@@ -149,3 +149,7 @@ docker/portainer-data/portainer.db
 .idea/shelf/Uncommitted_changes_before_Update_at_04_08_2022_17_37_\[Changes\]1/portainer.db
 .idea/shelf/Uncommitted_changes_before_Update_at_04_08_2022_17_37_\[Changes\]1/shelved.patch
 .idea/shelf/Uncommitted_changes_before_Update_at_04_08_2022_17_37__Changes_.xml
+docker/portainer-data/certs/cert.pem
+docker/portainer-data/certs/key.pem
+docker/portainer-data/portainer.key
+docker/portainer-data/portainer.pub
