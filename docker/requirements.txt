@@ -1,0 +1,14 @@
+git+https://github.com/man-group/arctic.git
+requests
+plotly
+papermill
+pycoingecko
+python-kucoin
+python-telegram-bot
+matplotlib
+web3
+schedule
+pika==1.3.0
+dataclasses-json
+pyyaml
+python-dotenv

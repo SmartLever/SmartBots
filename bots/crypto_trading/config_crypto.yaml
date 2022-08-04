@@ -1,0 +1,18 @@
+---
+Name: PortfolioCrypto1
+Strategies:
+  - id: 1
+    strategy: Basic_Strategy
+    params:
+      ticker: BTC-USDT
+      entry: 5
+      inicial_action: buy
+      quantity : 1
+
+  - id: 2
+    strategy: Basic_Strategy
+    params:
+      ticker: BTC-USDT
+      entry: 2
+      inicial_action: buy
+      quantity: 1

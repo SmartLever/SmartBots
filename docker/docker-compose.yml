@@ -1,0 +1,71 @@
+# docker-compose up -d
+# docker-compose --env-file ./compose.env up -d
+# docker-compose --env-file ./compose.env up -d data_provider1  # just one container
+version: '3.9'
+
+services:
+  rabbitmq:
+    image: rabbitmq:management
+    restart: always
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    networks:
+       crypto_networks:
+         ipv4_address: 172.20.0.2
+    ports:
+    - ${RABBITMQ_PORT}:5672
+    - 15672:15672
+
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./portainer-data:/data
+    ports:
+      - 9000:9000
+
+  data_provider1:
+    build:
+      context: .
+      dockerfile:  smartbot-python.dockerfile
+    hostname: kukoin_provider
+    volumes:
+      - ..:/app
+    depends_on:
+      - rabbitmq
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    networks:
+      crypto_networks:
+        ipv4_address: 172.20.0.3
+    command: python -u ./bots/crypto_trading/data_provider_kucoin.py
+
+  bot_crypto_trading1:
+    build:
+      context: .
+      dockerfile: smartbot-python.dockerfile
+    hostname: bot_crypto_trading1
+    volumes:
+      - ..:/app
+    depends_on:
+      - rabbitmq
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    networks:
+      crypto_networks:
+        ipv4_address: 172.20.0.4
+    command: python -u ./bots/crypto_trading/portfolio_production.py
+
+networks:
+  crypto_networks:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
