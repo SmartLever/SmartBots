@@ -64,6 +64,22 @@ services:
         ipv4_address: 172.20.0.4
     command: python -u ./bots/crypto_trading/portfolio_production.py
 
+  broker_crypto1:
+    build:
+      context: .
+      dockerfile: smartbot-python.dockerfile
+    hostname: broker_crypto1
+    volumes:
+      - ..:/app
+    depends_on:
+      - rabbitmq
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    networks:
+      crypto_networks:
+        ipv4_address: 172.20.0.5
+    command: python -u ./bots/crypto_trading/broker_kucoin.py
+
 networks:
   crypto_networks:
     ipam:
