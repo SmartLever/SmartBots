@@ -1,11 +1,16 @@
 ---
 Name: PortfolioCrypto1
+Data_Sources:
+  - ticker: BTC-USDT
+    historical_source: mongoDB
+    historical_library: kucoin_historical_1min
+
 Strategies:
   - id: 1
     strategy: Basic_Strategy
     params:
       ticker: BTC-USDT
-      entry: 5
+      entry: 5000
       inicial_action: buy
       quantity : 1
 
@@ -13,6 +18,6 @@ Strategies:
     strategy: Basic_Strategy
     params:
       ticker: BTC-USDT
-      entry: 2
+      entry: 20000
       inicial_action: buy
       quantity: 1

@@ -1,17 +1,23 @@
 import importlib
 from dataclasses import dataclass
 from smartbots.brokerMQ import Emit_Events, receive_events
-
+from smartbots.engine import data_loader
+import datetime as dt
 
 class Portfolio_Constructor(object):
     def __init__(self, conf_portfolio: dict, run_real: bool = False, asset_type: str = None,
-                 send_orders_to_broker: bool = False):
+                 send_orders_to_broker: bool = False, start_date: dt.datetime =dt.datetime(2022,1,1)
+                 , end_date: dt.datetime = dt.datetime.utcnow()):
         """ Run portfolio of strategies"""
+        self.print_events_realtime = False
+        self.start_date = start_date
+        self.end_date = end_date
         if asset_type is None:
             error_msg = 'asset_type is required'
             raise ValueError(error_msg)
         self.conf_portfolio = conf_portfolio
         self.name = conf_portfolio['Name']
+        self.data_sources = conf_portfolio['Data_Sources']
         self.run_real = run_real
         self.asset_type = asset_type
         self.ticker_to_strategies = {}  # fill with function load_strategies_conf()
@@ -50,11 +56,14 @@ class Portfolio_Constructor(object):
         print(f'running Portfolio {self.name}')
         self.run_simulation()
         if self.run_real:
+            self.print_events_realtime = True
             self.run_realtime()
 
     def run_simulation(self):
-        print('running Simulation of the Portfolio')
-        pass
+        for event in data_loader.load_tickers_and_create_events(self.data_sources,
+                                                                start_date=self.start_date, end_date=self.end_date):
+            self._callback_datafeed(event)
+
 
     def run_realtime(self):
         print('running real  of the Portfolio, waitig Events')
@@ -71,7 +80,8 @@ class Portfolio_Constructor(object):
         """ Feed portfolio with data from events, recieve dict with key as topic and value as event"""
         if 'bar' in event_info:
             bar = event_info['bar']
-            print(bar)
+            if self.print_events_realtime:
+                print(bar)
             try:
                 strategies = self.ticker_to_strategies[bar.ticker]
             except:

@@ -34,3 +34,12 @@
    ```bash
    pip install -r requirements.txt
    ```
+   
+## Infrastructure
+docker/docker-compose.yml have all the elements to run and manage the infrastructure.
+You can adapt it to your needs.
+
+### Components:
+#### MongoDB docker: Historical data
+MongoDB is used to store historical data, here more info: https://github.com/man-group/arctic
+For large historical data it use as defaul months chunks, here docs: https://github.com/man-group/arctic/wiki/Chunkstore

@@ -6,6 +6,11 @@ path = os.path.abspath(__file__)
 path_modulo = os.path.dirname(path)  # path to the module
 path_to_principal = path_modulo.replace('smartbots','')
 
+path_to_temp = os.path.join(path_modulo, 'temp')
+# Check is exist temp folder
+if not os.path.exists(path_to_temp):
+    os.makedirs(path_to_temp)
+
 
 if  os.getenv('AM_I_IN_A_DOCKER_CONTAINER') == '1': # only with docker running
     # Path to docker folder
@@ -13,6 +18,11 @@ if  os.getenv('AM_I_IN_A_DOCKER_CONTAINER') == '1': # only with docker running
 else:
     load_dotenv(os.path.join(path_to_principal, "conf.env"))
 
+# MongoDB
+MONGO_INITDB_ROOT_USERNAME= os.getenv("MONGO_INITDB_ROOT_USERNAME") or "REPLACE_ME"
+MONGO_INITDB_ROOT_PASSWORD= os.getenv("MONGO_INITDB_ROOT_PASSWORD") or "REPLACE_ME"
+MONGO_HOST= os.getenv("MONGO_HOST") or "REPLACE_ME"
+MONGO_PORT= os.getenv("MONGO_PORT") or "REPLACE_ME"
 
 
 # BrokerMQ

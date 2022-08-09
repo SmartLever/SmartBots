@@ -18,6 +18,22 @@ services:
     - ${RABBITMQ_PORT}:5672
     - 15672:15672
 
+  mongodb:
+    image: mongo:5.0
+    restart: always
+    hostname: mongodb
+    networks:
+      crypto_networks:
+        ipv4_address: 172.20.0.3
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+
+
 
   portainer:
     image: portainer/portainer-ce:latest
@@ -45,8 +61,8 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       crypto_networks:
-        ipv4_address: 172.20.0.3
-    command: python -u ./bots/crypto_trading/data_provider_kucoin.py
+        ipv4_address: 172.20.0.10
+    command: python -u ./bots/crypto_trading/data_realtime_provider_kucoin.py
 
   bot_crypto_trading1:
     build:
@@ -61,7 +77,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       crypto_networks:
-        ipv4_address: 172.20.0.4
+        ipv4_address: 172.20.0.11
     command: python -u ./bots/crypto_trading/portfolio_production.py
 
   broker_crypto1:
@@ -77,7 +93,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       crypto_networks:
-        ipv4_address: 172.20.0.5
+        ipv4_address: 172.20.0.12
     command: python -u ./bots/crypto_trading/broker_kucoin.py
 
 networks:
