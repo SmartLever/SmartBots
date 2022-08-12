@@ -78,7 +78,7 @@ services:
     networks:
       crypto_networks:
         ipv4_address: 172.20.0.11
-    command: python -u ./bots/crypto_trading/portfolio_production.py
+    command: python -u ./bots/crypto_trading/portfolio_production_betting.py
 
   broker_crypto1:
     build:

@@ -157,6 +157,8 @@ def get_historical_data(symbol: str, interval: str = '1day',
     if len(datas) > 0:
         df = pd.concat(datas) # add new data
         read_df = pd.concat([read_df, df]).sort_index(ascending=True)
+
+
     return read_df, hist_data_path
 
 

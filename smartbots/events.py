@@ -17,7 +17,6 @@ from typing import List, Dict, Any, Optional, Union
 class Order:
     """ Event from Portfolio of Strategies to Exchange or Broker for execution """
     datetime: dt.datetime = None
-    datetime_epoch: int = None
     dtime_zone: str = 'UTC'
     ticker: str = None
     contract: str = None
@@ -32,7 +31,7 @@ class Order:
     exchange: str = None
     order_id_sender: str = None
     order_id_receiver: str = None
-    datetime_in_epoch: int = None # datetime in epoch, broker or exchange enters the order
+    datetime_in: int = None # datetime when in broker or exchange enters the order
 
 
 @dataclass_json
@@ -40,7 +39,6 @@ class Order:
 class Bar:
     """ Event from dataProvider to Portfolio of Strategies"""
     datetime: dt.datetime = None
-    datetime_epoch: int = None
     dtime_zone: str = 'UTC'
     ticker: str = None
     open: float = None
@@ -71,7 +69,6 @@ class Odds:
     datetime: dt.datetime = None
     datetime_real_off: dt.datetime = None #real time of the event
     datetime_scheduled_off : dt.datetime = None #scheduled time of the event
-    datetime_epoch: int = None
     dtime_zone: str = 'UTC'
     unique_name: str = None #unique for ticker and match, for example: albacete vs betis_1_over/under 2.5 goals_202201010820
     unique_id_match: str = None #unique id for the match
@@ -115,7 +112,6 @@ class Odds:
 class Bet:
     """ Event from Portfolio of Strategies to Exchange of betting for execution """
     datetime: dt.datetime = None
-    datetime_epoch: int = None
     dtime_zone: str = 'UTC'
     ticker: str = None # event type
     selection: str = None # selection type

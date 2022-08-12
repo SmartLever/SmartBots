@@ -27,7 +27,7 @@ class Basic_Strategy(object):
         """ Add event to the strategy and apply logic """
         self.n_events += 1
         if self.n_events % self.entry == 0:
-            order = Order(datetime=bar.datetime, datetime_epoch=bar.datetime_epoch,
+            order = Order(datetime=bar.datetime,
                           dtime_zone=bar.dtime_zone, ticker=self.ticker,action=self.action,
                           price=bar.close, quantity=self.quantity)
             self.callback(order) # send order to exchange or broker
