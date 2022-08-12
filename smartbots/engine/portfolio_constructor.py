@@ -24,6 +24,7 @@ class Portfolio_Constructor(object):
         self._load_strategies_conf()
         self.send_orders_to_broker = send_orders_to_broker
         self.orders = []
+        self.bets = []
         if self.send_orders_to_broker:
             self.emit_orders = Emit_Events()
 
@@ -60,24 +61,58 @@ class Portfolio_Constructor(object):
             self.run_realtime()
 
     def run_simulation(self):
-        for event in data_loader.load_tickers_and_create_events(self.data_sources,
-                                                                start_date=self.start_date, end_date=self.end_date):
-            self._callback_datafeed(event)
+        if self.asset_type == 'crypto':
+            for event in data_loader.load_tickers_and_create_events(self.data_sources,
+                                                                    start_date=self.start_date, end_date=self.end_date):
+                self._callback_datafeed(event)
+        elif self.asset_type == 'betting':
+            for event in data_loader.load_tickers_and_create_events_betting(self.data_sources):
+                self._callback_datafeed_betting(event)
+        else:
+            raise ValueError(f'Asset type {self.asset_type} not supported')
 
 
     def run_realtime(self):
         print('running real  of the Portfolio, waitig Events')
-        receive_events(routing_key='bar', callback=self._callback_datafeed)
+        if self.asset_type == 'crypto':
+            receive_events(routing_key='bar', callback=self._callback_datafeed)
+        elif self.asset_type == 'betting':
+            receive_events(routing_key='odds', callback=self._callback_datafeed_betting)
+        else:
+            raise ValueError(f'Asset type {self.asset_type} not supported')
 
-    def _callback_orders(self, order: dataclass):
+    def _callback_orders(self, order_or_bet: dataclass):
         """ Order event from strategies"""
-        if self.send_orders_to_broker:
-            self.emit_orders.publish_event('order', order)
-            print(order)
-        self.orders.append(order)
+        if self.send_orders_to_broker and self.asset_type == 'crypto':
+                self.emit_orders.publish_event('order', order_or_bet)
+                print(order_or_bet)
+                self.orders.append(order_or_bet)
+        elif self.send_orders_to_broker and self.asset_type == 'betting':
+            self.emit_orders.publish_event('bet', order_or_bet)
+            print(order_or_bet)
+            self.bets.append(order_or_bet)
+        elif self.send_orders_to_broker:
+            raise ValueError(f'Asset type {self.asset_type} not supported')
+
+    def _callback_datafeed_betting(self, event_info: dict):
+        """ Feed portfolio with data from events for asset type Betting,
+         recieve dict with key as topic and value as event"""
+        if 'odds' in event_info:
+            odds = event_info['odds']
+            if self.print_events_realtime:
+                print(odds)
+            try:
+                strategies = self.ticker_to_strategies[odds.ticker]
+            except:
+                self.ticker_to_strategies[odds.ticker] = []  # default empty list
+                strategies = self.ticker_to_strategies[odds.ticker]
+
+            for strategy in strategies:
+                strategy.add_odds(odds)
 
     def _callback_datafeed(self, event_info: dict):
-        """ Feed portfolio with data from events, recieve dict with key as topic and value as event"""
+        """ Feed portfolio with data from events for asset Crypto and Finance,
+        recieve dict with key as topic and value as event"""
         if 'bar' in event_info:
             bar = event_info['bar']
             if self.print_events_realtime:

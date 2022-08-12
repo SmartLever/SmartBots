@@ -1,0 +1,20 @@
+---
+Name: PortfolioBetting1
+Data_Sources:
+  - ticker: over/under 2.5 goals
+    event_type: odds
+    historical_source: mongoDB
+    historical_library: betfair_files_historical
+
+Strategies_Load_From:
+  from:
+
+Strategies:
+  - id: 1
+    strategy: Basic_Strategy
+    params:
+      ticker: over/under 2.5 goals
+      selection : over 2.5 goals
+      entry: 5
+      inicial_action: back
+      quantity : 1

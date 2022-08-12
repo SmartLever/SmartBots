@@ -2,6 +2,7 @@
 Name: PortfolioCrypto1
 Data_Sources:
   - ticker: BTC-USDT
+    event_type: bar
     historical_source: mongoDB
     historical_library: kucoin_historical_1min
 

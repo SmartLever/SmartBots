@@ -1,5 +1,5 @@
 """ Portfolio Production Bot.
-    This bot is used to produce a portfolio of crypto currencies.
+    This bot is used to produce a portfolio of betting.
     It is used to:
     1) Test the perfomance of a combination of strategies.
     2) Test the performance of a strategy with a portfolio.
@@ -21,14 +21,14 @@ def main(run_real:bool=False,send_orders_to_broker:bool=True) -> None:
     from smartbots.engine.portfolio_constructor import Portfolio_Constructor
     path = os.path.abspath(__file__)
     path_bot = os.path.dirname(path)  # path to the module
-    path_to_config = os.path.join(path_bot, "config_crypto.yaml")
+    path_to_config = os.path.join(path_bot, "config_betting.yaml")
     conf_portfolio = get_config(path_to_config)  # get the configuration from the config file
     # run the portfolio engine, set run_real=True to run in real time
 
-    portfolio_production = Portfolio_Constructor(conf_portfolio, run_real=run_real, asset_type = 'crypto',
+    portfolio_production = Portfolio_Constructor(conf_portfolio, run_real=run_real, asset_type = 'betting',
                                                  send_orders_to_broker=send_orders_to_broker)
     portfolio_production.run()
 
 if __name__ == '__main__':
-    main( run_real=True,send_orders_to_broker=True)
+    main( run_real=True, send_orders_to_broker=True)
 
