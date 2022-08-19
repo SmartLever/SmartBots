@@ -1,6 +1,8 @@
 """ Wrappe around MQ broker, using Rabbitmq
 LocalHost: http://localhost:15672/
 """
+import time
+
 import pika
 from smartbots import conf
 import json
@@ -12,7 +14,7 @@ import datetime as dt
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-events_type = {'bar': Bar, 'order': Order} #define types of events
+events_type = {'bar': Bar, 'order': Order,'order_status': Order} #define types of events
 
 
 logger = logging.getLogger(__name__)
@@ -35,8 +37,16 @@ class CallBack_Handler(object):
     def callback_recieved(self, ch, method, properties, body):
         """ Callback function for realtime data"""
         event = events_type[method.routing_key].from_json(body)
-        # datetime and datetime epoch are in all events
-        event.datetime = dt.datetime.fromtimestamp(event.datetime_epoch)  # force
+        if 'datetime' in event.__dict__:
+            if event.datetime is not None:
+                _dtime = event.datetime
+                event.datetime = dt.datetime(_dtime.year, _dtime.month,
+                                             _dtime.day, _dtime.hour, _dtime.minute, _dtime.second)
+        if 'datetime_in' in event.__dict__:
+            if event.datetime_in is not None:
+                _dtime = event.datetime_in
+                event.datetime_in = dt.datetime(_dtime.year, _dtime.month,
+                                                _dtime.day, _dtime.hour, _dtime.minute, _dtime.second)
         self.callback({method.routing_key: event})
 
 
@@ -77,8 +87,14 @@ class Emit_Events():
 
     def publish_event(self, topic: str, message:dataclass):
         """ Publish message Event to MQ by topic, all events are dataclass objects define in events.py """
-        self.channel.basic_publish(exchange='events', routing_key=topic,properties =self.properties,
-                                   body=message.to_json())
+        try:
+            self.channel.basic_publish(exchange='events', routing_key=topic,properties =self.properties,
+                                       body=message.to_json())
+        except Exception as e:
+            time.sleep(1)
+            self._connect_client() # connect to MQ if connection is lost
+            self.channel.basic_publish(exchange='events', routing_key=topic, properties=self.properties,
+                                       body=message.to_json())
 
     def publish(self, topic: str, message: str):
         """ Publish String  to MQ by topic, this is the generic case"""

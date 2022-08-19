@@ -10,6 +10,7 @@ class Portfolio_Constructor(object):
                  , end_date: dt.datetime = dt.datetime.utcnow()):
         """ Run portfolio of strategies"""
         self.print_events_realtime = False
+        self.in_real_time = False
         self.start_date = start_date
         self.end_date = end_date
         if asset_type is None:
@@ -35,12 +36,15 @@ class Portfolio_Constructor(object):
             strategy_name = parameters['strategy']
             _id = parameters['id']
             ticker = parameters['params']['ticker']
+            set_basic = False
+            if strategy_name == 'Basic_Strategy':
+                set_basic = True
             if strategy_name not in list_stra:  # import strategy only once
                 list_stra[strategy_name] = self._get_strategy(self.asset_type, strategy_name)
             if ticker not in self.ticker_to_strategies:
                 self.ticker_to_strategies[ticker] = []
             strategy_obj = list_stra[strategy_name](parameters['params'], id_strategy=_id,
-                                                    callback=self._callback_orders)
+                                                    callback=self._callback_orders, set_basic = set_basic)
             self.ticker_to_strategies[ticker].append(strategy_obj)
 
     def _get_strategy(self, asset_type: str, strategy_name: str):
@@ -55,9 +59,11 @@ class Portfolio_Constructor(object):
 
     def run(self):
         print(f'running Portfolio {self.name}')
+        self.in_real_time = False
         self.run_simulation()
         if self.run_real:
             self.print_events_realtime = True
+            self.in_real_time = True
             self.run_realtime()
 
     def run_simulation(self):
@@ -83,14 +89,19 @@ class Portfolio_Constructor(object):
 
     def _callback_orders(self, order_or_bet: dataclass):
         """ Order event from strategies"""
+        order_or_bet.portfolio_name = self.name
+        order_or_bet.status = 'from_strategy'
         if self.send_orders_to_broker and self.asset_type == 'crypto':
-                self.emit_orders.publish_event('order', order_or_bet)
+            self.orders.append(order_or_bet)
+            if self.in_real_time:
                 print(order_or_bet)
-                self.orders.append(order_or_bet)
+                self.emit_orders.publish_event('order', order_or_bet)
+
         elif self.send_orders_to_broker and self.asset_type == 'betting':
-            self.emit_orders.publish_event('bet', order_or_bet)
-            print(order_or_bet)
             self.bets.append(order_or_bet)
+            if self.in_real_time:
+                print(order_or_bet)
+                self.emit_orders.publish_event('bet', order_or_bet)
         elif self.send_orders_to_broker:
             raise ValueError(f'Asset type {self.asset_type} not supported')
 

@@ -37,7 +37,7 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
                 ohlc['volume'] = data['size'].astype(float).sum() # sum volume
                 dtime = dt.datetime(ohlc.index[0].year, ohlc.index[0].month, ohlc.index[0].day,
                                     ohlc.index[0].hour, ohlc.index[0].minute, ohlc.index[0].second)
-                bar = Bar(ticker=symbol, datetime=dtime, dtime_zone='UTC', datetime_epoch =dtime.timestamp(),
+                bar = Bar(ticker=symbol, datetime=dtime, dtime_zone='UTC',
                           open=ohlc.open[0],
                           high=ohlc.high[0], low=ohlc.low[0], close=ohlc.close[0],
                           volume=ohlc.volume[0],exchange= 'kucoin', provider= 'kucoin', freq=interval)

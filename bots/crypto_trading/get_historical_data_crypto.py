@@ -5,7 +5,7 @@ import datetime as dt
 from smartbots import conf
 from typing import List
 import pandas as pd
-from arctic import Arctic, CHUNK_STORE
+from arctic import Arctic
 from smartbots.decorators import log_start_end
 from smartbots.events import Bar
 
@@ -48,7 +48,8 @@ def read_historical(symbol: str, name_library: str= 'provider_historical_1min') 
     if not store.library_exists(name_library):
          store.initialize_library(name_library)
     lib = store[name_library]
-    month_list = [{l.split('_')[0]:int(l.split('_')[-1]) }    for l in lib.list_symbols()]
+    month_list = [{l.split('_')[0]:int(l.split('_')[-1]) }    for l in lib.list_symbols()
+                  if symbol in l]
     if len(month_list) > 0:
         # get from dict with less value
         symbol_min = min(month_list, key=lambda x: x.get(symbol))
@@ -120,6 +121,6 @@ def main(symbols: List[str] =["BTC-USDT"], start_date: dt.datetime=dt.datetime(2
 
 if __name__ == '__main__':
     """ A temp file it is save until completed, you can re-run this script if something goes wrong """
-    symbols  =["BTC-USDT"]
-    main(symbols=symbols,start_date=dt.datetime(2015, 1, 1), end_date=dt.datetime.utcnow(),
+    symbols  =["ETH-USDT"]
+    main(symbols=symbols,start_date=dt.datetime(2022, 1, 1), end_date=dt.datetime.utcnow(),
          provider='kucoin',clean_symbols_database=[])
