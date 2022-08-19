@@ -3,6 +3,9 @@ from dataclasses import dataclass
 from smartbots.brokerMQ import Emit_Events, receive_events
 from smartbots.engine import data_loader
 import datetime as dt
+import pandas as pd
+from arctic import Arctic
+from smartbots import conf
 
 class Portfolio_Constructor(object):
     def __init__(self, conf_portfolio: dict, run_real: bool = False, asset_type: str = None,
@@ -57,6 +60,18 @@ class Portfolio_Constructor(object):
         except Exception as e:
             raise ValueError(f'Error loading strategy {strategy_name}') from e
 
+    def get_saved_values_strategy(self, id_strategy: int = None):
+        # Get saved values for the strategy
+        frames = {}
+        for t in self.ticker_to_strategies.keys():
+            for strategy in self.ticker_to_strategies[t]:
+                if id_strategy is None or strategy.id_strategy == id_strategy:
+                    df = pd.DataFrame(strategy.get_saved_values())
+                    df['ticker'] = t
+                    df.set_index('datetime', inplace=True)
+                    frames[id_strategy] = df
+        return frames
+
     def run(self):
         print(f'running Portfolio {self.name}')
         self.in_real_time = False
@@ -77,13 +92,32 @@ class Portfolio_Constructor(object):
         else:
             raise ValueError(f'Asset type {self.asset_type} not supported')
 
+    def process_petitions(self, event_info: dict):
+        """ Recieve a event peticion and get the data from the data source and save it in the DataBase"""
+        if 'petition' in event_info:
+            data_to_save = None
+            print(f'Petition {event_info["petition"]}')
+            petition = event_info['petition']
+            if petition.function_to_run == 'get_saved_values_strategy':
+                data_to_save = self.get_saved_values_strategy()
+            if data_to_save is not None:
+                name_library = petition.path_to_saving
+                name = petition.name_to_saving
+                store = Arctic(f'{conf.MONGO_HOST}:{conf.MONGO_PORT}', username=conf.MONGO_INITDB_ROOT_USERNAME,
+                               password=conf.MONGO_INITDB_ROOT_PASSWORD)
+                if not store.library_exists(name_library):
+                    store.initialize_library(name_library)
+                lib = store[name_library]
+                lib.write(name, data_to_save)
+                print(f'Save {name} in {name_library}.')
+
 
     def run_realtime(self):
         print('running real  of the Portfolio, waitig Events')
         if self.asset_type == 'crypto':
-            receive_events(routing_key='bar', callback=self._callback_datafeed)
+            receive_events(routing_key='bar,petition', callback=self._callback_datafeed)
         elif self.asset_type == 'betting':
-            receive_events(routing_key='odds', callback=self._callback_datafeed_betting)
+            receive_events(routing_key='odds,petition', callback=self._callback_datafeed_betting)
         else:
             raise ValueError(f'Asset type {self.asset_type} not supported')
 
@@ -133,6 +167,7 @@ class Portfolio_Constructor(object):
             except:
                 self.ticker_to_strategies[bar.ticker] = []  # default empty list
                 strategies = self.ticker_to_strategies[bar.ticker]
-
             for strategy in strategies:
-                strategy.add_bar(bar)
+                strategy.add_event('bar', bar)
+        elif 'petition' in event_info:
+            self.process_petitions(event_info)

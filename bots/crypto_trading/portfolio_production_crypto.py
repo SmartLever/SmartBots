@@ -17,7 +17,7 @@ import datetime as dt
 
 
 def main(run_real: bool = False, send_orders_to_broker: bool = True,
-         start_date: dt.datetime = dt.datetime(2022, 8, 1)) -> None:
+         start_date: dt.datetime = dt.datetime(2022, 7, 1)) -> None:
     """ Run the portfolio engine. """
     from smartbots.config_helper import get_config
     import os

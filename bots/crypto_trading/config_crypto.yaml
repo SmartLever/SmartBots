@@ -7,10 +7,17 @@ Data_Sources:
     historical_library: kucoin_historical_1min
 
 Strategies:
+#  - id: 1
+#    strategy: Basic_Strategy
+#    params:
+#      ticker: ETH-USDT
+#      entry: 2
+#      inicial_action: buy
+#      quantity : 0.1
   - id: 1
-    strategy: Basic_Strategy
+    strategy: Simple_Avg_Cross
     params:
       ticker: ETH-USDT
-      entry: 2
-      inicial_action: buy
-      quantity : 1
+      short_period: 10
+      long_period: 50
+      quantity: 0.1

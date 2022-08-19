@@ -5,6 +5,7 @@ from smartbots.events import Order
 import datetime as dt
 
 
+
 class Basic_Strategy(object):
     def __init__(self, parameters: dict = None, id_strategy: int=None,
                  callback: callable=None, set_basic: bool= True):
@@ -17,8 +18,11 @@ class Basic_Strategy(object):
         self.id_strategy = id_strategy
         self.n_events = 0 # number of events received
         self.n_orders = 0 # number of orders sent
+        self.position = 0 # position in the strategy, 1 Long, -1 Short, 0 None
+        self.inicial_values = False # Flag to set inicial values
+        self.saves_values = {'datetime': [],  'position': [], 'close': []}
         if set_basic:
-            self.add_bar = self._add_bar_example
+            self.add_bar = self._add_event_example
 
 
     def _callback_default(self, event_order: dataclass):
@@ -41,20 +45,34 @@ class Basic_Strategy(object):
         self.callback(order)
         self.n_orders += 1
 
-    def add_bar(self, bar: dataclass):
+    def add_event(self, event_type, event: dataclass):
         """ Add event to the strategy and apply logic """
         pass
 
+    def get_saved_values(self):
+        """ Return values saved """
+        return self.saves_values
 
-    def _add_bar_example(self, bar: dataclass):
+
+    def _add_event_example(self, event_type, event: dataclass):
         """ Basic logic for testing purposes """
-        self.n_events += 1
-        if self.n_events % self.parameters['entry'] == 0:
-            self.send_order(ticker = bar.ticker, price=bar.close, quantity=self.parameters['quantity'],
-                            action= self.parameters['inicial_action'], type='market')
-            # Chamge action
-            if self.parameters['inicial_action'] == 'buy':
-                self.parameters['inicial_action']  = 'sell'
-            elif self.parameters['inicial_action']  == 'sell':
-                self.parameters['inicial_action']  = 'buy'
+        if event_type == 'bar':
+            self.n_events += 1
+            if self.n_events % self.parameters['entry'] == 0:
+                self.send_order(ticker = event.ticker, price=event.close, quantity=self.parameters['quantity'],
+                                action= self.parameters['inicial_action'], type='market')
+                # Chamge action
+                if self.parameters['inicial_action'] == 'buy':
+                    self.position = 1
+                    self.parameters['inicial_action'] = 'sell'
+                elif self.parameters['inicial_action'] == 'sell':
+                    self.position = 0
+                    self.parameters['inicial_action'] = 'buy'
+            # save values
+            self.saves_values['datetime'].append(event.datetime)
+            self.saves_values['position'].append(self.position)
+            self.saves_values['close'].append(event.close)
+
+        else:
+            pass
 

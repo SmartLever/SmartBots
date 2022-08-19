@@ -8,13 +8,13 @@ from smartbots import conf
 import json
 import logging
 from smartbots.decorators import log_start_end, check_api_key
-from smartbots.events import Bar, Order
+from smartbots.events import Bar, Order, Petition
 from dataclasses import dataclass
 import datetime as dt
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-events_type = {'bar': Bar, 'order': Order,'order_status': Order} #define types of events
+events_type = {'bar': Bar, 'order': Order, 'order_status': Order, 'petition': Petition} #define types of events
 
 
 logger = logging.getLogger(__name__)
@@ -120,6 +120,8 @@ def receive_events(routing_key: str = "#", topic: str ='events', callback: calla
     channel.exchange_declare(exchange=topic, exchange_type='topic')
     result = channel.queue_declare('', exclusive=True)
     queue_name = result.method.queue
+    for routing in routing_key.split(','):
+        channel.queue_bind(exchange=topic, queue=queue_name, routing_key=routing)
     channel.queue_bind(exchange=topic, queue=queue_name, routing_key=routing_key)
     print(' [*] Waiting for events. To exit press CTRL+C')
     channel.basic_consume(

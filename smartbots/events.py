@@ -11,6 +11,17 @@ import datetime as dt
 from typing import List, Dict, Any, Optional, Union
 
 
+@dataclass_json
+@dataclass
+class Petition:
+    """ Petition for getting data from a data source from running processes """
+    datetime: dt.datetime = None
+    dtime_zone: str = 'UTC'
+    function_to_run: str = None # petition of function to run for the petition
+    parameters: Dict[str, Any] = None # parameters for the function to run
+    path_to_saving: str = 'petitions' # path to saving the data
+    name_to_saving: str = 'default' # name of the key to save the data
+
 ####Financial and crypto events##################################################################
 @dataclass_json
 @dataclass
