@@ -33,8 +33,6 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
 
-
-
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
@@ -47,6 +45,23 @@ services:
       - ./portainer-data:/data
     ports:
       - 9000:9000
+
+  jupyterlab:
+    build:
+      context: .
+      dockerfile: smartbot-python.dockerfile
+    ports:
+      - 4444:8888
+    depends_on:
+      - rabbitmq
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    volumes:
+      - ..:/app
+    networks:
+      crypto_networks:
+        ipv4_address: 172.20.0.4
+    entrypoint: sh -c 'jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --notebook-dir=/app --allow-root'
 
   data_provider1:
     build:
@@ -78,7 +93,7 @@ services:
     networks:
       crypto_networks:
         ipv4_address: 172.20.0.11
-    command: python -u ./bots/crypto_trading/portfolio_production_betting.py
+    command: python -u ./bots/crypto_trading/portfolio_production_crypto.py
 
   broker_crypto1:
     build:
@@ -95,6 +110,22 @@ services:
       crypto_networks:
         ipv4_address: 172.20.0.12
     command: python -u ./bots/crypto_trading/broker_kucoin.py
+
+  event_keeper:
+    build:
+      context: .
+      dockerfile: smartbot-python.dockerfile
+    hostname: event_keeper
+    volumes:
+      - ..:/app
+    depends_on:
+      - rabbitmq
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    networks:
+      crypto_networks:
+        ipv4_address: 172.20.0.13
+    command: python -u ./bots/event_keeper.py
 
 networks:
   crypto_networks:

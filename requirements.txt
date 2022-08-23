@@ -13,3 +13,4 @@ dataclasses-json
 pyyaml
 python-dotenv
 jupyter
+jupyterlab

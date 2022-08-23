@@ -12,3 +12,5 @@ pika==1.3.0
 dataclasses-json
 pyyaml
 python-dotenv
+jupyter
+jupyterlab
