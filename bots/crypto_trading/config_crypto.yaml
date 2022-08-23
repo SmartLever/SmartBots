@@ -21,3 +21,11 @@ Strategies:
       short_period: 10
       long_period: 50
       quantity: 0.1
+
+  - id: 2
+    strategy: Simple_Avg_Cross
+    params:
+      ticker: ETH-USDT
+      short_period: 10
+      long_period: 500
+      quantity: 0.1

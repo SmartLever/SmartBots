@@ -62,4 +62,5 @@ if __name__ == '__main__':
     save_data = {symbol: [] for symbol in symbols}
     x = threading.Thread(target=get_thread_for_create_bar)
     x.start()
-    get_realtime_data(symbols, save_tick_data)
+    setting = {'symbols': symbols}
+    get_realtime_data(setting, save_tick_data)

@@ -17,6 +17,7 @@ class Petition:
     """ Petition for getting data from a data source from running processes """
     datetime: dt.datetime = None
     dtime_zone: str = 'UTC'
+    ticker: str = 'petition'
     function_to_run: str = None # petition of function to run for the petition
     parameters: Dict[str, Any] = None # parameters for the function to run
     path_to_saving: str = 'petitions' # path to saving the data

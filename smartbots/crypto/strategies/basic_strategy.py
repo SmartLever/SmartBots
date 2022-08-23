@@ -15,6 +15,7 @@ class Basic_Strategy(object):
             self.callback = callback
         self.parameters = parameters
         self.ticker = parameters['ticker']
+        self.quantity = parameters['quantity']
         self.id_strategy = id_strategy
         self.n_events = 0 # number of events received
         self.n_orders = 0 # number of orders sent
@@ -33,7 +34,7 @@ class Basic_Strategy(object):
         """ Return order_id_sender """
         return f'{self.id_strategy}_{self.n_orders}_{dt.datetime.utcnow().strftime("%Y%m%d%H%M%S")}'
 
-    def send_order(self,price=None, quantity=None, action=None, ticker=None,type='market'):
+    def send_order(self, price=None, quantity=None, action=None, ticker=None,type='market'):
         """ Send order to exchange or broker """
 
         sender_id = self.get_order_id_sender()

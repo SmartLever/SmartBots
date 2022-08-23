@@ -6,6 +6,7 @@ import logging
 from typing import Dict, List
 from kucoin.client import Client
 import asyncio
+import threading
 from smartbots import conf
 import time
 import pandas as pd
@@ -72,6 +73,31 @@ class Trading(object):
         else:
             self.emit_orders = None
 
+    def start_update_orders_status(self) -> None:
+        """Start update orders status."""
+        def run_status_orders():
+            while True:
+                if len(self.dict_open_orders ) > 0: # if there are open orders
+                    self.check_order()
+                    time.sleep(30)
+                else:
+                    time.sleep(1)
+        x = threading.Thread(target=run_status_orders)
+        x.start()
+
+
+    def get_account(self,currency=None,account_type='trade') -> None:
+        """Get a list of accounts
+
+        https://docs.kucoin.com/#accounts
+
+        :param currency: optional Currency code
+        :type currency: string
+        :param account_type: optional Account type - main, trade, margin or pool
+        :type account_type: string"""
+
+        return self.client.get_accounts( currency=currency, account_type=account_type)
+
     def send_order(self, order: dataclasses.dataclass) -> None:
         """Send order.
 
@@ -83,6 +109,7 @@ class Trading(object):
         try:
             self._send_order(order)
         except ConnectionError as e:
+            print('ConnectionError, tryin again')
             time.sleep(1)
             self._send_order(order)
         except Exception as e:
@@ -100,7 +127,6 @@ class Trading(object):
 
 
     def _send_order(self, order: dataclasses.dataclass) -> None:
-        print(f'Send order {order}')
         # place a market buy order
         ticker = order.ticker
         action = order.action
@@ -124,12 +150,12 @@ class Trading(object):
                 order.status = "error"
                 order.error_description = "Type order not recognized"
                 raise ValueError(order.error_description)
-
+            print(f'Send order {order}')
         except Exception as e:
             order.status = "error"
             order.error_description = str(e)
+            print(f'Send order {order}')
             raise(e)
-
 
     def get_order(self, order: dataclasses.dataclass) -> None:
         """Get info order and fill it.
@@ -180,26 +206,30 @@ class Trading(object):
             time.sleep(1)
             self._get_fills_by_order(order)
         except Exception as e:
-                print(e)
+                print(f'Error getting FillOrders {e}')
 
 
     def _get_fills_by_order(self, order: dataclasses.dataclass) -> None:
-        if order.order_id_receiver is not None and order.status == "open":
+        if order.order_id_receiver is not None:
             fills = self.client.get_fills(order.order_id_receiver)
-            quantity_execute = 0
-            prices = []
-            sizes = []
-            for fill in fills['items']:
-                quantity_execute += float(fill['size'])
-                prices.append(float(fill['price']))
-                sizes.append(float(fill['size']))
-            order.quantity_execute = quantity_execute
-            order.quantity_left = order.quantity - order.quantity_execute
-            # Get  price by ponderate by sizes
-            order.filled_price = sum(x * y for x, y in zip(prices, sizes)) / sum(sizes)
+            if len(fills['items']) == 0:
+                time.sleep(5)
+                fills = self.client.get_fills(order.order_id_receiver)
+            if len(fills['items'])> 0:
+                quantity_execute = 0
+                prices = []
+                sizes = []
+                for fill in fills['items']:
+                    quantity_execute += float(fill['size'])
+                    prices.append(float(fill['price']))
+                    sizes.append(float(fill['size']))
+                order.quantity_execute = quantity_execute
+                order.quantity_left = order.quantity - order.quantity_execute
+                # Get  price by ponderate by sizes
+                order.filled_price = sum(x * y for x, y in zip(prices, sizes)) / sum(sizes)
 
-            if order.quantity_left == 0:
-                order.status = "closed"
+                if order.quantity_left == 0:
+                    order.status = "closed"
 
     def cancel_order(self, order: dataclasses.dataclass) -> None:
         """Cancel order.
@@ -226,18 +256,18 @@ class Trading(object):
     def check_order(self):
         """ Check open order and send changes to Portfolio  and for saving in the database"""
         list_changing = []
-        for order_id in self.dict_open_orders:
+        for order_id in self.dict_open_orders.keys():
             order = self.dict_open_orders[order_id]
-            self.get_fills_by_order(order)
             self.get_order(order)
+            self.get_fills_by_order(order)
+            if order.status == 'closed' or order.status == 'cancelled':
+                list_changing.append(order_id)
             if self.send_orders_status: # publish order status
                 self.emit_orders.publish_event('order_status', order)
-            if order.status == 'closed' or order.status == 'cancelled':
-                # eliminate from dict_open_orders and create in dict_cancel_and_close_orders
-                list_changing.append(order_id)
+            print(f'Order {order.status} {order}')
 
         for order_id in list_changing:
-            print(f'Order {order.status} {order}')
+            # eliminate from dict_open_orders and create in dict_cancel_and_close_orders
             self.dict_open_orders.pop(order_id)
             self.dict_cancel_and_close_orders[order_id] = order
 
@@ -336,7 +366,7 @@ def get_historical_data(symbol: str, interval: str = '1day',
 
 
 @log_start_end(log=logger)
-def get_realtime_data(symbols: List[str], callback: callable = _callable) -> None:
+def get_realtime_data(settings: dict = {'symbols': List[str]}, callback: callable = _callable) -> None:
     """Return realtime data for a list of symbols. [Source: Kucoin]
 
     Parameters
@@ -347,6 +377,7 @@ def get_realtime_data(symbols: List[str], callback: callable = _callable) -> Non
 
     """
 
+    symbols = settings['symbols']
     async def main():
         ksm = await KucoinSocketManager.create(loop, client, callback)
         # subscribe to all symbols  (this is the default)

@@ -69,8 +69,22 @@ class Portfolio_Constructor(object):
                     df = pd.DataFrame(strategy.get_saved_values())
                     df['ticker'] = t
                     df.set_index('datetime', inplace=True)
-                    frames[id_strategy] = df
+                    frames[strategy.id_strategy] = df
         return frames
+
+    def get_saved_values_strategies_last(self):
+        # Get last saved values for the strategy
+        dict_values = {}
+        for t in self.ticker_to_strategies.keys():
+            for strategy in self.ticker_to_strategies[t]:
+                values = strategy.get_saved_values()
+                dict_values[strategy.id_strategy] = {}
+                dict_values[strategy.id_strategy]['ticker'] = strategy.ticker
+                dict_values[strategy.id_strategy]['close'] = values['close'][-1]
+                dict_values[strategy.id_strategy]['position'] = values['position'][-1]
+                dict_values[strategy.id_strategy]['quantity'] = strategy.quantity
+
+        return dict_values
 
     def run(self):
         print(f'running Portfolio {self.name}')
@@ -100,6 +114,8 @@ class Portfolio_Constructor(object):
             petition = event_info['petition']
             if petition.function_to_run == 'get_saved_values_strategy':
                 data_to_save = self.get_saved_values_strategy()
+            elif petition.function_to_run == 'get_saved_values_strategies_last':
+                data_to_save = self.get_saved_values_strategies_last()
             if data_to_save is not None:
                 name_library = petition.path_to_saving
                 name = petition.name_to_saving
@@ -170,4 +186,9 @@ class Portfolio_Constructor(object):
             for strategy in strategies:
                 strategy.add_event('bar', bar)
         elif 'petition' in event_info:
-            self.process_petitions(event_info)
+            """ If the petition do not work it keeps working"""
+            try:
+                self.process_petitions(event_info)
+            except Exception as e:
+                print(f'Error processing petitions {e}')
+
