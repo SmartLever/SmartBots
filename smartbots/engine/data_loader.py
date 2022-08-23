@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import datetime as dt
 from smartbots.events import Bar, Odds
-from arctic import Arctic
+from smartbots.database_handler import Universe
 from typing import List, Dict
 from smartbots.decorators import log_start_end
 from smartbots import conf
@@ -19,8 +19,7 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
         start_date: start date of the query period
         end_date: end date of the query period """
 
-    store = Arctic(f'{conf.MONGO_HOST}:{conf.MONGO_PORT}', username=conf.MONGO_INITDB_ROOT_USERNAME,
-                   password=conf.MONGO_INITDB_ROOT_PASSWORD)
+    store = Universe() # database handler
 
     from_month = start_date
     end_month = calendar.monthrange(from_month.year, from_month.month)
@@ -33,7 +32,7 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
             symbol = info['ticker'] +'_'+ yyyymm
             name_library = info['historical_library']
             print(f'{symbol}')
-            lib = store[name_library]
+            lib = store.get_library(name_library)
             if lib.has_symbol(symbol):
                 data = lib.read(symbol).data
                 data = data[data.index <= to_month]
@@ -62,13 +61,12 @@ def load_tickers_and_create_events_betting(tickers_lib_name: list):
         tickers_lib_name: list of tickers to load with info about the source of the data
          """
 
-    store = Arctic(f'{conf.MONGO_HOST}:{conf.MONGO_PORT}', username=conf.MONGO_INITDB_ROOT_USERNAME,
-                   password=conf.MONGO_INITDB_ROOT_PASSWORD)
+    store = Universe()
 
     for info in tickers_lib_name:
         ticker = info['ticker']
         name_library = info['historical_library']
-        lib = store[name_library]
+        lib = store.get_library(name_library)
         list_symbols = [l for l in lib.list_symbols() if ticker in l]
 
         for unique in list_symbols:

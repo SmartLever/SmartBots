@@ -5,7 +5,7 @@ import datetime as dt
 from smartbots import conf
 from typing import List
 import pandas as pd
-from arctic import Arctic
+from smartbots.database_handler import Universe
 from smartbots.decorators import log_start_end
 from smartbots.events import Bar
 
@@ -22,14 +22,10 @@ def dataframe_to_bars(symbol:str,frame:pd.DataFrame):
 
 
 def save_historical(symbol: str, data: pd.DataFrame,name_library: str= 'provider_historical_1min') -> None:
-    """ Save historical data as version.
-        Symbols as save as :symbol_monthYear as a way to optimize the data reading
-        Here the docs: https://github.com/man-group/arctic/"""
-    store = Arctic(f'{conf.MONGO_HOST}:{conf.MONGO_PORT}',username=conf.MONGO_INITDB_ROOT_USERNAME,
-                   password=conf.MONGO_INITDB_ROOT_PASSWORD)
-    if not store.library_exists(name_library):
-        store.initialize_library(name_library)
-    lib = store[name_library]
+    """ Save historical in database in the library."""
+    store = Universe()
+    lib = store.get_library(name_library)
+
     # save in chunks of 1 month of data, index have to be a datetime object with name date
     data.index.name = 'date'
     data['yyyymm'] = data.index.strftime('%Y%m')
@@ -43,11 +39,9 @@ def read_historical(symbol: str, name_library: str= 'provider_historical_1min') 
     """ Read historical data from initial month and end month.
         Symbols as save as :symbol_monthYear as a way to identify the data.
         """
-    store = Arctic(f'{conf.MONGO_HOST}:{conf.MONGO_PORT}', username=conf.MONGO_INITDB_ROOT_USERNAME,
-                   password=conf.MONGO_INITDB_ROOT_PASSWORD)
-    if not store.library_exists(name_library):
-         store.initialize_library(name_library)
-    lib = store[name_library]
+    store = Universe()
+    lib = store.get_library(name_library)
+
     month_list = [{l.split('_')[0]:int(l.split('_')[-1]) }    for l in lib.list_symbols()
                   if symbol in l]
     if len(month_list) > 0:
@@ -61,9 +55,8 @@ def read_historical(symbol: str, name_library: str= 'provider_historical_1min') 
     return {'initial':pd.DataFrame(),'end':pd.DataFrame()}
 
 def clean_symbol(symbols,name_library):
-    store = Arctic(f'{conf.MONGO_HOST}:{conf.MONGO_PORT}', username=conf.MONGO_INITDB_ROOT_USERNAME,
-                   password=conf.MONGO_INITDB_ROOT_PASSWORD)
-    lib = store[name_library]
+    store = Universe()
+    lib = store.get_library(name_library)
     for symbol in symbols:
          for _s in  lib.list_symbols():
              if symbol in _s:

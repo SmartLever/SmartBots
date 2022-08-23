@@ -1,8 +1,7 @@
-""" Wrappe around MQ broker, using Rabbitmq
+""" Wrapper around MQ broker, using Rabbitmq
 LocalHost: http://localhost:15672/
 """
 import time
-
 import pika
 from smartbots import conf
 import json

@@ -4,7 +4,7 @@ from smartbots.brokerMQ import Emit_Events, receive_events
 from smartbots.engine import data_loader
 import datetime as dt
 import pandas as pd
-from arctic import Arctic
+from smartbots.database_handler import Universe
 from smartbots import conf
 
 class Portfolio_Constructor(object):
@@ -119,11 +119,9 @@ class Portfolio_Constructor(object):
             if data_to_save is not None:
                 name_library = petition.path_to_saving
                 name = petition.name_to_saving
-                store = Arctic(f'{conf.MONGO_HOST}:{conf.MONGO_PORT}', username=conf.MONGO_INITDB_ROOT_USERNAME,
-                               password=conf.MONGO_INITDB_ROOT_PASSWORD)
-                if not store.library_exists(name_library):
-                    store.initialize_library(name_library)
-                lib = store[name_library]
+                store = Universe()
+                lib = store.get_library(name_library)
+
                 lib.write(name, data_to_save)
                 print(f'Save {name} in {name_library}.')
 
