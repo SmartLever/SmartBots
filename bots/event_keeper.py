@@ -3,7 +3,7 @@
 
 def main(name_library='events_keeper') -> None:
     from smartbots.brokerMQ import receive_events
-    from arctic import Arctic
+    from smartbots.database_handler import Universe
     from smartbots import conf
     import datetime as dt
 
@@ -33,11 +33,9 @@ def main(name_library='events_keeper') -> None:
     # variable
     n_saved = {'events': 0}
     # Create connection  to DataBase
-    store = Arctic(f'{conf.MONGO_HOST}:{conf.MONGO_PORT}', username=conf.MONGO_INITDB_ROOT_USERNAME,
-                   password=conf.MONGO_INITDB_ROOT_PASSWORD)
-    if not store.library_exists(name_library):
-        store.initialize_library(name_library)
-    lib = store[name_library]
+    store = Universe()
+    lib = store.get_library(name_library)
+
     # Connect to brokerMQ for receiving events
     receive_events(routing_key='#', callback=callback)
 
