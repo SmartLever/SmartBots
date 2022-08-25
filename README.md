@@ -27,30 +27,35 @@ Lets see how it works.
       All will be done on the container and configurations and modifications can be done with JupyterLab.
 
       Docker installation instructions, please refer to the [Docker-Compose](https://docs.docker.com/compose/install/) documentation.
-      Once you have Docker-Compose installed, run the following command:
+      Once you have Docker-Compose installed, run the following command for lauching the basics service infrastructure:
      
       ```bash
       cd docker/
-      docker compose --env-file ./compose.env up -d
+      docker compose -f docker-compose_basic.yml --env-file ./compose.env up -d
       ```
-      Once all the containers are up and running. 
-      Go to your_server_ip:9000 and enter in Docker Portainer, setup the password and you will enter in a Dashboard 
+      Once running, you will have:
+      - portainer: Service for managing dockers. Go to your_server_ip:9000 and enter in Docker Portainer, setup the password and you will enter in a Dashboard 
       where you can manage all the dockers. 
-      Once inside, locate JupyterLab docker and click on logs tab, copy the token that you will find on the console.
-      Go to your_server_ip:8888 and paste the token on the password field. 
+      - mongodb: Mongo database.
+      - rabbitmq: service for MQ messages.
+      - event_keeper: Service for keeping the events in the database.
+      - jupyterlab: service for management the code. Get the Token going  to DashBoard in portainer,
+      - localize the jupyterlab container and enter in logs console to copy the token.
+        Navigate to your_server_ip:4444 and paste the token. That's all.
+      
       
       Wellcome to SmartBots, you can now start coding and testing your strategies and run it in real time.
       
-      Example for running a strategy with Kucoin go here: ....
-     
-   6. you can access the JupyterLab on your browser at `http://localhost:8888`.
-   7. Activate the virtual environment
+      Backtesting an Strategy Example.
+
+    
+   5. Activate the virtual environment
 
       ```bash
       conda activate ebots
       ```
 
-   8. Install dependencies with poetry
+   6. Install dependencies with poetry
 
       Install the main dependencies with
 

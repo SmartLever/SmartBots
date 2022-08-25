@@ -1,8 +1,7 @@
-""" Historical data from Kucoin"""
+""" Download historical data frrom Data Exchage and save it for use in the bot.  """
 import logging
 import os
 import datetime as dt
-from smartbots import conf
 from typing import List
 import pandas as pd
 from smartbots.database_handler import Universe
@@ -64,9 +63,9 @@ def clean_symbol(symbols,name_library):
                 print(f'Symbol {_s} deleted.')
 
 @log_start_end(log=logger)
-def main(symbols: List[str] =["BTC-USDT"], start_date: dt.datetime=dt.datetime(2022, 7, 1),
-         end_date: dt.datetime = dt.datetime.utcnow(),
-         interval: str ='1min', provider: str='kucoin',clean_symbols_database : list =[]):
+def historical_downloader(symbols: List[str] =["BTC-USDT"], start_date: dt.datetime=dt.datetime(2022, 7, 1),
+                          end_date: dt.datetime = dt.datetime.utcnow(),
+                          interval: str ='1min', provider: str='kucoin', clean_symbols_database : list =[]):
     """ Main function """
     if provider == 'kucoin':
         from smartbots.crypto.kucoin_model import get_historical_data
@@ -111,9 +110,3 @@ def main(symbols: List[str] =["BTC-USDT"], start_date: dt.datetime=dt.datetime(2
         if os.path.exists(temporal_name):
             os.remove(temporal_name)
         print(f'* Historical data for {symbol} saved')
-
-if __name__ == '__main__':
-    """ A temp file it is save until completed, you can re-run this script if something goes wrong """
-    symbols  =["ETH-USDT"]
-    main(symbols=symbols,start_date=dt.datetime(2022, 1, 1), end_date=dt.datetime.utcnow(),
-         provider='kucoin',clean_symbols_database=[])

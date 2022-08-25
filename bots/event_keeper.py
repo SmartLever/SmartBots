@@ -2,6 +2,8 @@
     """
 
 def main(name_library='events_keeper') -> None:
+    import time
+    time.sleep(10) # wait until MQ and Database are running
     from smartbots.brokerMQ import receive_events
     from smartbots.database_handler import Universe
     from smartbots import conf

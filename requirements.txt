@@ -14,4 +14,3 @@ pyyaml
 python-dotenv
 jupyter
 jupyterlab
-mitoinstaller

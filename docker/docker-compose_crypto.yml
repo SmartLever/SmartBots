@@ -1,0 +1,59 @@
+# docker compose -f docker-compose_crypto.yml --env-file ./compose.env up -d
+version: '3.9'
+
+  data_provider1:
+    build:
+      context: ../..
+      dockerfile:  smartbot-python.dockerfile
+    hostname: kukoin_provider
+    volumes:
+      - ..:/app
+    depends_on:
+      - rabbitmq
+      - mongodb
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    networks:
+      smartbots_networks:
+        ipv4_address: 172.20.0.10
+    command: python -u ./bots/crypto_trading/data_realtime_provider_kucoin.py
+
+  bot_crypto_trading1:
+    build:
+      context: ../..
+      dockerfile: smartbot-python.dockerfile
+    hostname: bot_crypto_trading1
+    volumes:
+      - ..:/app
+    depends_on:
+      - rabbitmq
+      - mongodb
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    networks:
+      smartbots_networks:
+        ipv4_address: 172.20.0.11
+    command: python -u ./bots/crypto_trading/portfolio_production_crypto.py
+
+  broker_crypto1:
+    build:
+      context: ../..
+      dockerfile: smartbot-python.dockerfile
+    hostname: broker_crypto1
+    volumes:
+      - ..:/app
+    depends_on:
+      - rabbitmq
+      - mongodb
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    networks:
+      smartbots_networks:
+        ipv4_address: 172.20.0.12
+    command: python -u ./bots/crypto_trading/broker_kucoin.py
+
+networks:
+  smartbots_networks:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24

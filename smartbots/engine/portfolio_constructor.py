@@ -1,7 +1,7 @@
 import importlib
 from dataclasses import dataclass
 from smartbots.brokerMQ import Emit_Events, receive_events
-from smartbots.engine import data_loader
+from smartbots.engine import data_reader
 import datetime as dt
 import pandas as pd
 from smartbots.database_handler import Universe
@@ -97,11 +97,11 @@ class Portfolio_Constructor(object):
 
     def run_simulation(self):
         if self.asset_type == 'crypto':
-            for event in data_loader.load_tickers_and_create_events(self.data_sources,
+            for event in data_reader.load_tickers_and_create_events(self.data_sources,
                                                                     start_date=self.start_date, end_date=self.end_date):
                 self._callback_datafeed(event)
         elif self.asset_type == 'betting':
-            for event in data_loader.load_tickers_and_create_events_betting(self.data_sources):
+            for event in data_reader.load_tickers_and_create_events_betting(self.data_sources):
                 self._callback_datafeed_betting(event)
         else:
             raise ValueError(f'Asset type {self.asset_type} not supported')
@@ -139,9 +139,9 @@ class Portfolio_Constructor(object):
         """ Order event from strategies"""
         order_or_bet.portfolio_name = self.name
         order_or_bet.status = 'from_strategy'
-        if self.send_orders_to_broker and self.asset_type == 'crypto':
+        if self.asset_type == 'crypto':
             self.orders.append(order_or_bet)
-            if self.in_real_time:
+            if self.in_real_time and self.send_orders_to_broker:
                 print(order_or_bet)
                 self.emit_orders.publish_event('order', order_or_bet)
 
