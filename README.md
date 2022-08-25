@@ -23,19 +23,34 @@ Lets see how it works.
       cd SmartBots/
       ```
    
-   3. Create Environment
+   3. Easy install and running, with Docker-Compose. You do not need to have Python installed on your machine.
+      All will be done on the container and configurations and modifications can be done with JupyterLab.
 
+      Docker installation instructions, please refer to the [Docker-Compose](https://docs.docker.com/compose/install/) documentation.
+      Once you have Docker-Compose installed, run the following command:
+     
       ```bash
-      conda env create -n ebots --file build/conda/conda-3-8-env.yaml
+      cd docker/
+      docker compose --env-file ./compose.env up -d
       ```
-
-   4. Activate the virtual environment
+      Once all the containers are up and running. 
+      Go to your_server_ip:9000 and enter in Docker Portainer, setup the password and you will enter in a Dashboard 
+      where you can manage all the dockers. 
+      Once inside, locate JupyterLab docker and click on logs tab, copy the token that you will find on the console.
+      Go to your_server_ip:8888 and paste the token on the password field. 
+      
+      Wellcome to SmartBots, you can now start coding and testing your strategies and run it in real time.
+      
+      Example for running a strategy with Kucoin go here: ....
+     
+   6. you can access the JupyterLab on your browser at `http://localhost:8888`.
+   7. Activate the virtual environment
 
       ```bash
       conda activate ebots
       ```
 
-   5. Install dependencies with poetry
+   8. Install dependencies with poetry
 
       Install the main dependencies with
 

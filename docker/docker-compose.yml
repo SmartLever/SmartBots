@@ -1,6 +1,6 @@
-# docker-compose up -d
-# docker-compose --env-file ./compose.env up -d
-# docker-compose --env-file ./compose.env up -d data_provider1  # just one container
+# docker compose up -d
+# docker compose --env-file ./compose.env up -d
+# docker compose --env-file ./compose.env up -d data_provider1  # just one container
 version: '3.9'
 
 services:

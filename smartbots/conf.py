@@ -19,8 +19,6 @@ else:
     load_dotenv(os.path.join(path_to_principal, "conf.env"))
 
 # MongoDB
-MONGO_INITDB_ROOT_USERNAME= os.getenv("MONGO_INITDB_ROOT_USERNAME") or "REPLACE_ME"
-MONGO_INITDB_ROOT_PASSWORD= os.getenv("MONGO_INITDB_ROOT_PASSWORD") or "REPLACE_ME"
 MONGO_HOST= os.getenv("MONGO_HOST") or "REPLACE_ME"
 MONGO_PORT= os.getenv("MONGO_PORT") or "REPLACE_ME"
 

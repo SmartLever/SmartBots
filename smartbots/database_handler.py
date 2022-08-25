@@ -17,15 +17,12 @@ logger = logging.getLogger(__name__)
 @check_api_key(
     [
         "MONGO_HOST",
-        "MONGO_PORT",
-        "MONGO_INITDB_ROOT_USERNAME",
-        "MONGO_INITDB_ROOT_PASSWORD"
+        "MONGO_PORT"
     ]
 )
 def get_client():
     # Conection to the database
-    return Arctic(f'{conf.MONGO_HOST}:{conf.MONGO_PORT}', username=conf.MONGO_INITDB_ROOT_USERNAME,
-                   password=conf.MONGO_INITDB_ROOT_PASSWORD)
+    return Arctic(f'{conf.MONGO_HOST}:{conf.MONGO_PORT}')
 
 
 class Universe():
