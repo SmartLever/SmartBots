@@ -1,6 +1,7 @@
 # docker compose -f docker-compose_crypto.yml --env-file ./compose.env up -d
 version: '3.9'
 
+services:
   data_provider1:
     build:
       context: ../..

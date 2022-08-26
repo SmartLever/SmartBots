@@ -47,7 +47,11 @@ Lets see how it works.
       
       Backtesting an Strategy Example:
       On jupyter Lab, go and open to bots/crypto_trading/backtesting.ipynb and run the code.
-
+      
+      Live Trading:
+     ```bash
+      cd docker/
+      docker compose -f docker-compose_crypto.yml --env-file ./compose.env up -d
       ```
 ## Basktesting a simple strategy in Crypto
       
