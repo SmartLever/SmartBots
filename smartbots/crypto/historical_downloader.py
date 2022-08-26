@@ -7,6 +7,7 @@ import pandas as pd
 from smartbots.database_handler import Universe
 from smartbots.decorators import log_start_end
 from smartbots.events import Bar
+from smartbots import conf
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,14 @@ def dataframe_to_bars(symbol:str,frame:pd.DataFrame):
     df.index.name = 'date'
     return df
 
+def save_test_data():
+    """ Save test data for testing purposes """
+    path = os.path.join(conf.path_modulo, 'crypto','data')
+    # check files in folder if pkl
+    files = [f for f in os.listdir(path) if f.endswith('.pkl')]
+    for file in files:
+        df = pd.read_pickle(os.path.join(path, file), compression='gzip')
+        save_historical(file.split('.')[0], df, name_library='test_historical_1min')
 
 def save_historical(symbol: str, data: pd.DataFrame,name_library: str= 'provider_historical_1min') -> None:
     """ Save historical in database in the library."""
@@ -32,7 +41,7 @@ def save_historical(symbol: str, data: pd.DataFrame,name_library: str= 'provider
         df = data[data['yyyymm'] == yyyymm]
         symbol_save = f'{symbol}_{yyyymm}'
         lib.write(symbol_save, df)
-        print(f'Symbol {symbol_save} saved.')
+    print(f'Symbol {symbol} saved.')
 
 def read_historical(symbol: str, name_library: str= 'provider_historical_1min') -> pd.DataFrame:
     """ Read historical data from initial month and end month.

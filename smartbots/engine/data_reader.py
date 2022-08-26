@@ -14,8 +14,8 @@ from dateutil import relativedelta
 def read_data_to_dataframe(symbol:str,provider:str,interval:str = '1min',
                            start_date: dt.datetime = dt.datetime(2022, 1, 1),
                             end_date: dt.datetime = dt.datetime.utcnow()):
-    """ Read data from DB and create DataFrame"""
 
+    """ Read data from DB and create DataFrame"""
     store = Universe()  # database handler
     name_library = f'{provider}_historical_{interval}'
     lib = store.get_library(name_library)
@@ -43,13 +43,14 @@ def read_data_to_dataframe(symbol:str,provider:str,interval:str = '1min',
         if to_month >= end_date + relativedelta.relativedelta(months=1):  # break if we reach the end of the period
             break
 
+
     ### Join all dataframes
     if len(datas) > 0:
         df = pd.concat(datas)
         df.sort_index(inplace=True)
         df['close'] = [c.close for c in df['bar'].values ]
 
-    return df[[ 'close']]
+    return df
 
 
 def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.datetime = dt.datetime(2022, 1, 1),

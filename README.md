@@ -42,30 +42,12 @@ Lets see how it works.
       - jupyterlab: service for management the code. Get the Token going  to DashBoard in portainer,
       - localize the jupyterlab container and enter in logs console to copy the token.
         Navigate to your_server_ip:4444 and paste the token. That's all.
-      
-      
+
       Wellcome to SmartBots, you can now start coding and testing your strategies and run it in real time.
       
-      Backtesting an Strategy Example.
+      Backtesting an Strategy Example:
+      On jupyter Lab, go and open to bots/crypto_trading/backtesting.ipynb and run the code.
 
-    
-   5. Activate the virtual environment
-
-      ```bash
-      conda activate ebots
-      ```
-
-   6. Install dependencies with poetry
-
-      Install the main dependencies with
-
-      ```bash
-      poetry install
-      ```
-      If you are having trouble with Poetry, use install requirements.txt with pip
-   
-      ```bash
-      pip install -r requirements.txt
       ```
 ## Basktesting a simple strategy in Crypto
       

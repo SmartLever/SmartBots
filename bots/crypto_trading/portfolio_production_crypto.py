@@ -34,5 +34,5 @@ def main(run_real: bool = False, send_orders_to_broker: bool = True,
 
 
 if __name__ == '__main__':
-    start_date = dt.datetime(2022, 8, 1)
+    start_date = dt.datetime(2022, 1, 1)
     main(run_real=True, send_orders_to_broker=True, start_date=start_date)
