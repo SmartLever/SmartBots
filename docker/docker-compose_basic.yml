@@ -11,8 +11,7 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     networks:
-       smartbots_networks:
-         ipv4_address: 172.20.0.2
+       - smartbots_networks
     ports:
     - ${RABBITMQ_PORT}:5672
     - 15672:15672
@@ -22,8 +21,7 @@ services:
     restart: always
     hostname: mongodb
     networks:
-      smartbots_networks:
-        ipv4_address: 172.20.0.3
+      - smartbots_networks
     ports:
       - 27017:27017
     volumes:
@@ -56,8 +54,7 @@ services:
     volumes:
       - ..:/app
     networks:
-      smartbots_networks:
-        ipv4_address: 172.20.0.4
+      - smartbots_networks
     entrypoint: sh -c 'jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --notebook-dir=/app --allow-root'
 
   event_keeper:
@@ -73,8 +70,7 @@ services:
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
-      smartbots_networks:
-        ipv4_address: 172.20.0.5
+      - smartbots_networks
     command: python -u ./bots/event_keeper.py
 
 networks:

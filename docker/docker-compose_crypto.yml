@@ -15,8 +15,7 @@ services:
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
-      smartbots_networks:
-        ipv4_address: 172.20.0.10
+      - smartbots_networks
     command: python -u ./bots/crypto_trading/data_realtime_provider_kucoin.py
 
   bot_crypto_trading1:
@@ -32,8 +31,7 @@ services:
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
-      smartbots_networks:
-        ipv4_address: 172.20.0.11
+      - smartbots_networks
     command: python -u ./bots/crypto_trading/portfolio_production_crypto.py
 
   broker_crypto1:
@@ -49,8 +47,7 @@ services:
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
-      smartbots_networks:
-        ipv4_address: 172.20.0.12
+      - smartbots_networks
     command: python -u ./bots/crypto_trading/broker_kucoin.py
 
 networks:

@@ -27,8 +27,12 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
 
     def create_bar():
         for symbol in save_data.keys():
-            data = pd.DataFrame(save_data[symbol])
-            save_data[symbol] = []  # clear data
+            try:
+                data = pd.DataFrame(save_data[symbol])
+            except Exception as e:
+                print(e)
+            finally:
+                save_data[symbol] = []  # clear data
             if len(data) > 0:
                 data.index = pd.to_datetime(data['time'] / 1000, unit='s')
                 ohlc = data['price'].astype(float).resample(interval).ohlc()
