@@ -23,6 +23,14 @@ class Petition:
     path_to_saving: str = 'petitions' # path to saving the data
     name_to_saving: str = 'default' # name of the key to save the data
 
+@dataclass_json
+@dataclass
+class Health:
+    """ Health event for getting if the process ir running """
+    datetime: dt.datetime = None
+    dtime_zone: str = 'UTC'
+    ticker: str = 'Health' # process
+
 ####Financial and crypto events##################################################################
 @dataclass_json
 @dataclass
