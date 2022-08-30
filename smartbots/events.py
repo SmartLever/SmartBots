@@ -14,6 +14,7 @@ from typing import List, Dict, Any, Optional, Union
 @dataclass
 class Petition:
     """ Petition for getting data from a data source from running processes """
+    event_type: str = 'petition'
     datetime: dt.datetime = None
     dtime_zone: str = 'UTC'
     ticker: str = 'petition'
@@ -26,6 +27,7 @@ class Petition:
 @dataclass
 class Health:
     """ Health event for getting if the process ir running """
+    event_type: str = 'health'
     datetime: dt.datetime = None
     dtime_zone: str = 'UTC'
     ticker: str = 'Health_Process' # process for controling
@@ -38,6 +40,7 @@ class Health:
 @dataclass
 class Order:
     """ Event from Portfolio of Strategies to Exchange or Broker for execution """
+    event_type: str = 'order'
     datetime: dt.datetime = None
     dtime_zone: str = 'UTC'
     ticker: str = None
@@ -65,6 +68,7 @@ class Order:
 @dataclass
 class Bar:
     """ Event from dataProvider to Portfolio of Strategies"""
+    event_type:str = 'bar'
     datetime: dt.datetime = None
     dtime_zone: str = 'UTC'
     ticker: str = None
@@ -93,6 +97,7 @@ class Odds:
     """ Event from dataProvider of betting exchange to Portfolio of Strategies
     For maintening ticker as main conductor as in Finance and Crypto, ticker here is equal to event type.
     """
+    event_type:str = 'odds'
     datetime: dt.datetime = None
     datetime_real_off: dt.datetime = None #real time of the event
     datetime_scheduled_off : dt.datetime = None #scheduled time of the event
@@ -138,6 +143,7 @@ class Odds:
 @dataclass
 class Bet:
     """ Event from Portfolio of Strategies to Exchange of betting for execution """
+    event_type:str = 'bet'
     datetime: dt.datetime = None
     dtime_zone: str = 'UTC'
     ticker: str = None # event type

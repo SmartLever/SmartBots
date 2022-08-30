@@ -109,19 +109,18 @@ class Portfolio_Constructor(object):
         else:
             raise ValueError(f'Asset type {self.asset_type} not supported')
 
-    def process_petitions(self, event_info: dict):
+    def process_petitions(self, event: dataclass):
         """ Recieve a event peticion and get the data from the data source and save it in the DataBase"""
-        if 'petition' in event_info:
+        if event.event_type == 'petition':
             data_to_save = None
-            print(f'Petition {event_info["petition"]}')
-            petition = event_info['petition']
-            if petition.function_to_run == 'get_saved_values_strategy':
+            print(f'Petition {event}')
+            if event.function_to_run == 'get_saved_values_strategy':
                 data_to_save = self.get_saved_values_strategy()
-            elif petition.function_to_run == 'get_saved_values_strategies_last':
+            elif event.function_to_run == 'get_saved_values_strategies_last':
                 data_to_save = self.get_saved_values_strategies_last()
             if data_to_save is not None:
-                name_library = petition.path_to_saving
-                name = petition.name_to_saving
+                name_library = event.path_to_saving
+                name = event.name_to_saving
                 store = Universe()
                 lib = store.get_library(name_library)
                 lib.write(name, data_to_save)
@@ -157,44 +156,42 @@ class Portfolio_Constructor(object):
         elif self.send_orders_to_broker:
             raise ValueError(f'Asset type {self.asset_type} not supported')
 
-    def _callback_datafeed_betting(self, event_info: dict):
+    def _callback_datafeed_betting(self, event: dataclass):
         """ Feed portfolio with data from events for asset type Betting,
          recieve dict with key as topic and value as event"""
         if self.in_real_time:
             self.health_handler.check()
-        if 'odds' in event_info:
-            odds = event_info['odds']
+        if event.event_type == 'odds':
             if self.print_events_realtime:
-                print(odds)
+                print(event)
             try:
-                strategies = self.ticker_to_strategies[odds.ticker]
+                strategies = self.ticker_to_strategies[event.ticker]
             except:
-                self.ticker_to_strategies[odds.ticker] = []  # default empty list
-                strategies = self.ticker_to_strategies[odds.ticker]
+                self.ticker_to_strategies[event.ticker] = []  # default empty list
+                strategies = self.ticker_to_strategies[event.ticker]
 
             for strategy in strategies:
-                strategy.add_odds(odds)
+                strategy.add_odds(event)
 
-    def _callback_datafeed(self, event_info: dict):
+    def _callback_datafeed(self, event: dataclass):
         """ Feed portfolio with data from events for asset Crypto and Finance,
         recieve dict with key as topic and value as event"""
         if self.in_real_time:
             self.health_handler.check()
-        if 'bar' in event_info:
-            bar = event_info['bar']
+        if event.event_type == 'bar':
             if self.print_events_realtime:
-                print(bar)
+                print(event)
             try:
-                strategies = self.ticker_to_strategies[bar.ticker]
+                strategies = self.ticker_to_strategies[event.ticker]
             except:
-                self.ticker_to_strategies[bar.ticker] = []  # default empty list
-                strategies = self.ticker_to_strategies[bar.ticker]
+                self.ticker_to_strategies[event.ticker] = []  # default empty list
+                strategies = self.ticker_to_strategies[event.ticker]
             for strategy in strategies:
-                strategy.add_event('bar', bar)
-        elif 'petition' in event_info:
+                strategy.add_event(event)
+        elif event.event_type == 'petition':
             """ If the petition do not work it keeps working"""
             try:
-                self.process_petitions(event_info)
+                self.process_petitions(event)
             except Exception as e:
                 print(f'Error processing petitions {e}')
 

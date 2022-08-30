@@ -1,5 +1,7 @@
 """ Bot for saving events to DataBase, recieve all events from rabbitMQ and save them
     """
+import dataclasses
+
 
 def main(name_library='events_keeper') -> None:
     import time
@@ -9,28 +11,28 @@ def main(name_library='events_keeper') -> None:
     from smartbots import conf
     import datetime as dt
 
-    def get_unique(event: dict) -> str:
+    def get_unique(event: dataclasses.dataclass) -> str:
         """ Get unique key for event """
         # Get first key from dict
-        event_type = list(event.keys())[0]
-        if event_type == 'bar':
-            return f'{event[event_type].ticker}_{event[event_type].datetime}_{event_type}_{n_saved["events"]}'
-        elif 'order' in event_type:
-            return event[event_type].order_id_sender
+        if event.event_type == 'bar':
+            return f'{event.ticker}_{event.datetime}_{event.event_type}_{n_saved["events"]}'
+        elif event.event_type == 'order':
+            return event.order_id_sender
+        elif event.event_type == 'health': #always the same for service
+            return f'{event.ticker}_{event.event_type}'
         else:
-            print(f'Event type {event_type}  saving as default')
-            return f'{event[event_type].ticker}_{event[event_type].datetime}_{event_type}_{n_saved["events"]}'
+            print(f'Event type {event.event_type}  saving as default')
+            return f'{event.ticker}_{event.datetime}_{event.event_type}_{n_saved["events"]}'
 
 
-    def callback(event: dict) -> None:
+    def callback(event : dataclasses.dataclass) -> None:
         """Callback for saving events to DataBase"""
         n_saved['events'] += 1
-        event_type = list(event.keys())[0]
-        ticker = event[event_type].ticker
+        ticker = event.ticker
         unique = get_unique(event)
-        lib.write(unique, event, metadata={'datetime': event[event_type].datetime,
-                                           'event_type':event_type, 'ticker': ticker})
-        print('Event saved', event[event_type])
+        lib.write(unique, event, metadata={'datetime': event.datetime,
+                                           'event_type':event.event_type, 'ticker': ticker})
+        print('Event saved', event.event_type)
 
     # variable
     n_saved = {'events': 0}

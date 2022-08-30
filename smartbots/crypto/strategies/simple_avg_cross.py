@@ -28,9 +28,9 @@ class Simple_Avg_Cross(Basic_Strategy):
         self.long_avg_value = None
         self.saves_values = {'datetime':[],'short_avg_value':[], 'long_avg_value':[], 'position':[], 'close':[]}
 
-    def add_event(self, event_type, event: dataclass):
+    def add_event(self,  event: dataclass):
         """ Logic of the Strategy"""
-        if event_type == 'bar' and self.inicial_values:
+        if event.event_type == 'bar' and self.inicial_values:
             # Calculate short average
             self.short_avg_value = (self.short_avg_value * (self.short_period - 1) + event.close) / self.short_period
             # Calculate long average
@@ -51,7 +51,7 @@ class Simple_Avg_Cross(Basic_Strategy):
             self.saves_values['position'].append(self.position)
             self.saves_values['close'].append(event.close)
 
-        elif event_type == 'bar' and self.inicial_values is False:
+        elif event.event_type == 'bar' and self.inicial_values is False:
             # Calculate initial values
             self.short_avg_value = event.close
             self.long_avg_value = event.close

@@ -14,7 +14,7 @@ import pytz
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-events_type = {'bar': Bar, 'order': Order, 'order_status': Order, 'petition': Petition,
+events_type = {'bar': Bar, 'order': Order, 'petition': Petition,
                'health':Health}  #define types of events
 
 
@@ -48,7 +48,7 @@ class CallBack_Handler(object):
                 _dtime = event.datetime_in
                 event.datetime_in = dt.datetime(_dtime.year, _dtime.month,
                                                 _dtime.day, _dtime.hour, _dtime.minute, _dtime.second)
-        self.callback({method.routing_key: event})
+        self.callback(event)
 
 
 @check_api_key(

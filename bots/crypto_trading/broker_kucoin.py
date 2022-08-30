@@ -20,16 +20,16 @@ def main(send_orders_status=True):
             health_handler.send(description=e, state=0)
 
 
-    def send_broker(_order: dict) -> None:
+    def send_broker(event) -> None:
         """Send order.
 
         Parameters
         ----------
         order: event order
         """
-        order = _order['order']
-        order.exchange = 'kucoin'
-        trading.send_order(order)
+        if event.event_type == 'order':
+            event.exchange = 'kucoin'
+            trading.send_order(event)
 
     # Log event health of the service
     health_handler = Health_Handler(n_check=6,

@@ -52,7 +52,7 @@ class Basic_Strategy(object):
                for k in self.saves_values.keys():
                    self.saves_values[k] = self.saves_values[k][-self.limit_save_values:]
 
-    def add_event(self, event_type, event: dataclass):
+    def add_event(self, event: dataclass):
         """ Add event to the strategy and apply logic """
         pass
 
@@ -60,9 +60,9 @@ class Basic_Strategy(object):
         """ Return values saved """
         return self.saves_values
 
-    def _add_event_example(self, event_type, event: dataclass):
+    def _add_event_example(self, event: dataclass):
         """ Basic logic for testing purposes """
-        if event_type == 'bar':
+        if event.event_type == 'bar':
             self.n_events += 1
             if self.n_events % self.parameters['entry'] == 0:
                 self.send_order(ticker=event.ticker, price=event.close, quantity=self.parameters['quantity'],
