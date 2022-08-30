@@ -59,8 +59,9 @@ class Trading(object):
         Kucoin client.
     """
 
-    def __init__(self, send_orders_status: bool = True) -> None:
+    def __init__(self, send_orders_status: bool = True, name = 'exchange_kucoin') -> None:
         """Initialize class."""
+        self.name = name
         self.client = get_client()
         # variables of status orders
         self.dict_open_orders = {}  # key is the order_id_sender, open order in the broker
@@ -68,7 +69,6 @@ class Trading(object):
         self.dict_from_strategies = {}  # key is order_id_sender from strategies, before send to broker or with error
         self.send_orders_status = send_orders_status
         if self.send_orders_status:
-
             self.emit_orders = Emit_Events()
         else:
             self.emit_orders = None
@@ -86,7 +86,7 @@ class Trading(object):
         x.start()
 
 
-    def get_account(self,currency=None,account_type='trade') -> None:
+    def get_accounts(self,currency=None, account_type='trade') -> None:
         """Get a list of accounts
 
         https://docs.kucoin.com/#accounts
@@ -97,6 +97,31 @@ class Trading(object):
         :type account_type: string"""
 
         return self.client.get_accounts( currency=currency, account_type=account_type)
+
+    def get_total_balance(self,fiat :str ='USD'):
+        """ Get total balance in the Exchange
+            :param fiat: optional Fiat code
+        """
+        accounts = self.get_accounts(currency=None, account_type=None)
+        # List of coins
+        coins= []
+        for account in accounts:
+            coins.append(account['currency'])
+        # Fiat prices
+        coins_csl = ','.join(coins)
+        currency_res = self.client.get_fiat_prices(base=fiat, symbol=coins_csl)
+        # Calculate total
+        total = 0
+        for b in accounts:
+            # ignore any coins of 0 value
+            if b['balance'] == '0.0' or b['balance'] == '0':
+                continue
+            # ignore the coin if we don't have a rate for it
+            if b['currency'] not in currency_res:
+                continue
+            # add the value for this coin to the total
+            total += float(b['balance'])  * float(currency_res[b['currency']])
+        return total
 
     def send_order(self, order: dataclasses.dataclass) -> None:
         """Send order.

@@ -12,6 +12,9 @@ import time
 import threading
 from smartbots.decorators import log_start_end
 from smartbots.brokerMQ import Emit_Events
+from smartbots.health_handler import Health_Handler
+import os
+import pytz
 
 logger = logging.getLogger(__name__)
 
@@ -24,12 +27,12 @@ async def save_tick_data(msg=dict) -> None:
 @log_start_end(log=logger)
 def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> threading.Thread:
     """ Create thread for bar event """
-
     def create_bar():
         for symbol in save_data.keys():
             try:
                 data = pd.DataFrame(save_data[symbol])
             except Exception as e:
+                data = []
                 print(e)
             finally:
                 save_data[symbol] = []  # clear data
@@ -38,21 +41,26 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
                 ohlc = data['price'].astype(float).resample(interval).ohlc()
                 if len(ohlc) > 1:
                     ohlc = ohlc[ohlc.index == ohlc.index.max()]
-                ohlc['volume'] = data['size'].astype(float).sum() # sum volume
+                ohlc['volume'] = data['size'].astype(float).sum()  # sum volume
                 dtime = dt.datetime(ohlc.index[0].year, ohlc.index[0].month, ohlc.index[0].day,
-                                    ohlc.index[0].hour, ohlc.index[0].minute, ohlc.index[0].second)
+                                    ohlc.index[0].hour, ohlc.index[0].minute, ohlc.index[0].second,0,pytz.UTC)
                 bar = Bar(ticker=symbol, datetime=dtime, dtime_zone='UTC',
                           open=ohlc.open[0],
                           high=ohlc.high[0], low=ohlc.low[0], close=ohlc.close[0],
-                          volume=ohlc.volume[0],exchange= 'kucoin', provider= 'kucoin', freq=interval)
+                          volume=ohlc.volume[0], exchange='kucoin', provider='kucoin', freq=interval)
                 if verbose:
                     print(bar)
                 emit.publish_event('bar', bar)
+                health_handler.check()
+
 
     # create scheduler
     schedule.every().minute.at(":00").do(create_bar)
     # Start publishing events in MQ
     emit = Emit_Events()
+    #
+    health_handler = Health_Handler(n_check=10,
+                                    name_service=os.path.basename(__file__))
 
     while True:
         schedule.run_pending()

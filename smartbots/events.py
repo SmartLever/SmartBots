@@ -10,7 +10,6 @@ from dataclasses_json import dataclass_json
 import datetime as dt
 from typing import List, Dict, Any, Optional, Union
 
-
 @dataclass_json
 @dataclass
 class Petition:
@@ -29,7 +28,10 @@ class Health:
     """ Health event for getting if the process ir running """
     datetime: dt.datetime = None
     dtime_zone: str = 'UTC'
-    ticker: str = 'Health' # process
+    ticker: str = 'Health_Process' # process for controling
+    state: int = 1 # 0 not_working and 1 working
+    description: str = '' # description in case is not working, could be a exception
+
 
 ####Financial and crypto events##################################################################
 @dataclass_json

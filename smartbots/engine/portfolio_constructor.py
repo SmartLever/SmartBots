@@ -6,6 +6,7 @@ import datetime as dt
 import pandas as pd
 from smartbots.database_handler import Universe
 from smartbots import conf
+from smartbots.health_handler import Health_Handler
 
 class Portfolio_Constructor(object):
     def __init__(self, conf_portfolio: dict, run_real: bool = False, asset_type: str = None,
@@ -29,6 +30,9 @@ class Portfolio_Constructor(object):
         self.send_orders_to_broker = send_orders_to_broker
         self.orders = []
         self.bets = []
+        # health log
+        self.health_handler = Health_Handler(n_check=10,
+                                             name_service=self.name)
         if self.send_orders_to_broker:
             self.emit_orders = Emit_Events()
 
@@ -88,14 +92,13 @@ class Portfolio_Constructor(object):
 
     def run(self):
         print(f'running Portfolio {self.name}')
-        self.in_real_time = False
         self.run_simulation()
         if self.run_real:
-            self.print_events_realtime = True
-            self.in_real_time = True
             self.run_realtime()
 
     def run_simulation(self):
+        """ Run Backtest portfolio"""
+        self.in_real_time = False
         if self.asset_type == 'crypto':
             for event in data_reader.load_tickers_and_create_events(self.data_sources,
                                                                     start_date=self.start_date, end_date=self.end_date):
@@ -121,12 +124,13 @@ class Portfolio_Constructor(object):
                 name = petition.name_to_saving
                 store = Universe()
                 lib = store.get_library(name_library)
-
                 lib.write(name, data_to_save)
                 print(f'Save {name} in {name_library}.')
 
 
     def run_realtime(self):
+        self.print_events_realtime = True
+        self.in_real_time = True
         print('running real  of the Portfolio, waitig Events')
         if self.asset_type == 'crypto':
             receive_events(routing_key='bar,petition', callback=self._callback_datafeed)
@@ -156,6 +160,8 @@ class Portfolio_Constructor(object):
     def _callback_datafeed_betting(self, event_info: dict):
         """ Feed portfolio with data from events for asset type Betting,
          recieve dict with key as topic and value as event"""
+        if self.in_real_time:
+            self.health_handler.check()
         if 'odds' in event_info:
             odds = event_info['odds']
             if self.print_events_realtime:
@@ -172,6 +178,8 @@ class Portfolio_Constructor(object):
     def _callback_datafeed(self, event_info: dict):
         """ Feed portfolio with data from events for asset Crypto and Finance,
         recieve dict with key as topic and value as event"""
+        if self.in_real_time:
+            self.health_handler.check()
         if 'bar' in event_info:
             bar = event_info['bar']
             if self.print_events_realtime:
