@@ -3,12 +3,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def main(send_orders_status=True):
     from smartbots.decorators import log_start_end
     from smartbots.brokerMQ import receive_events
     import datetime as dt
     from smartbots.crypto.kucoin_model import Trading
     import schedule
+    from smartbots import conf
     from smartbots.health_handler import Health_Handler
 
     def check_balance() -> None:
@@ -19,7 +21,6 @@ def main(send_orders_status=True):
         except Exception as e:
             health_handler.send(description=e, state=0)
 
-
     def send_broker(event) -> None:
         """Send order.
 
@@ -27,9 +28,12 @@ def main(send_orders_status=True):
         ----------
         order: event order
         """
-        if event.event_type == 'order':
+        if event.event_type == 'order' and conf.SEND_ORDERS_BROKER_KUCOIN == 1:
             event.exchange = 'kucoin'
             trading.send_order(event)
+        elif event.event_type == 'order' and conf.SEND_ORDERS_BROKER_KUCOIN == 0:
+            event.exchange = 'kucoin'
+            print(f'Order for {event.ticker} recieved but not send.')
 
     # Log event health of the service
     health_handler = Health_Handler(n_check=6,
@@ -44,6 +48,7 @@ def main(send_orders_status=True):
     trading.start_update_orders_status()
 
     receive_events(routing_key='order', callback=send_broker)
+
 
 if __name__ == '__main__':
     main()

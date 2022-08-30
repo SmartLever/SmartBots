@@ -1,4 +1,4 @@
-""" Compute equity from orders"""
+""" Compute and tracking equity from orders"""
 
 
 class Equity():
