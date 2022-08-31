@@ -38,11 +38,11 @@ class Simple_Avg_Cross(Basic_Strategy):
             # Send order if cross average
             if self.short_avg_value > self.long_avg_value and self.position <= 0:
                 self.send_order(ticker=event.ticker, price=event.close, quantity=self.parameters['quantity'],
-                                action='buy', type='market')
+                                action='buy', type='market',datetime=event.datetime)
                 self.position = 1 # change position to Long
             elif self.short_avg_value < self.long_avg_value and self.position > 0:
                 self.send_order(ticker=event.ticker, price=event.close, quantity=self.parameters['quantity'],
-                                action='sell', type='market')
+                                action='sell', type='market',datetime=event.datetime)
                 self.position = 0 #change position out of the market
             # Save list of values
             self.saves_values['datetime'].append(event.datetime)

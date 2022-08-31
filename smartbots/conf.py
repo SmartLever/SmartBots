@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 path = os.path.abspath(__file__)
 path_modulo = os.path.dirname(path)  # path to the module
 path_to_principal = path_modulo.replace('smartbots','')
+path_to_crypto = os.path.join(path_modulo, 'crypto')
+path_to_betting = os.path.join(path_modulo, 'betting')
 
 path_to_temp = os.path.join(path_modulo, 'temp')
 # Check is exist temp folder

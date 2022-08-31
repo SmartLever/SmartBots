@@ -36,12 +36,12 @@ class Basic_Strategy(object):
         """ Return order_id_sender """
         return f'{self.id_strategy}_{self.n_orders}_{dt.datetime.utcnow().strftime("%Y%m%d%H%M%S")}'
 
-    def send_order(self, price=None, quantity=None, action=None, ticker=None, type='market'):
+    def send_order(self, price=None, quantity=None, action=None, ticker=None, type='market', datetime=None):
         """ Send order to exchange or broker """
 
         sender_id = self.get_order_id_sender()
         order_id_sender = self.get_order_id_sender()
-        order = Order(datetime=dt.datetime.utcnow(),
+        order = Order(datetime=datetime,
                       dtime_zone='UTC', ticker=ticker, action=action,
                       price=price, quantity=quantity, type=type, sender_id=sender_id,
                       order_id_sender=order_id_sender)
@@ -66,7 +66,7 @@ class Basic_Strategy(object):
             self.n_events += 1
             if self.n_events % self.parameters['entry'] == 0:
                 self.send_order(ticker=event.ticker, price=event.close, quantity=self.parameters['quantity'],
-                                action=self.parameters['inicial_action'], type='market')
+                                action=self.parameters['inicial_action'], type='market',datetime=event.datetime)
                 # Chamge action
                 if self.parameters['inicial_action'] == 'buy':
                     self.position = 1

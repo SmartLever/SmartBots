@@ -84,7 +84,7 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
             df.sort_index(inplace=True)
             col_name = df.columns[0]
             for tuple in data.itertuples():
-                yield {col_name: tuple.bar}
+                yield tuple.bar
 
         # Actualizamos
         from_month = from_month + relativedelta.relativedelta(months=1)
@@ -115,4 +115,4 @@ def load_tickers_and_create_events_betting(tickers_lib_name: list):
             data.sort_index(inplace=True)
             col_name =data.columns[0]
             for tuple in data.itertuples():
-                 yield {col_name: tuple.odds}
+                 yield tuple.odds
