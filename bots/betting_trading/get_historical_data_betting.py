@@ -10,12 +10,13 @@ from smartbots.decorators import log_start_end
 
 logger = logging.getLogger(__name__)
 
+
 def _get_historical_data_test_files_betfair():
-    """ Read historical data save in file, normalice it and return it as events"""
+    """ Read historical data save in file, normalise it and return it as events"""
     from smartbots.events import Odds
     location = os.path.join(conf.path_modulo, 'betting', 'data', 'test_data')
     files = os.listdir(location)
-    datas = {}
+    data = {}
 
     normalize_columns = {'dt_actual_off': 'datetime_real_off',
                          'scheduled_off': 'datetime_scheduled_off',
@@ -25,13 +26,14 @@ def _get_historical_data_test_files_betfair():
                          'id_local': 'local_team_id',
                          'id_visitante': 'away_team_id',
                          'id_partido': 'match_id',
-                         'lastpricetraded':'odds_last_traded',
-                          'unico':'unique_id_match',
-                          'unico_evento':'unique_id_ticker',
-                          'id_competition':'competition_id',
-                          'sortPriority':'sort_priority',
-                          'event':'ticker',
-                           'event_id':'ticker_id',
+                         'lastpricetraded': 'odds_last_traded',
+                         'unico': 'unique_id_match',
+                         'unico_evento': 'unique_id_ticker',
+                         'id_competition': 'competition_id',
+                         'sortPriority': 'sort_priority',
+                         'event': 'ticker',
+                         'event_id': 'ticker_id',
+                         'ultima': 'last_row'
                          }
 
     for file in files:
@@ -44,41 +46,40 @@ def _get_historical_data_test_files_betfair():
         df['datetime_real_off'] = pd.to_datetime(df['datetime_real_off'], unit='s')
         df['datetime_scheduled_off'] = pd.to_datetime(df['datetime_scheduled_off'], unit='s')
         df.drop(['datetime'], axis=1, inplace=True)
-        unique_name =df['match_name'].values[0] +'_' +df.unique_id_ticker.values[0]
+        unique_name = df['match_name'].values[0] + '_' + df.unique_id_ticker.values[0]
         df['unique_name'] = unique_name
-        # Creamos eventos Odds
-        for tuple in df.itertuples():
-            events.append(Odds(datetime=tuple.Index, ticker=tuple.ticker,
-                               unique_name=tuple.unique_name, unique_id_match=tuple.unique_id_match,
-                               unique_id_ticker=tuple.unique_id_ticker,
-                               selection=tuple.selection, selection_id=tuple.selection_id,
-                               ticker_id=tuple.ticker_id, competition=tuple.competition,
-                               days_since_last_run=tuple.days_since_last_run,
-                               match_name=tuple.match_name, local_team=tuple.local_team, away_team=tuple.away_team,
-                               full_description=tuple.full_description, competition_id=tuple.competition_id,
-                               local_team_id=tuple.local_team_id, away_team_id=tuple.away_team_id,
-                               match_id=tuple.match_id, in_play=tuple.in_play,
-                               jockey_name=tuple.jockey_name, odds_last_traded=tuple.odds_last_traded,
-                               number_of_active_runners=tuple.number_of_active_runners,
-                               number_of_winners=tuple.number_of_winners,
-                               odds_back=[tuple.odds_back, tuple.odds_back_1, tuple.odds_back_2, tuple.odds_back_3],
-                               odds_lay=[tuple.odds_lay, tuple.odds_lay_1, tuple.odds_lay_2, tuple.odds_lay_3],
-                               size_back=[tuple.size_back_1, tuple.size_back_2, tuple.size_back_3],
-                               size_lay=[tuple.size_lay_1, tuple.size_lay_2, tuple.size_lay_3],
-                               official_rating=tuple.official_rating, player_name=tuple.player,
-                               trainer_name=tuple.trainer_name, sex_type=tuple.sex_type,
-                               sort_priority=tuple.sort_priority, sports_id=tuple.sports_id,
-                               status=tuple.status, status_selection=tuple.status_selection,
-                               volume_matched=tuple.volume_matched, win_flag=tuple.win_flag))
+        # Create events Odds
+        for tp in df.itertuples():
+            events.append(Odds(datetime=tp.Index, ticker=tp.ticker,
+                               unique_name=tp.unique_name, unique_id_match=tp.unique_id_match,
+                               unique_id_ticker=tp.unique_id_ticker,
+                               selection=tp.selection, selection_id=tp.selection_id,
+                               ticker_id=tp.ticker_id, competition=tp.competition,
+                               days_since_last_run=tp.days_since_last_run,
+                               match_name=tp.match_name, local_team=tp.local_team, away_team=tp.away_team,
+                               full_description=tp.full_description, competition_id=tp.competition_id,
+                               last_row=tp.last_row, local_team_id=tp.local_team_id,
+                               away_team_id=tp.away_team_id, match_id=tp.match_id, in_play=tp.in_play,
+                               jockey_name=tp.jockey_name, odds_last_traded=tp.odds_last_traded,
+                               number_of_active_runners=tp.number_of_active_runners,
+                               number_of_winners=tp.number_of_winners,
+                               odds_back=[tp.odds_back, tp.odds_back_1, tp.odds_back_2, tp.odds_back_3],
+                               odds_lay=[tp.odds_lay, tp.odds_lay_1, tp.odds_lay_2, tp.odds_lay_3],
+                               size_back=[tp.size_back_1, tp.size_back_2, tp.size_back_3],
+                               size_lay=[tp.size_lay_1, tp.size_lay_2, tp.size_lay_3],
+                               official_rating=tp.official_rating, player_name=tp.player,
+                               trainer_name=tp.trainer_name, sex_type=tp.sex_type,
+                               sort_priority=tp.sort_priority, sports_id=tp.sports_id,
+                               status=tp.status, status_selection=tp.status_selection,
+                               volume_matched=tp.volume_matched, win_flag=tp.win_flag))
 
-        df_save = pd.DataFrame({'odds':events},index = df.index)
+        df_save = pd.DataFrame({'odds': events}, index=df.index)
         df_save.index.name = 'date'
-        datas[unique_name] = df_save
-    return datas
+        data[unique_name] = df_save
+    return data
 
 
-
-def save_historical(symbol_data :Dict = {},name_library: str= 'provider_historical') -> None:
+def save_historical(symbol_data: Dict = {}, name_library: str = 'provider_historical') -> None:
     """ Save historical data in Data Base as VersionStore.
         Here the docs: https://github.com/man-group/arctic"""
     store = Arctic(f'{conf.MONGO_HOST}:{conf.MONGO_PORT}',username=conf.MONGO_INITDB_ROOT_USERNAME,
@@ -89,7 +90,7 @@ def save_historical(symbol_data :Dict = {},name_library: str= 'provider_historic
     for symbol, data in symbol_data.items():
         data.index.name = 'date'
         ticker = str(data['odds'].iloc[0].ticker)
-        dtime = data['odds'].iloc[0].datetime_scheduled_off #.to_pydatetime()
+        dtime = data['odds'].iloc[0].datetime_scheduled_off  # to_pydatetime()
         selection = str(data['odds'].iloc[0].selection)
         sports_id = int(data['odds'].iloc[0].sports_id)
         lib.write(symbol, data, metadata={'ticker': ticker,
@@ -108,6 +109,7 @@ def main(provider='betfair_files'):
     data = get_historical_data()
     save_historical(data, name_library=f'{provider}_historical')
     print(f'* Historical data for {provider} saved')
+
 
 if __name__ == '__main__':
     """ A temp file it is save until completed, you can re-run this script if something goes wrong """

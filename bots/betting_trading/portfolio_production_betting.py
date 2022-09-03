@@ -14,7 +14,8 @@
     to produce orders that will send to trading.
     """
 
-def main(run_real:bool=False,send_orders_to_broker:bool=True) -> None:
+
+def main(run_real : bool = False, send_orders_to_broker : bool = True) -> None:
     """ Run the portfolio engine. """
     from smartbots.config_helper import get_config
     import os
@@ -25,10 +26,11 @@ def main(run_real:bool=False,send_orders_to_broker:bool=True) -> None:
     conf_portfolio = get_config(path_to_config)  # get the configuration from the config file
     # run the portfolio engine, set run_real=True to run in real time
 
-    portfolio_production = Portfolio_Constructor(conf_portfolio, run_real=run_real, asset_type = 'betting',
+    portfolio_production = Portfolio_Constructor(conf_portfolio, run_real=run_real, asset_type='betting',
                                                  send_orders_to_broker=send_orders_to_broker)
     portfolio_production.run()
 
+
 if __name__ == '__main__':
-    main( run_real=True, send_orders_to_broker=True)
+    main(run_real=True, send_orders_to_broker=True)
 

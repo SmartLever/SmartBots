@@ -1,0 +1,52 @@
+# docker compose -f docker-compose_betting.yml --env-file ./compose.env up -d  or
+# docker-compose -f docker-compose_betting.yml --env-file ./compose.env up -d
+
+version: '3.9'
+
+services:
+  provider_betting:
+    build:
+      context: .
+      dockerfile:  smartbot-python.dockerfile
+    hostname: provider_betting
+    volumes:
+      - ..:/app
+    networks:
+      - smartbots_networks
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    command: python -u ./bots/betting_trading/data_realtime_provider_betfair.py
+
+  bot_betting_trading:
+    build:
+      context: .
+      dockerfile: smartbot-python.dockerfile
+    hostname: bot_betting_trading
+    volumes:
+      - ..:/app
+    networks:
+      - smartbots_networks
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    command: python -u ./bots/betting_trading/portfolio_production_betting.py
+
+  broker_betting:
+    build:
+      context: .
+      dockerfile: smartbot-python.dockerfile
+    hostname: broker_betting
+    volumes:
+      - ..:/app
+
+    networks:
+      - smartbots_networks
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    command: python -u ./bots/betting_trading/broker_betfair.py
+
+
+networks:
+  smartbots_networks:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24

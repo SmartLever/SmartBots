@@ -14,7 +14,7 @@ if not os.path.exists(path_to_temp):
     os.makedirs(path_to_temp)
 
 
-if  os.getenv('AM_I_IN_A_DOCKER_CONTAINER') == '1': # only with docker running
+if os.getenv('AM_I_IN_A_DOCKER_CONTAINER') == '1': # only with docker running
     # Path to docker folder
     load_dotenv(os.path.join(path_to_principal,'docker', "compose.env"))
 else:
@@ -35,6 +35,11 @@ RABBITMQ_PORT = os.getenv("RABBITMQ_PORT") or "REPLACE_ME"
 API_KUCOIN_API_KEYS = os.getenv("API_KUCOIN_API_KEYS") or "REPLACE_ME"
 API_KUCOIN_API_SECRET = os.getenv("API_KUCOIN_API_SECRET") or "REPLACE_ME"
 API_KUCOIN_API_PASSPHRASE = os.getenv("API_KUCOIN_API_PASSPHRASE") or "REPLACE_ME"
+
+# betfair
+USERNAME_BETFAIR = os.getenv("USERNAME_BETFAIR") or "REPLACE_ME"
+PASSWORD_BETFAIR = os.getenv("PASSWORD_BETFAIR") or "REPLACE_ME"
+APP_KEYS_BETFAIR = os.getenv("APP_KEYS_BETFAIR") or "REPLACE_ME"
 
 # Variable for production
 SEND_ORDERS_BROKER_KUCOIN = int(os.getenv("SEND_ORDERS_BROKER_KUCOIN")) or 0

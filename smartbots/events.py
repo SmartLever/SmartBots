@@ -105,59 +105,83 @@ class Odds(Base):
     """ Event from dataProvider of betting exchange to Portfolio of Strategies
     For maintening ticker as main conductor as in Finance and Crypto, ticker here is equal to event type.
     """
-    event_type:str = 'odds'
-    datetime_real_off: dt.datetime = None #real time of the event
-    datetime_scheduled_off : dt.datetime = None #scheduled time of the event
-    dtime_zone: str = 'UTC'
-    unique_name: str = None #unique for ticker and match, for example: albacete vs betis_1_over/under 2.5 goals_202201010820
-    unique_id_match: str = None #unique id for the match
+    event_type: str = 'odds'
+    datetime_real_off: dt.datetime = None  # real time of the event
+    datetime_scheduled_off: dt.datetime = None  # scheduled time of the event
+    datatime_latest_taken: dt.datetime = None  # real time from betfair where the bets was matched
+    unique_name: str = None  # unique for ticker and match, for example: albacete vs betis_1_over/under 2.5 goals_202201010820
+    unique_id_match: str = None  # unique id for the match
     unique_id_ticker: str = None  # unique id for the event
-    ticker: str = None  # event type, for example: over/under 2.5 goals
-    selection: str = None # selection type, for example: under 2.5 goals
+    selection: str = None  # selection type, for example: under 2.5 goals
     selection_id: int = None  # selection id
     ticker_id: float = None  # event id
     competition: str = None
-    days_since_last_run: int = None # days since last run, for horse racing
-    match_name: str = None # match name
-    local_team: str = None # local team
-    away_team: str = None # away team
-    full_description: str = None # full description
-    competition_id: int = None # id of the competition
-    local_team_id: int = None # id of the local team
-    away_team_id: int = None # id of the away team
-    match_id : int = None # id of the match
-    in_play: bool = None # in play
-    jockey_name: str = None # jockey name
-    odds_last_traded: float = None # last price traded
-    number_of_active_runners: int = None # number of active runners
-    number_of_winners: int = None # number of winners
-    odds_back: List[float] = None # back odds
-    odds_lay: List[float] = None # lay odds
+    days_since_last_run: int = None  # days since last run, for horse racing
+    match_name: str = None  # match name
+    local_team: str = None  # local team
+    away_team: str = None  # away team
+    full_description: str = None  # full description
+    competition_id: int = None  # id of the competition
+    last_row: int = None  # last row of data
+    local_team_id: int = None  # id of the local team
+    away_team_id: int = None  # id of the away team
+    match_id: int = None  # id of the match
+    in_play: bool = None  # in play
+    jockey_name: str = None  # jockey name
+    odds_last_traded: float = None  # last price traded
+    number_of_active_runners: int = None  # number of active runners
+    number_of_winners: int = None  # number of winners
+    odds_back: List[float] = None  # back odds
+    odds_lay: List[float] = None  # lay odds
     size_back: List[float] = None  # back size odds
     size_lay: List[float] = None  # lay size odds
-    official_rating: float = None # official rating
-    player_name: str = None # player name
-    trainer_name: str = None # trainer name
+    official_rating: float = None  # official rating
+    player_name: str = None  # player name
+    trainer_name: str = None  # trainer name
     sex_type: str = None
     sort_priority: int = None
     sports_id: int = None
-    status:str =None  #closed, open
-    status_selection : str = None # active, winner, loser
+    status: str = None  # closed, open
+    status_selection: str = None  # active, winner, loser
     volume_matched: float = None
-    win_flag: bool = None # win flag
+    win_flag: bool = None  # win flag
+
 
 @dataclass_json
 @dataclass
 class Bet(Base):
     """ Event from Portfolio of Strategies to Exchange of betting for execution """
-    event_type:str = 'bet'
-    ticker: str = None # event type
-    selection: str = None # selection type
-    action: str = None # back or lay
-    odds: float = None # odds
-    type: str = None  # market or limit
-    quantity: float = None # quantity for betting
-    match_name: str = None # match name
+    event_type: str = 'bet'
+    ticker_id: float = None  # event id
+    selection: str = None  # selection type
+    selection_id: int = None  # selection id
+    action: str = None  # back or lay
+    odds: float = None  # odds
+    quantity: float = None  # quantity for betting
+    match_name: str = None  # match name
+    quantity_execute: float = None  # quantity executed, amount always positive.
+    quantity_left: float = None  # quantity of contracts left to execute, amount always positive.
+    filled_price: float = None  # price of executed contracts
+    commission_fee: float = None  # commission fee for executed contracts
+    bet_id: float = None  # bet_id
+    status: str = None  # status of order
+    persistence_type: str = 'PERSIST'  # 'LAPSE', 'PERSIST' or 'MARKET_ON_CLOSE'
+    bet_type: str = 'LIMIT'  # options = 'LIMIT', 'LIMIT_ON_CLOSE' or 'MARKET_ON_CLOSE'
     id_sender: int = None  # id of sender, strategies id
     portfolio_name: str = None  # name of portfolio
     error_description: str = None  # error description if error
+
+    def bet_prepare(self):
+        """
+        Create a dict with the parameter
+        """
+        bet_info = {'selectionId': self.selection_id}
+        if self.action == 'back':
+            bet_info['side'] = 'BACK'
+        else:
+            bet_info['side'] = 'LAY'
+        bet_info['orderType'] = 'LIMIT'
+        bet_info['limitOrder'] = {'size': self.quantity, 'price': self.odds,
+                                  'persistenceType': self.persistence_type}
+
+        return bet_info

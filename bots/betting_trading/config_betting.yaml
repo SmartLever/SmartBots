@@ -15,6 +15,9 @@ Strategies:
     params:
       ticker: over/under 2.5 goals
       selection : over 2.5 goals
-      entry: 5
-      inicial_action: back
-      quantity : 1
+      action: back
+      quantity : 2
+      init_odd : 1.5
+      end_odd : 1.55
+      init_time: 10
+      end_time: 15

@@ -3,29 +3,35 @@
     Send Events to RabbitMQ for further processing.
 """
 import logging
-from smartbots.betting.betfair_model import  get_realtime_data
+from smartbots.betting.betfair_model import get_realtime_data
 import datetime as dt
-import pandas as pd
-from smartbots.events import Odds
-import schedule
-import time
-import threading
-from smartbots.decorators import log_start_end
 from smartbots.brokerMQ import Emit_Events
 
 logger = logging.getLogger(__name__)
 
 
-async def save_odds(msg=dict) -> None:
-    """ Populate Odds from data recieved from Betfair"""
-    odds = Odds()
-    # Start publishing events in MQ
-    emit = Emit_Events('odds',odds)
-    print(odds)
+def main():
+
+    def save_odds(odds) -> None:
+        """ Populate Odds from data recieved from Betfair"""
+        # Start publishing events in MQ
+        emit.publish_event('odds', odds)
+        print(odds)
+
+    print(f'* Starting betfair provider at {dt.datetime.utcnow()}')
+    emit = Emit_Events()
+    settings = {
+        'time_books_play': 5,
+        'time_books_not_play': 10,
+        'time_events': 1800,
+        'min_total_matched': 0,
+        'minutes': 60,
+        'event_ids': [1],
+        # 'sports': ['soccer','tennis',basketball, horses],  # used by self.get_event_ids()
+        'market_types': ['OVER_UNDER_25', 'OVER_UNDER_05'],
+        'betting_types': ['ODDS']}
+    get_realtime_data(settings, callback=save_odds)
 
 
 if __name__ == '__main__':
-    print(f'* Starting betfair provider at {dt.datetime.utcnow()}')
-    global save_data
-    tickers = []  # events
-    get_realtime_data(tickers, save_odds)
+    main()

@@ -17,6 +17,5 @@ COPY ./requirements.txt requirements.txt
 COPY ./proyect_modules.py proyect_modules.py
 RUN pip install -r requirements.txt
 
-COPY --chown=python:python . .
 
 RUN python proyect_modules.py # add smartbot the project as a module
