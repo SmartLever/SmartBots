@@ -14,8 +14,8 @@ def main():
         ----------
         bet: event bet
         """
-        bet = _bet['bet']
-        trading.send_order(bet)
+        if _bet.event_type == 'bet':
+            trading.send_order(_bet)
 
     # Create trading object
     trading = Trading()

@@ -18,6 +18,6 @@ Strategies:
       action: back
       quantity : 2
       init_odd : 1.5
-      end_odd : 1.55
+      end_odd : 1.65
       init_time: 10
-      end_time: 15
+      end_time: 25

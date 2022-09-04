@@ -16,7 +16,6 @@ def main():
         """ Populate Odds from data recieved from Betfair"""
         # Start publishing events in MQ
         emit.publish_event('odds', odds)
-        print(odds)
 
     print(f'* Starting betfair provider at {dt.datetime.utcnow()}')
     emit = Emit_Events()

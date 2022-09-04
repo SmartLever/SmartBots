@@ -38,7 +38,7 @@ class Basic_Strategy(object):
         """ Check if the event is between the times parameters"""
         from_init = (odds.datatime_latest_taken - odds.datetime_real_off).seconds / 60
         # check range time
-        if self.init_odd <= from_init <= self.end_odd:
+        if self.init_time <= from_init <= self.end_time:
             return True
         return False
 
@@ -55,13 +55,14 @@ class Basic_Strategy(object):
         """ Add event to the strategy and apply logic """
         if odds.selection == self.selection:
             unique = odds.unique_name
-            self.check_control_unique(unique)
-            # check is the odds_last_traded has value
-            if odds.odds_last_traded is not None:
-                if self._time_conditions(odds):
-                    # check is the odds_last_traded is between the odds parameters
-                    if self.end_odds >= odds.odds_last_traded >= self.init_odds:
-                        if self.n_events[unique] == 0:
+            if self.n_events[unique] == 0:
+                self.check_control_unique(unique)
+                # check is the odds_last_traded has value
+                if odds.odds_last_traded is not None:
+                    if self._time_conditions(odds):
+                        # check is the odds_last_traded is between the odds parameters
+                        if self.end_odd >= odds.odds_last_traded >= self.init_odd:
+
                             # just one bet for event
                             self.n_events[unique] += 1
                             bet = Bet(datetime=odds.datetime, dtime_zone=odds.dtime_zone, ticker=self.ticker,
