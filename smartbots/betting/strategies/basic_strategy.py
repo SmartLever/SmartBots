@@ -66,9 +66,9 @@ class Basic_Strategy(object):
                             # just one bet for event
                             self.n_events[unique] += 1
                             bet = Bet(datetime=odds.datetime, dtime_zone=odds.dtime_zone, ticker=self.ticker,
-                                      selection=odds.selection, odds=odds.odds_last_traded, quantity=self.quantity[unique],
+                                      selection=odds.selection, odds=odds.odds_last_traded, quantity=self.quantity,
                                       match_name=odds.match_name, ticker_id=odds.ticker_id, selection_id=odds.selection_id,
-                                      action=self.action[unique]
+                                      action=self.action
                                       )
 
                             self.callback(bet)  # send bet to betting platform
