@@ -177,7 +177,7 @@ class Trading(object):
                     bet.quantity_execute = bet.quantity
                     bet.quantity_left = 0
                 else:
-                    bet.quantity_execute = bet.quantity
+                    bet.quantity_execute = float(resp['instructionReports'][0]['sizeMatched'])
                     bet.quantity_left = bet.quantity - bet.quantity_execute
                 bet_failed = False
             else:
@@ -221,6 +221,7 @@ class Trading(object):
             Run pending bet
             :return:
             """
+            print('Manage this pending bet: '+_bet)
             sleep(_bet.cancel_seconds)
             no_found = True
             disc_mens = {'betId': []}
