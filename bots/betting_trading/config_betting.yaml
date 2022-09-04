@@ -21,3 +21,5 @@ Strategies:
       end_odd : 1.65
       init_time: 10
       end_time: 25
+      cancel_seconds: 300
+      diff_odds: 0.03

@@ -170,12 +170,13 @@ class Bet(Base):
     id_sender: int = None  # id of sender, strategies id
     portfolio_name: str = None  # name of portfolio
     error_description: str = None  # error description if error
+    cancel_seconds: int = 120  # time to cancel bet, by default is 120 seconds
 
     def bet_prepare(self):
         """
         Create a dict with the parameter
         """
-        bet_info = {'selectionId': self.selection_id}
+        bet_info = {'selectionId': str(self.selection_id)}
         if self.action == 'back':
             bet_info['side'] = 'BACK'
         else:
@@ -184,4 +185,4 @@ class Bet(Base):
         bet_info['limitOrder'] = {'size': self.quantity, 'price': self.odds,
                                   'persistenceType': self.persistence_type}
 
-        return bet_info
+        return [bet_info]

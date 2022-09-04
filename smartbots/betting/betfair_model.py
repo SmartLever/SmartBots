@@ -14,7 +14,7 @@ from smartbots.betting.api_berfair.api import Api
 from concurrent.futures import ThreadPoolExecutor, wait
 from smartbots.events import Odds
 import json
-
+import threading
 
 logger = logging.getLogger(__name__)
 BASE_DIR = Path(__file__).resolve().parent
@@ -154,7 +154,6 @@ class Trading(object):
         self.next_events = {}  # dict to saving markets
         self.last_datetime = {}  # dict to saving last datetime from ticker
         self.callback_real_time = callback_real_time
-        self.pending_bet = {}  # dict to saving pending bets
 
     def send_order(self, bet: dataclasses.dataclass) -> None:
         """Send order.
@@ -167,8 +166,9 @@ class Trading(object):
         bet_info = bet.bet_prepare()
         msg = 'PLACING %d BETS...\n' % len(bet_info)
         msg += '%s' % bet_info
-
+        print(msg)
         resp = self.client.place_bets(bet.ticker_id, bet_info)
+        print(resp)
         if type(resp) is dict and 'status' in resp:
             if resp['status'] == 'SUCCESS':
                 # updated bets field
@@ -194,14 +194,71 @@ class Trading(object):
             if bet.quantity_execute < bet.quantity:
                 # pending bets
                 bet.status = 'Pending'
-                print('BETS  NO COMPLETADA :')
+                print('BET NO COMPLETED :')
+                try:
+                    self.manage_pending_bet(bet)
+
+                except Exception as e:
+                    print('Fail to cancel bet ' + e)
+
             else:
                 # completed bets
                 bet.status = 'Completed'
-                print('BETS COMPLETADA :' + str(bet))
+                print('BET COMPLETED :' + str(bet))
                 bet.filled_price = float(resp['instructionReports'][0]['averagePriceMatched'])
 
         print(bet)
+
+    def manage_pending_bet(self, bet):
+        """
+        launch a thread to manage the pending bet
+        :param bet:
+        :return:
+        """
+
+        def run_pending_bets(_bet):
+            """
+            Run pending bet
+            :return:
+            """
+            sleep(_bet.cancel_seconds)
+            no_found = True
+            disc_mens = {'betId': []}
+            for currentOrder in self.get_current_bets():
+                if len(currentOrder) > 0:
+                    disc_mens['betId'].append(currentOrder['betId'])
+                    if currentOrder['betId'] == _bet.bet_id:
+                        no_found = False
+                        _bet.quantity_execute = currentOrder['sizeMatched']
+                        # if it has not been executed after x minutes we cancel
+                        if _bet.quantity > _bet.quantity_execute:  # cancel
+                            _bet.quantity_left = _bet.quantity - _bet.quantity_execute
+                            self.cancel_bet(_bet)
+                        else:  # if it executed
+                            print('BETS COMPLETED IN' + str(_bet.cancel_seconds) + ' SECONDS')
+                            _bet.quantity_left = 0
+                            _bet.filled_price = float(currentOrder['averagePriceMatched'])
+
+            if no_found:
+                try:
+                    bets_market_id = self.get_settled_bets(init_datetime=datetime.now() - timedelta(days=1))
+                    for bet_settled in bets_market_id:
+                        if bet_settled['betId'] == _bet.bet_id:
+                            _bet.quantity_execute = _bet.quantity
+                            _bet.quantity_left = 0
+                            print('BETS COMPLETED IN' + str(_bet.cancel_seconds) + ' SECONDS')
+                            _bet.filled_price = float(bet_settled['priceMatched'])
+                            no_found = False
+                except:
+                    print('Error to get_settled_bets_market_id')
+
+            if no_found:
+                msg = 'manage_pending_bet dont match ' + str(_bet.bet_id) + ' :' + str(disc_mens)
+                print(msg)
+
+        t = threading.Thread(target=run_pending_bets, args=(bet,))
+        t.daemon = True
+        t.start()
 
     def get_current_bets(self):
         """
