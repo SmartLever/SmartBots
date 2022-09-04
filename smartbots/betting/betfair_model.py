@@ -454,11 +454,9 @@ class Trading(object):
         """Check is the row is valid"""
 
         # if odds_back, odds_lay and volume_matched have info is valid the data row
-        if volume_matched is not None:
+        if len(odds_back) > 0 and len(odds_lay) > 0 and volume_matched is not None:
             return True
-        elif len(odds_back) > 0 and len(odds_lay) > 0:
-            return True
-        elif last_row == 1:
+        if last_row == 1:
             return True
 
         return False
