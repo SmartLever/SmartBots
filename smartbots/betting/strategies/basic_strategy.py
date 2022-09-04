@@ -55,8 +55,8 @@ class Basic_Strategy(object):
         """ Add event to the strategy and apply logic """
         if odds.selection == self.selection:
             unique = odds.unique_name
+            self.check_control_unique(unique)
             if self.n_events[unique] == 0:
-                self.check_control_unique(unique)
                 # check is the odds_last_traded has value
                 if odds.odds_last_traded is not None:
                     if self._time_conditions(odds):
