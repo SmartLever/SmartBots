@@ -30,6 +30,7 @@ class Portfolio_Constructor(object):
         self.send_orders_to_broker = send_orders_to_broker
         self.orders = []
         self.bets = []
+        self.bets_result = {}  # keys: match unique and values: result
         # health log
         self.health_handler = Health_Handler(n_check=10,
                                              name_service=self.name)
@@ -162,6 +163,9 @@ class Portfolio_Constructor(object):
         if self.in_real_time:
             self.health_handler.check()
         if event.event_type == 'odds':
+            # save result
+            if event.last_row == 1:
+                self.bets_result[event.unique_name] = event.win_flag
             if self.print_events_realtime:
                 print(event)
             try:
@@ -171,7 +175,7 @@ class Portfolio_Constructor(object):
                 strategies = self.ticker_to_strategies[event.ticker]
 
             for strategy in strategies:
-                strategy.add_odds(event)
+                strategy.add_event(event)
 
     def _callback_datafeed(self, event: dataclass):
         """ Feed portfolio with data from events for asset Crypto and Finance,

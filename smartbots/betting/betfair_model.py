@@ -642,7 +642,7 @@ class Trading(object):
                             away_team = None
                         odd.local_team = local_team
                         odd.away_team = away_team
-                        sports_id_event = str(int(odd.sports_id)) + '_' + odd.ticker
+                        sports_id_event = str(int(odd.sports_id)) + '_' + odd.ticker + '_' + str(odd.selection_id)
                         odd.unique_id_ticker = sports_id_event + '_' + str(yyyymmdd)
                         # unique name for ticker and match, for example: albacete vs betis_1_over/under 2.5 goals_202201010820
                         odd.unique_name = odd.match_name + '_' + odd.unique_id_ticker
