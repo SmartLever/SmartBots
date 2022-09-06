@@ -25,8 +25,9 @@ class Basic_Strategy(object):
         # Parameters for unique events
         self.n_events = {}  # dict with unique as key and number of events as value
         self.unique_control = {}  # dict with unique as key and true or false as value
+        self.saves_values = []  # list of bets
         if set_basic:
-            self.add_odds
+            self.add_event
 
     def _callback_default(self, event_bet: dataclass):
         """ callback for Bet by defalt """
@@ -53,7 +54,24 @@ class Basic_Strategy(object):
         else:
             return False
 
-    def add_odds(self, odds: dataclass):
+    def send_order(self, odds):
+        """ Send order to exchange or broker """
+
+        bet = Bet(datetime=odds.datetime, dtime_zone=odds.dtime_zone, ticker=self.ticker,
+                  selection=odds.selection, odds=odds.odds_last_traded, quantity=self.quantity,
+                  match_name=odds.match_name, ticker_id=odds.ticker_id,
+                  selection_id=odds.selection_id, action=self.action,
+                  cancel_seconds=self.cancel_seconds, unique_name=odds.unique_name
+                  )
+
+        self.callback(bet)  # send bet to betting platform
+        self.saves_values.append(bet)
+
+    def get_saved_values(self):
+        """ Return values saved """
+        return self.saves_values
+
+    def add_event(self, odds: dataclass):
         """ Add event to the strategy and apply logic """
         if odds.selection == self.selection:
             unique = odds.unique_name
@@ -65,13 +83,7 @@ class Basic_Strategy(object):
                         if self._time_conditions(odds):
                             # check is the odds_last_traded is between the odds parameters
                             if self.end_odd >= odds.odds_last_traded >= self.init_odd:
-
                                 # just one bet for event
                                 self.n_events[unique] += 1
-                                bet = Bet(datetime=odds.datetime, dtime_zone=odds.dtime_zone, ticker=self.ticker,
-                                          selection=odds.selection, odds=odds.odds_last_traded, quantity=self.quantity,
-                                          match_name=odds.match_name, ticker_id=odds.ticker_id, selection_id=odds.selection_id,
-                                          action=self.action, cancel_seconds=self.cancel_seconds
-                                          )
+                                self.send_order(odds)
 
-                                self.callback(bet)  # send bet to betting platform

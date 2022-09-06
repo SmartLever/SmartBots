@@ -159,6 +159,7 @@ class Bet(Base):
     odds: float = None  # odds
     quantity: float = None  # quantity for betting
     match_name: str = None  # match name
+    unique_name: str = None  # unique_name
     quantity_execute: float = None  # quantity executed, amount always positive.
     quantity_left: float = None  # quantity of contracts left to execute, amount always positive.
     filled_price: float = None  # price of executed contracts
