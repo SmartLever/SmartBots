@@ -6,7 +6,7 @@ import logging
 from smartbots.crypto.kucoin_model import get_historical_data, get_realtime_data
 import datetime as dt
 import pandas as pd
-from smartbots.events import Bar
+from smartbots.events import Bar, Tick
 import schedule
 import time
 import threading
@@ -26,6 +26,13 @@ async def save_tick_data(msg=dict) -> None:
 
 @log_start_end(log=logger)
 def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> threading.Thread:
+    def create_tick_closed_day():
+        for t in last_bar.values():
+            tick = Tick(event_type='tick', tick_type='close_day', price=t.close,
+                        ticker=t.ticker, datetime=t.datetime)
+            print(f'tick close_day {tick.ticker} {tick.datetime} {tick.price}')
+            emit.publish_event('tick', tick)
+
     """ Create thread for bar event """
     def create_bar():
         for symbol in save_data.keys():
@@ -49,13 +56,17 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
                           high=ohlc.high[0], low=ohlc.low[0], close=ohlc.close[0],
                           volume=ohlc.volume[0], exchange='kucoin', provider='kucoin', freq=interval)
                 if verbose:
-                    print(bar)
+                    print(f'bar {bar.ticker} {bar.datetime} {bar.close}')
                 emit.publish_event('bar', bar)
+                last_bar[symbol] = bar
                 health_handler.check()
 
 
-    # create scheduler
+
+    # create scheduler for bar event
     schedule.every().minute.at(":00").do(create_bar)
+    # create scheduler for close_day event
+    schedule.every().day.at("00:00").do(create_tick_closed_day)
     # Start publishing events in MQ
     emit = Emit_Events()
     #
@@ -69,8 +80,9 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
 
 if __name__ == '__main__':
     print(f'* Starting kucoin provider at {dt.datetime.utcnow()}')
-    global save_data
+    global save_data , last_bar
     symbols = ['BTC-USDT', 'ETH-USDT']
+    last_bar = {s:None  for s in symbols}
     save_data = {symbol: [] for symbol in symbols}
     x = threading.Thread(target=get_thread_for_create_bar)
     x.start()

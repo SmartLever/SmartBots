@@ -14,7 +14,7 @@ from typing import List, Dict, Any, Optional, Union
 @dataclass
 class Base:
     """ Base class for events """
-    event_type: str = 'petition'
+    event_type: str = 'base'
     datetime: dt.datetime = None
     dtime_zone: str = 'UTC'
     ticker: str = None

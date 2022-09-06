@@ -4,8 +4,8 @@ from smartbots.brokerMQ import Emit_Events, receive_events
 from smartbots.engine import data_reader
 import datetime as dt
 import pandas as pd
+from smartbots.engine.equity_handler import Equity_Handler
 from smartbots.database_handler import Universe
-from smartbots import conf
 from smartbots.health_handler import Health_Handler
 
 class Portfolio_Constructor(object):
@@ -13,19 +13,20 @@ class Portfolio_Constructor(object):
                  send_orders_to_broker: bool = False, start_date: dt.datetime =dt.datetime(2022,1,1)
                  , end_date: dt.datetime = dt.datetime.utcnow()):
         """ Run portfolio of strategies"""
+        if asset_type is None:
+            error_msg = 'asset_type is required'
+            raise ValueError(error_msg)
         self.print_events_realtime = False
         self.in_real_time = False
         self.start_date = start_date
         self.end_date = end_date
-        if asset_type is None:
-            error_msg = 'asset_type is required'
-            raise ValueError(error_msg)
         self.conf_portfolio = conf_portfolio
         self.name = conf_portfolio['Name']
         self.data_sources = conf_portfolio['Data_Sources']
         self.run_real = run_real
         self.asset_type = asset_type
         self.ticker_to_strategies = {}  # fill with function load_strategies_conf()
+        self.ticker_to_id_strategies = {}
         self._load_strategies_conf()
         self.send_orders_to_broker = send_orders_to_broker
         self.orders = []
@@ -33,8 +34,14 @@ class Portfolio_Constructor(object):
         # health log
         self.health_handler = Health_Handler(n_check=10,
                                              name_service=self.name)
-        if self.send_orders_to_broker:
+        if self.send_orders_to_broker: # if send orders to broker, send orders to brokerMQ
             self.emit_orders = Emit_Events()
+        # equity handler
+        if self.asset_type in ['crypto', 'financial']:
+            self.equity_handler = Equity_Handler(info_tickers= conf_portfolio['Ticker_Info'],
+                                                 ticker_to_id_strategies= self.ticker_to_id_strategies)
+        elif self.asset_type == 'betting':
+            self.equity_handler = None # todo: get equity from bets
 
     def _load_strategies_conf(self):
         """ Load the strategies configuration """
@@ -50,9 +57,11 @@ class Portfolio_Constructor(object):
                 list_stra[strategy_name] = self._get_strategy(self.asset_type, strategy_name)
             if ticker not in self.ticker_to_strategies:
                 self.ticker_to_strategies[ticker] = []
+                self.ticker_to_id_strategies[ticker] = []
             strategy_obj = list_stra[strategy_name](parameters['params'], id_strategy=_id,
                                                     callback=self._callback_orders, set_basic = set_basic)
             self.ticker_to_strategies[ticker].append(strategy_obj)
+            self.ticker_to_id_strategies[ticker].append(_id)
 
     def _get_strategy(self, asset_type: str, strategy_name: str):
         """ Load the strategy dinamically"""
@@ -143,11 +152,11 @@ class Portfolio_Constructor(object):
         order_or_bet.portfolio_name = self.name
         order_or_bet.status = 'from_strategy'
         if self.asset_type == 'crypto':
-            self.orders.append(order_or_bet)
+            self.equity_handler.update(order_or_bet) # update the equity
+            self.orders.append(order_or_bet) # append the order to the list of orders
             if self.in_real_time and self.send_orders_to_broker:
                 print(order_or_bet)
                 self.emit_orders.publish_event('order', order_or_bet)
-
         elif self.send_orders_to_broker and self.asset_type == 'betting':
             self.bets.append(order_or_bet)
             if self.in_real_time:
@@ -175,12 +184,12 @@ class Portfolio_Constructor(object):
 
     def _callback_datafeed(self, event: dataclass):
         """ Feed portfolio with data from events for asset Crypto and Finance,
-        recieve dict with key as topic and value as event"""
+        recieve  events"""
         if self.in_real_time:
             self.health_handler.check()
-        if event.event_type == 'bar':
+        if event.event_type == 'bar': # bar event, most common.
             if self.print_events_realtime:
-                print(event)
+                print(f'bar {event.ticker} {event.datetime} {event.close}')
             try:
                 strategies = self.ticker_to_strategies[event.ticker]
             except:
@@ -188,10 +197,14 @@ class Portfolio_Constructor(object):
                 strategies = self.ticker_to_strategies[event.ticker]
             for strategy in strategies:
                 strategy.add_event(event)
-        elif event.event_type == 'petition':
+        elif event.event_type == 'petition': # petition to get data from the portfolio
             """ If the petition do not work it keeps working"""
             try:
                 self.process_petitions(event)
             except Exception as e:
                 print(f'Error processing petitions {e}')
+        elif event.event_type == 'tick' and event.tick_type == 'close_day': # update equity with last price
+            if self.print_events_realtime:
+                print(f'tick close_day {event.ticker} {event.datetime} {event.price}')
+            self.equity_handler.update(event)
 
