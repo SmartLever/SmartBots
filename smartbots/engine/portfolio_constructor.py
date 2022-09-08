@@ -38,11 +38,8 @@ class Portfolio_Constructor(object):
         if self.send_orders_to_broker: # if send orders to broker, send orders to brokerMQ
             self.emit_orders = Emit_Events()
         # equity handler
-        if self.asset_type in ['crypto', 'financial']:
-            self.equity_handler = Equity_Handler(info_tickers= conf_portfolio['Ticker_Info'],
-                                                 ticker_to_id_strategies= self.ticker_to_id_strategies)
-        elif self.asset_type == 'betting':
-            self.equity_handler = None # todo: get equity from bets
+        self.equity_handler = Equity_Handler()
+
 
     def _load_strategies_conf(self):
         """ Load the strategies configuration """
@@ -153,7 +150,6 @@ class Portfolio_Constructor(object):
         order_or_bet.portfolio_name = self.name
         order_or_bet.status = 'from_strategy'
         if self.asset_type == 'crypto':
-            self.equity_handler.update(order_or_bet) # update the equity
             self.orders.append(order_or_bet) # append the order to the list of orders
             if self.in_real_time and self.send_orders_to_broker:
                 print(order_or_bet)
@@ -210,5 +206,12 @@ class Portfolio_Constructor(object):
         elif event.event_type == 'tick' and event.tick_type == 'close_day': # update equity with last price
             if self.print_events_realtime:
                 print(f'tick close_day {event.ticker} {event.datetime} {event.price}')
-            self.equity_handler.update(event)
+            try:
+                strategies = self.ticker_to_strategies[event.ticker]
+            except:
+                self.ticker_to_strategies[event.ticker] = []  # default empty list
+                strategies = self.ticker_to_strategies[event.ticker]
+            for strategy in strategies:
+                strategy.add_event(event)
+            self.equity_handler.calculate_equity_day(event.datetime) # update equity portfolio with close
 

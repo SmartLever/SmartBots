@@ -3,6 +3,7 @@ import time
 from dataclasses import dataclass
 from smartbots.events import Order
 import datetime as dt
+from smartbots.engine.equity_handler import Equity
 
 
 class Basic_Strategy(object):
@@ -25,12 +26,54 @@ class Basic_Strategy(object):
         self.position = 0  # position in the strategy, 1 Long, -1 Short, 0 None
         self.inicial_values = False  # Flag to set inicial values
         self.saves_values = {'datetime': [], 'position': [], 'close': []}
+        # Equity handler of the strategy
+        if 'save_equity_vector_for' in self.parameters:
+            self.save_equity_vector_for = self.parameters['save_equity_vector_for']
+        else:
+            self.save_equity_vector_for = ['close_day','order']
+        self.bar_to_equity = False
+        if 'bar' in self.save_equity_vector_for:
+            self.bar_to_equity = True
+
+        fees = 0
+        if 'fees' in self.parameters:
+            fees = self.parameters['fees']
+        slippage = 0
+        if 'slippage' in self.parameters:
+            slippage = self.parameters['slippage']
+        point_value = 1
+        if 'point_value' in self.parameters:
+            point_value = self.parameters['point_value']
+
+        self.equity_hander_estrategy = Equity(ticker=self.ticker, asset_type='crypto', fees=fees, slippage = slippage,
+                                              point_value= point_value, id_strategy=self.id_strategy)
+
         if set_basic:
             self.add_bar = self._add_event_example
 
     def _callback_default(self, event_order: dataclass):
         """ callback for Order by defalt """
         print(event_order)
+
+    def update_equity(self, event: dataclass):
+        """ Update equity """
+        is_day_closed = False
+        if event.event_type == 'bar':
+            update = {'quantity': 0, 'price': event.close, 'datetime': event.datetime}
+        elif event.event_type == 'order':
+            quantity = event.quantity
+            if event.action == 'sell':
+                quantity = -quantity
+            update = {'quantity': quantity, 'price': event.price, 'datetime': event.datetime}
+        elif event.event_type == 'tick' and event.tick_type == 'close_day':
+            update = {'quantity': 0, 'price': event.price, 'datetime': event.datetime}
+            is_day_closed = True
+        # update equity
+        self.equity_hander_estrategy.update(update)
+        self.equity_hander_estrategy.fill_equity_vector()
+        # update equity day
+        if is_day_closed:
+            self.equity_hander_estrategy.fill_equity_day()
 
     def get_order_id_sender(self):
         """ Return order_id_sender """
@@ -51,6 +94,8 @@ class Basic_Strategy(object):
            if len(self.saves_values['datetime']) > self.limit_save_values:
                for k in self.saves_values.keys():
                    self.saves_values[k] = self.saves_values[k][-self.limit_save_values:]
+        # update equity
+        self.update_equity(order)
 
     def add_event(self, event: dataclass):
         """ Add event to the strategy and apply logic """

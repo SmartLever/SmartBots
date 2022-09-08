@@ -29,8 +29,8 @@ class Simple_Avg_Cross(Basic_Strategy):
         self.saves_values = {'datetime':[],'short_avg_value':[], 'long_avg_value':[], 'position':[], 'close':[]}
 
     def add_event(self,  event: dataclass):
-        """ Logic of the Strategy"""
-        if event.event_type == 'bar' and self.inicial_values:
+        """ Logic of the Strategy goes here """
+        if event.event_type == 'bar' and self.inicial_values: # logic with OHLC bars
             # Calculate short average
             self.short_avg_value = (self.short_avg_value * (self.short_period - 1) + event.close) / self.short_period
             # Calculate long average
@@ -50,9 +50,17 @@ class Simple_Avg_Cross(Basic_Strategy):
             self.saves_values['long_avg_value'].append(self.long_avg_value)
             self.saves_values['position'].append(self.position)
             self.saves_values['close'].append(event.close)
+            if self.bar_to_equity: # if bar_to_equity is True, save the equity by event bar.
+                self.equity_hander_estrategy.update(event)
 
         elif event.event_type == 'bar' and self.inicial_values is False:
             # Calculate initial values
             self.short_avg_value = event.close
             self.long_avg_value = event.close
             self.inicial_values = True
+
+        elif event.event_type == 'tick' and event.tick_type == 'close_day' and self.inicial_values:
+            """Logic of the Strategy goes here for calculate data at the end of the day if it was necessary"""
+            # update equity strategy
+            self.update_equity(event)
+
