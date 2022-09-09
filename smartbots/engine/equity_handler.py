@@ -33,7 +33,8 @@ class Equity():
                                    'quantity': self.quantity,'price': self.price})
 
     def fill_equity_day(self):
-        self.equity_day.append({'datetime': self.datetime, 'equity': self.equity,
+        dtime = dt.datetime(self.datetime.year, self.datetime.month, self.datetime.day)
+        self.equity_day.append({'datetime': dtime, 'equity': self.equity,
                                    'quantity': self.quantity,'price': self.price})
 
     def get_equity_vector(self):
@@ -51,6 +52,7 @@ class Equity():
         df['diff'] = df['equity'].diff().fillna(0)
         df['id_strategy'] = self.id_strategy
         return df
+
     def update(self, _update: dict):
         """Update equity with new price, quantity and datetime"""
         if self.init:
@@ -73,7 +75,7 @@ class Equity():
 
 
 class Equity_Handler():
-    def __init__(self,inicial_cash: float= None,ticker_to_strategies: dict = None):
+    def __init__(self,inicial_cash: float= 0,ticker_to_strategies: dict = None):
         """Calculate equity for a portfolio of tickers
                 Parameters
                 ----------
@@ -86,18 +88,24 @@ class Equity_Handler():
         self.ticker_to_strategies = ticker_to_strategies # pointer to strategies
         self.equity_day = []
 
+
+
     def get_equities(self):
         """
         This returns the equity of components of the portfolio.
         """
         df = []
         df_day = []
-        for strategy in self.ticker_to_strategies.keys():
-            frame = strategy.equity_hander_estrategy.get_equity_vector()
-            df.append(frame)
-            frame_day = strategy.equity_hander_estrategy.get_equity_day()
-            df_day.append(frame_day)
-        return {'equities_by_events': df, 'equities_by_day':df_day}
+        for ticker in self.ticker_to_strategies.keys():
+            for strategy in self.ticker_to_strategies[ticker]:
+                frame = strategy.equity_hander_estrategy.get_equity_vector()
+                df.append(frame)
+                frame_day = strategy.equity_hander_estrategy.get_equity_day()
+                df_day.append(frame_day)
+        port = pd.DataFrame(self.equity_day)
+        port.set_index('datetime', inplace=True)
+        return {'equities_by_events': df, 'equities_by_day':df_day,
+                'equity_portfolio': port}
 
     def construct_current_holdings(self):
         """
@@ -110,14 +118,21 @@ class Equity_Handler():
         """
         Calculate equity of the portfolio for last day.
         """
-
-        equity = {'datetime': _datetime, 'equity': self.inicial_cash}
+        dtime = dt.datetime(_datetime.year, _datetime.month, _datetime.day) # by date
+        equity = {'datetime': dtime, 'equity': self.inicial_cash}
         # Get equity for strategy and sum with total
-        for strategy in self.ticker_to_strategies.keys():
-            equity['equity'] += strategy.equity_hander_estrategy.equity
+        for ticker in self.ticker_to_strategies.keys():
+            for strategy in self.ticker_to_strategies[ticker]:
+                value = strategy.equity_hander_estrategy.equity
+                if value is None:
+                    value = 0
+                equity['equity'] += value
         # update equity day
-        if equity['datetime'] == self.equity_day[-1]['datetime']:
-            self.equity_day[-1] = equity
-        elif equity['datetime'] > self.equity_day[-1]['datetime']:
+        if len(self.equity_day) > 0:
+            if equity['datetime'] == self.equity_day[-1]['datetime']:
+                self.equity_day[-1] = equity
+            elif equity['datetime'] > self.equity_day[-1]['datetime']:
+                self.equity_day.append(equity)
+        else:
             self.equity_day.append(equity)
 

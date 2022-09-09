@@ -11,15 +11,6 @@ Data_Sources:
     historical_source: mongoDB
     historical_library: kucoin_historical_1min
 
-Ticker_Info:
-  - ticker: ETH-USDT
-    asset_type: crypto
-    point_value: 1
-
-  - ticker: BTC-USDT
-    asset_type: crypto
-    point_value: 1
-
 Strategies:
 #  - id: 1
 #    strategy: Basic_Strategy
@@ -34,8 +25,10 @@ Strategies:
       ticker: BTC-USDT
       short_period: 10
       long_period: 500
-      quantity: 0.1
+      quantity: 1
       limit_save_values: 1000
+      point_value: 1
+      slippage: 0
 
   - id: 2
     strategy: Simple_Avg_Cross
@@ -43,5 +36,7 @@ Strategies:
       ticker: ETH-USDT
       short_period: 10
       long_period: 500
-      quantity: 0.1
+      quantity: 1
       limit_save_values: 1000
+      point_value: 1
+      slippage: 0

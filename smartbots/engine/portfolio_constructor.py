@@ -10,8 +10,8 @@ from smartbots.health_handler import Health_Handler
 
 class Portfolio_Constructor(object):
     def __init__(self, conf_portfolio: dict, run_real: bool = False, asset_type: str = None,
-                 send_orders_to_broker: bool = False, start_date: dt.datetime =dt.datetime(2022,1,1)
-                 , end_date: dt.datetime = dt.datetime.utcnow()):
+                 send_orders_to_broker: bool = False, start_date: dt.datetime = dt.datetime(2022, 1, 1)
+                 , end_date: dt.datetime = dt.datetime.utcnow(),inicial_cash: float= 0):
         """ Run portfolio of strategies"""
         if asset_type is None:
             error_msg = 'asset_type is required'
@@ -38,7 +38,8 @@ class Portfolio_Constructor(object):
         if self.send_orders_to_broker: # if send orders to broker, send orders to brokerMQ
             self.emit_orders = Emit_Events()
         # equity handler
-        self.equity_handler = Equity_Handler()
+        self.equity_handler = Equity_Handler(ticker_to_strategies=self.ticker_to_strategies,
+                                             inicial_cash=inicial_cash)
 
 
     def _load_strategies_conf(self):
@@ -132,7 +133,6 @@ class Portfolio_Constructor(object):
                 lib = store.get_library(name_library)
                 lib.write(name, data_to_save)
                 print(f'Save {name} in {name_library}.')
-
 
     def run_realtime(self):
         self.print_events_realtime = False
