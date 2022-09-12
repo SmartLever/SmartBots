@@ -2,8 +2,7 @@
     """
 import dataclasses
 
-
-def main(name_library='events_keeper') -> None:
+def main(_name_library='events_keeper') -> None:
     import time
     time.sleep(10) # wait until MQ and Database are running
     from smartbots.brokerMQ import receive_events
@@ -15,30 +14,40 @@ def main(name_library='events_keeper') -> None:
         """ Get unique key for event """
         # Get first key from dict
         if event.event_type == 'bar':
-            return f'{event.ticker}_{event.datetime}_{event.event_type}_{n_saved["events"]}'
+            return f'{event.ticker}_{event.datetime}_{event.event_type}_{saved_variable["events"]}'
         elif event.event_type == 'order':
             return event.order_id_sender
         elif event.event_type == 'health': #always the same for service
             return f'{event.ticker}_{event.event_type}'
         else:
             print(f'Event type {event.event_type}  saving as default')
-            return f'{event.ticker}_{event.datetime}_{event.event_type}_{n_saved["events"]}'
+            return f'{event.ticker}_{event.datetime}_{event.event_type}_{saved_variable["events"]}'
 
 
     def callback(event : dataclasses.dataclass) -> None:
         """Callback for saving events to DataBase"""
-        n_saved['events'] += 1
+        saved_variable['events'] += 1
         ticker = event.ticker
         unique = get_unique(event)
-        lib.write(unique, event, metadata={'datetime': event.datetime,
+        saved_variable['lib'].write(unique, event, metadata={'datetime': event.datetime,
                                            'event_type':event.event_type, 'ticker': ticker})
-        print('Event saved', event.event_type)
+        print(f'Event saved {event.event_type} {event.datetime}', )
+
+        name = f'{_name_library}_{event.datetime.strftime("%Y%m%d %H%M")}'
+        if name != saved_variable['name']:
+            saved_variable['lib'] = store.get_library(name)
+            saved_variable['name'] = name
+            print('New library created', name)
+
 
     # variable
-    n_saved = {'events': 0}
+    saved_variable = {'events': 0}
     # Create connection  to DataBase
     store = Universe()
-    lib = store.get_library(name_library)
+    # Create library for saving events
+    name = f'{_name_library}_{dt.datetime.utcnow().strftime("%Y%m%d %H%M")}'
+    saved_variable['lib'] = store.get_library(name)
+    saved_variable['name'] = name
 
     # Connect to brokerMQ for receiving events
     receive_events(routing_key='#', callback=callback)
