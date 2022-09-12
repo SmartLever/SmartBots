@@ -135,7 +135,7 @@ class Portfolio_Constructor(object):
                 print(f'Save {name} in {name_library}.')
 
     def run_realtime(self):
-        self.print_events_realtime = False
+        self.print_events_realtime = True
         self.in_real_time = True
         print('running real  of the Portfolio, waitig Events')
         if self.asset_type == 'crypto':
