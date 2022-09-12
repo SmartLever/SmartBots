@@ -54,7 +54,12 @@ Lets see how it works.
       docker compose -f docker-compose_crypto.yml --env-file ./compose.env up -d
       ```
 ## Basktesting a simple strategy in Crypto
-      
+
+## Updating the code of the repository changing local files
+    '''git fetch
+       git reset --hard HEAD
+       git merge '@{u}' '''
+          
 ## Live Trading a simple strategy in Crypto
 ### Open a account in Kucoin and get the Keys
 
