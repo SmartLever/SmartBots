@@ -15,4 +15,5 @@ pyyaml
 python-dotenv
 jupyter
 jupyterlab
+quantstats
 git+https://github.com/man-group/arctic.git
