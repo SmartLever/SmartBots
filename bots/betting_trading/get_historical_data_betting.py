@@ -1,15 +1,12 @@
 """ Historical data from Kucoin"""
 import logging
 import os
-import datetime as dt
 from smartbots import conf
-from typing import List,Dict
+from typing import Dict
 import pandas as pd
-from arctic import Arctic
 from smartbots.decorators import log_start_end
-
+from smartbots.database_handler import Universe
 logger = logging.getLogger(__name__)
-
 
 def _get_historical_data_test_files_betfair():
     """ Read historical data save in file, normalise it and return it as events"""
@@ -46,7 +43,8 @@ def _get_historical_data_test_files_betfair():
         df['datetime_real_off'] = pd.to_datetime(df['datetime_real_off'], unit='s')
         df['datetime_scheduled_off'] = pd.to_datetime(df['datetime_scheduled_off'], unit='s')
         df.drop(['datetime'], axis=1, inplace=True)
-        unique_name = df['match_name'].values[0] + '_' + df.unique_id_ticker.values[0]
+        unique_name = df['match_name'].values[0] + '_' + df.unique_id_ticker.values[0] + '_' + str(
+            df.selection_id.values[0])
         df['unique_name'] = unique_name
         # Create events Odds
         for tp in df.itertuples():
@@ -82,10 +80,9 @@ def _get_historical_data_test_files_betfair():
 def save_historical(symbol_data: Dict = {}, name_library: str = 'provider_historical') -> None:
     """ Save historical data in Data Base as VersionStore.
         Here the docs: https://github.com/man-group/arctic"""
-    store = Arctic(f'{conf.MONGO_HOST}:{conf.MONGO_PORT}',username=conf.MONGO_INITDB_ROOT_USERNAME,
-                   password=conf.MONGO_INITDB_ROOT_PASSWORD)
-    store.initialize_library(name_library)
-    lib = store[name_library]
+
+    store = Universe()
+    lib = store.get_library(name_library)
 
     for symbol, data in symbol_data.items():
         data.index.name = 'date'

@@ -12,6 +12,8 @@ def main(send_orders_status=True):
     import schedule
     from smartbots import conf
     from smartbots.health_handler import Health_Handler
+    import time
+    import threading
 
     def check_balance() -> None:
         try:
@@ -20,6 +22,13 @@ def main(send_orders_status=True):
             health_handler.check()
         except Exception as e:
             health_handler.send(description=e, state=0)
+
+    def schedule_balance():
+        # create scheduler for saving balance
+        schedule.every(10).minutes.do(check_balance)
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
 
     def send_broker(event) -> None:
         """Send order.
@@ -41,9 +50,9 @@ def main(send_orders_status=True):
     # Create trading object
     trading = Trading(send_orders_status=send_orders_status)
     check_balance()
-    # create scheduler for saving balance
-
-    schedule.every(10).minutes.do(check_balance)
+    # Launch thread to saving balance
+    x = threading.Thread(target=schedule_balance)
+    x.start()
     # Launch thead for update orders status
     trading.start_update_orders_status()
 

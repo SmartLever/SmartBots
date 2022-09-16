@@ -112,7 +112,10 @@ class Portfolio_Constructor(object):
                                                                     start_date=self.start_date, end_date=self.end_date):
                 self._callback_datafeed(event)
         elif self.asset_type == 'betting':
-            for event in data_reader.load_tickers_and_create_events_betting(self.data_sources):
+            for event in data_reader.load_tickers_and_create_events_betting(self.data_sources,
+                                                                            start_date=self.start_date,
+                                                                            end_date=self.end_date
+                                                                            ):
                 self._callback_datafeed_betting(event)
         else:
             raise ValueError(f'Asset type {self.asset_type} not supported')
@@ -154,9 +157,9 @@ class Portfolio_Constructor(object):
             if self.in_real_time and self.send_orders_to_broker:
                 print(order_or_bet)
                 self.emit_orders.publish_event('order', order_or_bet)
-        elif self.send_orders_to_broker and self.asset_type == 'betting':
+        elif self.asset_type == 'betting':
             self.bets.append(order_or_bet)
-            if self.in_real_time:
+            if self.in_real_time and self.send_orders_to_broker:
                 print(order_or_bet)
                 self.emit_orders.publish_event('bet', order_or_bet)
         elif self.send_orders_to_broker:
@@ -180,7 +183,8 @@ class Portfolio_Constructor(object):
                 strategies = self.ticker_to_strategies[event.ticker]
 
             for strategy in strategies:
-                strategy.add_event(event)
+                if event.last_row == 0:
+                    strategy.add_event(event)
 
     def _callback_datafeed(self, event: dataclass):
         """ Feed portfolio with data from events for asset Crypto and Finance,

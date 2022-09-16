@@ -19,7 +19,10 @@ class Basic_Strategy(object):
         self.end_odd = parameters['end_odd']  # end_odd
         self.init_time = parameters['init_time']  # init_time
         self.end_time = parameters['end_time']  # end_time
-        self.cancel_seconds = parameters['cancel_seconds']  # cancel_seconds
+        if 'cancel_seconds' not in parameters:
+            self.cancel_seconds = 100
+        else:
+            self.cancel_seconds = parameters['cancel_seconds']  # cancel_seconds
         self.diff_odds = parameters['diff_odds']
         self.id_strategy = id_strategy
         # Parameters for unique events
@@ -65,7 +68,6 @@ class Basic_Strategy(object):
                   )
 
         self.callback(bet)  # send bet to betting platform
-        self.saves_values.append(bet)
 
     def get_saved_values(self):
         """ Return values saved """
@@ -73,6 +75,7 @@ class Basic_Strategy(object):
 
     def add_event(self, odds: dataclass):
         """ Add event to the strategy and apply logic """
+        # status is open
         if odds.selection == self.selection:
             unique = odds.unique_name
             self.check_control_unique(unique)
@@ -86,4 +89,5 @@ class Basic_Strategy(object):
                                 # just one bet for event
                                 self.n_events[unique] += 1
                                 self.send_order(odds)
+
 

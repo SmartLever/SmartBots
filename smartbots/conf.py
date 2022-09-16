@@ -43,3 +43,6 @@ APP_KEYS_BETFAIR = os.getenv("APP_KEYS_BETFAIR") or "REPLACE_ME"
 
 # Variable for production
 SEND_ORDERS_BROKER_KUCOIN = int(os.getenv("SEND_ORDERS_BROKER_KUCOIN")) or 0
+
+# Telegram
+TOKEN_TELEGRAM_BETTING = os.getenv("TOKEN_TELEGRAM_BETTING") or "REPLACE_ME"

@@ -1,19 +1,14 @@
 """ Load data from DB and create Events for consumption by portfolio engine """
-import os
 import pandas as pd
-import numpy as np
 import datetime as dt
 from smartbots.events import Bar, Odds, Tick
 from smartbots.database_handler import Universe
-from typing import List, Dict
-from smartbots.decorators import log_start_end
-from smartbots import conf
 import calendar
 from dateutil import relativedelta
 
 def read_data_to_dataframe(symbol:str, provider:str, interval:str = '1min',
                            start_date: dt.datetime = dt.datetime(2022, 1, 1),
-                            end_date: dt.datetime = dt.datetime.utcnow()):
+                           end_date: dt.datetime = dt.datetime.utcnow()):
 
     """ Read data from DB and create DataFrame"""
     store = Universe()  # database handler
@@ -119,23 +114,23 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
         if to_month >= end_date + relativedelta.relativedelta(months=1):  # break if we reach the end of the period
             break
 
-
-def load_tickers_and_create_events_betting(tickers_lib_name: list):
+def load_tickers_and_create_events_betting(tickers_lib_name: list, start_date: dt.datetime = dt.datetime(2022, 1, 1),
+                                           end_date: dt.datetime = dt.datetime.utcnow()):
     """ Load data from DB and create Events for consumption by portfolio engine for betting markets
         tickers_lib_name: list of tickers to load with info about the source of the data
          """
-
     store = Universe()
-
+    yyyymmdd_start = start_date.year * 10000 + start_date.month * 100 + start_date.day
+    yyyymmdd_end = end_date.year * 10000 + end_date.month * 100 + end_date.day
     for info in tickers_lib_name:
         ticker = info['ticker']
         name_library = info['historical_library']
         lib = store.get_library(name_library)
-        list_symbols = [l for l in lib.list_symbols() if ticker in l]
+        list_symbols = [l for l in lib.list_symbols() if
+                        ticker in l and yyyymmdd_start <= int(l.split('_')[-1]) <= yyyymmdd_end]
 
-        for unique in list_symbols:
-            data = lib.read(unique).data
+        for symbol in list_symbols:
+            data = lib.read(symbol).data
             data.sort_index(inplace=True)
-            col_name =data.columns[0]
             for tuple in data.itertuples():
-                 yield tuple.odds
+                yield tuple

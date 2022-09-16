@@ -433,22 +433,22 @@ class Trading(object):
     def _check_new_data_books(self, ticker_id, selection_id, latest_taken):
         """check if the data is new"""
 
-        dtime = latest_taken
-        if dtime is None:
-            return False
-        # last_datetime from each ticker
-        self.last_datetime.setdefault(ticker_id, {})
         try:
-            self.last_datetime[ticker_id][selection_id]
-        except:
-            self.last_datetime[ticker_id][selection_id] = dtime
-            return True
+            dtime = latest_taken
+            self.ultimo_datetime.setdefault(ticker_id, {})
+            try:
+                self.ultimo_datetime[ticker_id][selection_id]
+            except:
+                self.ultimo_datetime[ticker_id][selection_id] = dtime
+                return True
 
-        if dtime > self.last_datetime[ticker_id][selection_id]:
-            self.last_datetime[ticker_id][selection_id] = dtime  # updated
+            if dtime > self.ultimo_datetime[ticker_id][selection_id]:
+                self.ultimo_datetime[ticker_id][selection_id] = dtime  # actualizamos
+                return True
+            else:
+                return False
+        except:
             return True
-        else:
-            return False
 
     @staticmethod
     def _is_valid(odds_back: list, odds_lay: list, volume_matched: float, last_row: int):
@@ -491,164 +491,169 @@ class Trading(object):
                     json.dump(self.data_actual_off, f)
         return self.data_actual_off['datetime_real_off'][key]
 
-    def processing_data(self, books: list, next_events: dict):
+    def processing_data(self, books: list):
         """Processing data and create events odds with the info"""
 
         books = {i['marketId']: i for i in books}
-        matchs = {n: next_events[n] for n in next_events.keys() if n in books.keys()}  # markets asked with book data
+        matchs = self.next_events  # markets
         in_play = False
+        list_delete = []
         # each ticker
         for ticker_id in matchs.keys():
-            book_event_id = books[ticker_id]  # check book by ticker_id
-            match_event_id = matchs[ticker_id]
+            if ticker_id in books:
+                book_event_id = books[ticker_id]  # check book by ticker_id
+                match_event_id = matchs[ticker_id]
 
-            # do data for selection inside event data
-            for i, runner in enumerate(matchs[ticker_id][u'runners']):
-                # check selection_id
-                selection_id = runner[u'selectionId']
-                # Create odd event for filling
-                odd = Odds()
+                # do data for selection inside event data
+                for i, runner in enumerate(matchs[ticker_id][u'runners']):
+                    # check selection_id
+                    selection_id = runner[u'selectionId']
+                    # Create odd event for filling
+                    odd = Odds()
 
-                runner_info = list(filter(lambda d: d['selectionId'] == selection_id, book_event_id[u'runners']))
-                # check if we have information from the ticker
-                if len(runner_info) == 0:
-                    continue
-                else:
-                    runner_info = runner_info[0]
-                if 'lastMatchTime' in book_event_id:
-                    latest_taken = pd.to_datetime(book_event_id['lastMatchTime'])
-                else:
-                    latest_taken = None
-                # check if this ticker is in play
-                if in_play is False and book_event_id['inplay']:
-                    in_play = True
-                # check if data is new
-                if self._check_new_data_books(ticker_id, selection_id, latest_taken):
-                    # fill in the dataclass odds
-                    odd.datatime_latest_taken = latest_taken
-                    odd.selection_id = selection_id
-                    odd.selection = runner['runnerName'].lower()
-                    odd.player_name = odd.selection
-                    odd.ticker_id = ticker_id
-                    odd.ticker = match_event_id[u'marketName'].lower()
-                    odd.datetime_scheduled_off = pd.to_datetime(matchs[ticker_id]['marketStartTime'])
-                    yyyymmdd = odd.datetime_scheduled_off.year * 10000 + odd.datetime_scheduled_off.month * 100 + \
-                               odd.datetime_scheduled_off.day
-                    odd.datetime = datetime.utcnow()  # utc
-                    odd.match_name = match_event_id['event']['name'].lower()
-                    odd.full_description = odd.match_name + '_' + str(yyyymmdd)
-                    if 'competition' in match_event_id:
-                        odd.competition = match_event_id['competition']['name']
-                        odd.competition_id = match_event_id['competition']['id']
+                    runner_info = list(filter(lambda d: d['selectionId'] == selection_id, book_event_id[u'runners']))
+                    # check if we have information from the ticker
+                    if len(runner_info) == 0:
+                        continue
                     else:
-                        odd.competition = ''
-                        odd.competition_id = 0
-
-                    odd.status = book_event_id['status'].lower()  # status of ticker
-                    odd.volume_matched = float(book_event_id['totalMatched'])
-                    if odd.ticker == 'moneyline':  # for basket
-                        odd.ticker = 'match odd'
-
-                    odd.sports_id = int(match_event_id['eventType']['id'])
-                    if 'lastPriceTraded' in runner_info:
-                        odd.odds_last_traded = float(runner_info['lastPriceTraded'])
-
-                    odd.number_of_active_runners = book_event_id['numberOfActiveRunners']
-                    odd.number_of_winners = book_event_id['numberOfWinners']
-                    odd.sortPriority = runner['sortPriority']
-                    odd.status_selection = runner_info['status'].lower()
-                    if 'totalMatched' in runner_info:
-                        odd.volume_matched_selection = float(runner_info['totalMatched'])
-
-                    # create a unique field for ticker
-                    unico_event_selec = int(ticker_id.replace('.', '')) + int(selection_id)
-                    odd.unique_id_match = float(unico_event_selec * 100000000 + yyyymmdd)
-
-                    # change of selections name in the next cases: 'match odds', 'half time',
-                    # 'moneyline', 'draw no bet'
-                    if odd.ticker in ['match odds', 'half time', 'moneyline', 'draw no bet']:
-                        if i == 0:
-                            odd.selection = 'home'
-                        elif i == 1:
-                            odd.selection = 'away'
-                        elif i == 2:
-                            odd.selection = 'draw'
-                    odd.in_play = in_play
-
-                    # if the ticker is over, we add win_flag and put last_row = 1
-                    if runner_info['status'] == 'LOSER' and book_event_id['status'] == 'CLOSED':
-                        odd.win_flag = 0
-                        odd.last_row = 1
-
-                    elif runner_info['status'] == 'WINNER' \
-                            and book_event_id['status'] == 'CLOSED':
-                        odd.win_flag = 1
-                        odd.last_row = 1
+                        runner_info = runner_info[0]
+                    if 'lastMatchTime' in book_event_id:
+                        latest_taken = pd.to_datetime(book_event_id['lastMatchTime'])
                     else:
-                        odd.win_flag = 0
-                        odd.last_row = 0
+                        latest_taken = None
+                    # check if this ticker is in play
+                    if in_play is False and book_event_id['inplay']:
+                        in_play = True
+                    # check if data is new
+                    if self._check_new_data_books(ticker_id, selection_id, latest_taken):
+                        # fill in the dataclass odds
+                        odd.datatime_latest_taken = latest_taken
+                        odd.selection_id = selection_id
+                        odd.selection = runner['runnerName'].lower()
+                        odd.player_name = odd.selection
+                        odd.ticker_id = ticker_id
+                        odd.ticker = match_event_id[u'marketName'].lower()
+                        odd.datetime_scheduled_off = pd.to_datetime(matchs[ticker_id]['marketStartTime'])
+                        yyyymmdd = odd.datetime_scheduled_off.year * 10000 + odd.datetime_scheduled_off.month * 100 + \
+                                   odd.datetime_scheduled_off.day
+                        odd.datetime = datetime.utcnow()  # utc
+                        odd.match_name = match_event_id['event']['name'].lower()
+                        odd.full_description = odd.match_name + '_' + str(yyyymmdd)
+                        if 'competition' in match_event_id:
+                            odd.competition = match_event_id['competition']['name']
+                            odd.competition_id = match_event_id['competition']['id']
+                        else:
+                            odd.competition = ''
+                            odd.competition_id = 0
 
-                    # if the ticker is over we delete to next_events####
-                    if odd.last_row == 1 and book_event_id['status'] == 'CLOSED':
-                        self.next_events.pop(odd.ticker_id)
+                        odd.status = book_event_id['status'].lower()  # status of ticker
+                        odd.volume_matched = float(book_event_id['totalMatched'])
+                        if odd.ticker == 'moneyline':  # for basket
+                            odd.ticker = 'match odd'
 
-                    # FILL IN odds
-                    odds_back = []
-                    size_back = []
-                    odds_lay = []
-                    size_lay = []
-                    # one or more back data available
-                    if len(runner_info['ex']['availableToBack']) >= 1:
-                        odds_back.append(runner_info['ex']['availableToBack'][0]['price'])
-                        size_back.append(runner_info['ex']['availableToBack'][0]['size'])
-                    # two or more back data available
-                    if len(runner_info['ex']['availableToBack']) >= 2:
-                        odds_back.append(runner_info['ex']['availableToBack'][1]['price'])
-                        size_back.append(runner_info['ex']['availableToBack'][1]['size'])
-                    # three or more back data available
-                    if len(runner_info['ex']['availableToBack']) >= 3:
-                        odds_back.append(runner_info['ex']['availableToBack'][2]['price'])
-                        size_back.append(runner_info['ex']['availableToBack'][2]['size'])
+                        odd.sports_id = int(match_event_id['eventType']['id'])
+                        if 'lastPriceTraded' in runner_info:
+                            odd.odds_last_traded = float(runner_info['lastPriceTraded'])
 
-                    odd.odds_back = odds_back
-                    odd.size_back = size_back
-                    # one or more lay data available
-                    if len(runner_info['ex']['availableToLay']) >= 1:
-                        odds_lay.append(runner_info['ex']['availableToLay'][0]['price'])
-                        size_lay.append(runner_info['ex']['availableToLay'][0]['size'])
-                    # two or more lay data available
-                    if len(runner_info['ex']['availableToLay']) >= 2:
-                        odds_lay.append(runner_info['ex']['availableToLay'][1]['price'])
-                        size_lay.append(runner_info['ex']['availableToLay'][1]['size'])
-                    # three or more lay data available
-                    if len(runner_info['ex']['availableToLay']) >= 3:
-                        odds_lay.append(runner_info['ex']['availableToLay'][2]['price'])
-                        size_lay.append(runner_info['ex']['availableToLay'][2]['size'])
+                        odd.number_of_active_runners = book_event_id['numberOfActiveRunners']
+                        odd.number_of_winners = book_event_id['numberOfWinners']
+                        odd.sortPriority = runner['sortPriority']
+                        odd.status_selection = runner_info['status'].lower()
+                        if 'totalMatched' in runner_info:
+                            odd.volume_matched_selection = float(runner_info['totalMatched'])
 
-                    odd.odds_lay = odds_lay
-                    odd.size_lay = size_lay
-                    # check if the data row is valid
-                    if self._is_valid(odds_back, odds_lay, odd.volume_matched, odd.last_row):
-                        # Find local team and away team
-                        try:
-                            local_team = str(odd.match_name.split(' v ')[0])
-                            if len(odd.match_name.split(' v ')) == 1:
-                                local_team = str(odd.match_name.split(' @ ')[-1])
-                            away_team = str(odd.match_name.split(' v ')[-1])
-                            if len(odd.match_name.split(' v ')) == 1:
-                                away_team = str(odd.match_name.split(' @ ')[0])
-                        except:
-                            local_team = None
-                            away_team = None
-                        odd.local_team = local_team
-                        odd.away_team = away_team
-                        sports_id_event = str(int(odd.sports_id)) + '_' + odd.ticker + '_' + str(odd.selection_id)
-                        odd.unique_id_ticker = sports_id_event + '_' + str(yyyymmdd)
-                        # unique name for ticker and match, for example: albacete vs betis_1_over/under 2.5 goals_202201010820
-                        odd.unique_name = odd.match_name + '_' + odd.unique_id_ticker
-                        odd.datetime_real_off = pd.to_datetime(self._save_dt_actual_off(odd), unit='s')
-                        self.callback_real_time(odd)
+                        # create a unique field for ticker
+                        unico_event_selec = int(ticker_id.replace('.', '')) + int(selection_id)
+                        odd.unique_id_match = float(unico_event_selec * 100000000 + yyyymmdd)
 
+                        # change of selections name in the next cases: 'match odds', 'half time',
+                        # 'moneyline', 'draw no bet'
+                        if odd.ticker in ['match odds', 'half time', 'moneyline', 'draw no bet']:
+                            if i == 0:
+                                odd.selection = 'home'
+                            elif i == 1:
+                                odd.selection = 'away'
+                            elif i == 2:
+                                odd.selection = 'draw'
+                        odd.in_play = in_play
+
+                        # if the ticker is over, we add win_flag and put last_row = 1
+                        if runner_info['status'] == 'LOSER' and book_event_id['status'] == 'CLOSED':
+                            odd.win_flag = 0
+                            odd.last_row = 1
+
+                        elif runner_info['status'] == 'WINNER' \
+                                and book_event_id['status'] == 'CLOSED':
+                            odd.win_flag = 1
+                            odd.last_row = 1
+                        else:
+                            odd.win_flag = 0
+                            odd.last_row = 0
+
+                        # if the ticker is over we delete to next_events####
+                        if odd.last_row == 1 and book_event_id['status'] == 'CLOSED':
+                            list_delete.append(odd.ticker_id)
+
+                        # FILL IN odds
+                        odds_back = []
+                        size_back = []
+                        odds_lay = []
+                        size_lay = []
+                        # one or more back data available
+                        if len(runner_info['ex']['availableToBack']) >= 1:
+                            odds_back.append(runner_info['ex']['availableToBack'][0]['price'])
+                            size_back.append(runner_info['ex']['availableToBack'][0]['size'])
+                        # two or more back data available
+                        if len(runner_info['ex']['availableToBack']) >= 2:
+                            odds_back.append(runner_info['ex']['availableToBack'][1]['price'])
+                            size_back.append(runner_info['ex']['availableToBack'][1]['size'])
+                        # three or more back data available
+                        if len(runner_info['ex']['availableToBack']) >= 3:
+                            odds_back.append(runner_info['ex']['availableToBack'][2]['price'])
+                            size_back.append(runner_info['ex']['availableToBack'][2]['size'])
+
+                        odd.odds_back = odds_back
+                        odd.size_back = size_back
+                        # one or more lay data available
+                        if len(runner_info['ex']['availableToLay']) >= 1:
+                            odds_lay.append(runner_info['ex']['availableToLay'][0]['price'])
+                            size_lay.append(runner_info['ex']['availableToLay'][0]['size'])
+                        # two or more lay data available
+                        if len(runner_info['ex']['availableToLay']) >= 2:
+                            odds_lay.append(runner_info['ex']['availableToLay'][1]['price'])
+                            size_lay.append(runner_info['ex']['availableToLay'][1]['size'])
+                        # three or more lay data available
+                        if len(runner_info['ex']['availableToLay']) >= 3:
+                            odds_lay.append(runner_info['ex']['availableToLay'][2]['price'])
+                            size_lay.append(runner_info['ex']['availableToLay'][2]['size'])
+
+                        odd.odds_lay = odds_lay
+                        odd.size_lay = size_lay
+                        # check if the data row is valid
+                        if self._is_valid(odds_back, odds_lay, odd.volume_matched, odd.last_row):
+                            # Find local team and away team
+                            try:
+                                local_team = str(odd.match_name.split(' v ')[0])
+                                if len(odd.match_name.split(' v ')) == 1:
+                                    local_team = str(odd.match_name.split(' @ ')[-1])
+                                away_team = str(odd.match_name.split(' v ')[-1])
+                                if len(odd.match_name.split(' v ')) == 1:
+                                    away_team = str(odd.match_name.split(' @ ')[0])
+                            except:
+                                local_team = None
+                                away_team = None
+                            odd.local_team = local_team
+                            odd.away_team = away_team
+                            sports_id_event = str(int(odd.sports_id)) + '_' + odd.ticker + '_' + str(odd.selection_id)
+                            odd.unique_id_ticker = sports_id_event + '_' + str(yyyymmdd)
+                            # unique name for ticker and match, for example: albacete vs betis_1_over/under 2.5 goals_202201010820
+                            odd.unique_name = odd.match_name + '_' + odd.unique_id_ticker
+                            odd.datetime_real_off = pd.to_datetime(self._save_dt_actual_off(odd), unit='s')
+                            self.callback_real_time(odd)
+
+        if len(list_delete) > 0:
+            for delete in np.unique(list_delete):
+                self.next_events.pop(delete)
         return in_play
 
 
@@ -685,7 +690,7 @@ def get_realtime_data(settings: dict, callback: callable = _callable) -> None:
             market_books = trading.get_market_books(ticker_ids)
             # get the next data
             if len(market_books) > 0:
-                process_data = trading.processing_data(market_books, next_events)
+                process_data = trading.processing_data(market_books)
                 if process_data:
                     time_books = settings['time_books_play']  # if there are live events
             sum_seg += time_books

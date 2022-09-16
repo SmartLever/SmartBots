@@ -5,17 +5,22 @@
     datetime objet do not have timezone information.
 
 """
-from dataclasses import dataclass
-from dataclasses_json import dataclass_json
+from dataclasses import dataclass, field
+from dataclasses_json import dataclass_json, config
 import datetime as dt
-from typing import List, Dict, Any, Optional, Union
+from datetime import datetime
+from typing import List, Dict, Any
+
+dataclass_json_config = config(
+            decoder=datetime.utcfromtimestamp,
+        )
 
 @dataclass_json
 @dataclass
 class Base:
     """ Base class for events """
     event_type: str = 'base'
-    datetime: dt.datetime = None
+    datetime: dt.datetime = field(default=None, metadata=dataclass_json_config)
     dtime_zone: str = 'UTC'
     ticker: str = None
 
@@ -24,7 +29,7 @@ class Base:
 class Tick(Base):
     """ Tick event, generic case for data events """
     event_type: str = 'tick'
-    tick_type: str = None # closed_day, ask, bid, etc.
+    tick_type: str = None  # closed_day, ask, bid, etc.
     price: float = None
     msg:  Dict[str, Any] = None
     description: str = None
@@ -35,10 +40,10 @@ class Petition(Base):
     """ Petition for getting data from a data source from running processes """
     event_type: str = 'petition'
     ticker: str = 'petition'
-    function_to_run: str = None # petition of function to run for the petition
-    parameters: Dict[str, Any] = None # parameters for the function to run
-    path_to_saving: str = 'petitions' # path to saving the data
-    name_to_saving: str = 'default' # name of the key to save the data
+    function_to_run: str = None  # petition of function to run for the petition
+    parameters: Dict[str, Any] = None  # parameters for the function to run
+    path_to_saving: str = 'petitions'  # path to saving the data
+    name_to_saving: str = 'default'  # name of the key to save the data
 
 @dataclass_json
 @dataclass
@@ -46,8 +51,8 @@ class Health(Base):
     """ Health event for getting if the process ir running """
     event_type: str = 'health'
     ticker: str = 'Health_Process' # process for controling
-    state: int = 1 # 0 not_working and 1 working
-    description: str = '' # description in case is not working, could be a exception
+    state: int = 1  # 0 not_working and 1 working
+    description: str = ''  # description in case is not working, could be a exception
 
 
 ####Financial and crypto events##################################################################
@@ -57,23 +62,23 @@ class Order(Base):
     """ Event from Portfolio of Strategies to Exchange or Broker for execution """
     event_type: str = 'order'
     contract: str = None
-    action: str = None # buy or sell
+    action: str = None  # buy or sell
     price: float = None
-    type: str = None # market or limit
-    quantity: float = None #quantity of contracts, amount always positive.
-    quantity_execute: float = None #quantity of contracts executed, amount always positive.
-    quantity_left: float = None #quantity of contracts left to execute, amount always positive.
-    filled_price: float = None #price of executed contracts
-    commission_fee: float = None #commission fee for executed contracts
-    fee_currency: str = None #currency of commission fee
-    status: str = None #status of order, open, closed, cancelled
+    type: str = None  # market or limit
+    quantity: float = None  # quantity of contracts, amount always positive.
+    quantity_execute: float = None  # quantity of contracts executed, amount always positive.
+    quantity_left: float = None  # quantity of contracts left to execute, amount always positive.
+    filled_price: float = None  # price of executed contracts
+    commission_fee: float = None  # commission fee for executed contracts
+    fee_currency: str = None  # currency of commission fee
+    status: str = None  # status of order, open, closed, cancelled
     exchange: str = None
     order_id_sender: str = None
     order_id_receiver: str = None
-    datetime_in: dt.datetime = None # datetime when in broker or exchange enters the order
-    sender_id: int = None # id of sender, strategies id
-    portfolio_name: str = None # name of portfolio
-    error_description: str = None # error description if error
+    datetime_in: dt.datetime = field(default=None, metadata=dataclass_json_config)
+    sender_id: int = None  # id of sender, strategies id
+    portfolio_name: str = None  # name of portfolio
+    error_description: str = None  # error description if error
 
 @dataclass_json
 @dataclass
@@ -106,9 +111,9 @@ class Odds(Base):
     For maintening ticker as main conductor as in Finance and Crypto, ticker here is equal to event type.
     """
     event_type: str = 'odds'
-    datetime_real_off: dt.datetime = None  # real time of the event
-    datetime_scheduled_off: dt.datetime = None  # scheduled time of the event
-    datatime_latest_taken: dt.datetime = None  # real time from betfair where the bets was matched
+    datetime_real_off: dt.datetime = field(default=None, metadata=dataclass_json_config)  # real time of the event
+    datetime_scheduled_off: dt.datetime = field(default=None, metadata=dataclass_json_config)  # scheduled time of the event
+    datatime_latest_taken: dt.datetime = field(default=None, metadata=dataclass_json_config)  # real time from betfair where the bets was matched
     unique_name: str = None  # unique for ticker and match, for example: albacete vs betis_1_over/under 2.5 goals_202201010820
     unique_id_match: str = None  # unique id for the match
     unique_id_ticker: str = None  # unique id for the event

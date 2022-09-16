@@ -17,35 +17,38 @@ def main(_name_library='events_keeper') -> None:
             return f'{event.ticker}_{event.datetime}_{event.event_type}_{saved_variable["events"]}'
         elif event.event_type == 'order':
             return event.order_id_sender
-        elif event.event_type == 'health': #always the same for service
+        elif event.event_type == 'health':  # always the same for service
             return f'{event.ticker}_{event.event_type}'
+        elif event.event_type == 'odds':
+            return f'{event.unique_name}_{event.datetime}_{saved_variable["events"]}'
+        elif event.event_type == 'bet':
+            return f'{event.unique_name}_{event.bet_id}'
         else:
             print(f'Event type {event.event_type}  saving as default')
             return f'{event.ticker}_{event.datetime}_{event.event_type}_{saved_variable["events"]}'
-
 
     def callback(event : dataclasses.dataclass) -> None:
         """Callback for saving events to DataBase"""
         saved_variable['events'] += 1
         ticker = event.ticker
         unique = get_unique(event)
+
         saved_variable['lib'].write(unique, event, metadata={'datetime': event.datetime,
-                                           'event_type':event.event_type, 'ticker': ticker})
+                                    'event_type':event.event_type, 'ticker': ticker})
         print(f'Event saved {event.event_type} {event.datetime}', )
 
-        name = f'{_name_library}_{event.datetime.strftime("%Y%m%d %H%M")}'
+        name = f'{_name_library}_{event.datetime.strftime("%Y%m%d")}'
         if name != saved_variable['name']:
             saved_variable['lib'] = store.get_library(name)
             saved_variable['name'] = name
             print('New library created', name)
-
 
     # variable
     saved_variable = {'events': 0}
     # Create connection  to DataBase
     store = Universe()
     # Create library for saving events
-    name = f'{_name_library}_{dt.datetime.utcnow().strftime("%Y%m%d %H%M")}'
+    name = f'{_name_library}_{dt.datetime.utcnow().strftime("%Y%m%d")}'
     saved_variable['lib'] = store.get_library(name)
     saved_variable['name'] = name
 
