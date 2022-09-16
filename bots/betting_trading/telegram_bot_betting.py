@@ -41,7 +41,6 @@ def start(update, context):
           'Available commands are: \n' + \
           '/start Start Bot.\n' + \
           '/mi_id Get Telegram ID\n' + \
-          '/positions Get Current Bets\n' + \
           '/status State of the Services. \n' + \
           '/balance Get Wallet Balance'
 
