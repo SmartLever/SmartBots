@@ -1,5 +1,5 @@
 from smartbots.crypto.strategies.basic_strategy import Basic_Strategy, dataclass
-
+from smartbots.indicators.simple_average import Simple_Average
 
 class Simple_Avg_Cross(Basic_Strategy):
     """ Strategy Simple_Avg_Cross  using  Basic_Strategy as base class
@@ -22,8 +22,8 @@ class Simple_Avg_Cross(Basic_Strategy):
 
     def __init__(self, params, id_strategy=None, callback=None, set_basic=False):
         super().__init__(params, id_strategy, callback, set_basic)
-        self.short_period = params['short_period']
-        self.long_period = params['long_period']
+        self.short_period = Simple_Average(self.parameters['short_period'])
+        self.long_period = Simple_Average(self.parameters['long_period'])
         self.short_avg_value = None
         self.long_avg_value = None
         self.saves_values = {'datetime':[],'short_avg_value':[], 'long_avg_value':[], 'position':[], 'close':[]}
@@ -32,9 +32,9 @@ class Simple_Avg_Cross(Basic_Strategy):
         """ Logic of the Strategy goes here """
         if event.event_type == 'bar' and self.inicial_values: # logic with OHLC bars
             # Calculate short average
-            self.short_avg_value = (self.short_avg_value * (self.short_period - 1) + event.close) / self.short_period
+            self.short_avg_value = self.short_period.add(event.close)
             # Calculate long average
-            self.long_avg_value = (self.long_avg_value * (self.long_period - 1) + event.close) / self.long_period
+            self.long_avg_value = self.long_period.add(event.close)
             # Send order if cross average
             if self.short_avg_value > self.long_avg_value and self.position <= 0:
                 self.send_order(ticker=event.ticker, price=event.close, quantity=self.parameters['quantity'],
@@ -55,8 +55,8 @@ class Simple_Avg_Cross(Basic_Strategy):
 
         elif event.event_type == 'bar' and self.inicial_values is False:
             # Calculate initial values
-            self.short_avg_value = event.close
-            self.long_avg_value = event.close
+            self.short_avg_value = self.short_period.set_initial_value(event.close)
+            self.long_avg_value = self.long_period.set_initial_value(event.close)
             self.inicial_values = True
 
         elif event.event_type == 'tick' and event.tick_type == 'close_day' and self.inicial_values:
