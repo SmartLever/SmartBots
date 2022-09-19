@@ -50,6 +50,19 @@ services:
       - smartbots_networks
     command: python -u ./bots/crypto_trading/broker_kucoin.py
 
+  telegram_crypto1:
+    build:
+      context: .
+      dockerfile: smartbot-python.dockerfile
+    hostname: telegram_crypto1
+    volumes:
+      - ..:/app
+    networks:
+      - smartbots_networks
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    command: python -u ./bots/crypto_trading/telegram_bot_crypto.py
+
 networks:
   smartbots_networks:
     ipam:

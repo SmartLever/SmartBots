@@ -71,7 +71,7 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
     emit = Emit_Events()
     #
     health_handler = Health_Handler(n_check=10,
-                                    name_service=os.path.basename(__file__))
+                                    name_service=os.path.basename(__file__).split('.')[0])
 
     while True:
         schedule.run_pending()
