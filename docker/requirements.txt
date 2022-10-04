@@ -164,3 +164,4 @@ widgetsnbextension==4.0.3
 yarl==1.8.1
 yfinance==0.1.74
 zipp==3.8.1
+zmq

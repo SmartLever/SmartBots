@@ -2,6 +2,9 @@ from smartbots.database_handler import Universe
 import pandas as pd
 import datetime as dt
 from datetime import timedelta
+import warnings
+import numpy as np
+warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
 """Script to update historical betfair"""
 

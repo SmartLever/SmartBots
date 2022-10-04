@@ -107,7 +107,7 @@ class Portfolio_Constructor(object):
     def run_simulation(self):
         """ Run Backtest portfolio"""
         self.in_real_time = False
-        if self.asset_type == 'crypto':
+        if self.asset_type in ['crypto', 'financial']:
             for event in data_reader.load_tickers_and_create_events(self.data_sources,
                                                                     start_date=self.start_date, end_date=self.end_date):
                 self._callback_datafeed(event)
@@ -123,25 +123,26 @@ class Portfolio_Constructor(object):
     def process_petitions(self, event: dataclass):
         """ Recieve a event peticion and get the data from the data source and save it in the DataBase"""
         if event.event_type == 'petition':
-            data_to_save = None
-            print(f'Petition {event}')
-            if event.function_to_run == 'get_saved_values_strategy':
-                data_to_save = self.get_saved_values_strategy()
-            elif event.function_to_run == 'get_saved_values_strategies_last':
-                data_to_save = self.get_saved_values_strategies_last()
-            if data_to_save is not None:
-                name_library = event.path_to_saving
-                name = event.name_to_saving
-                store = Universe()
-                lib = store.get_library(name_library)
-                lib.write(name, data_to_save)
-                print(f'Save {name} in {name_library}.')
+            if event.name_portfolio == self.name:
+                data_to_save = None
+                print(f'Petition {event}')
+                if event.function_to_run == 'get_saved_values_strategy':
+                    data_to_save = self.get_saved_values_strategy()
+                elif event.function_to_run == 'get_saved_values_strategies_last':
+                    data_to_save = self.get_saved_values_strategies_last()
+                if data_to_save is not None:
+                    name_library = event.path_to_saving
+                    name = event.name_to_saving
+                    store = Universe()
+                    lib = store.get_library(name_library)
+                    lib.write(name, data_to_save)
+                    print(f'Save {name} in {name_library}.')
 
     def run_realtime(self):
         self.print_events_realtime = True
         self.in_real_time = True
         print('running real  of the Portfolio, waitig Events')
-        if self.asset_type == 'crypto':
+        if self.asset_type in ['crypto', 'financial']:
             receive_events(routing_key='bar,petition', callback=self._callback_datafeed)
         elif self.asset_type == 'betting':
             receive_events(routing_key='odds,petition', callback=self._callback_datafeed_betting)
@@ -162,6 +163,11 @@ class Portfolio_Constructor(object):
             if self.in_real_time and self.send_orders_to_broker:
                 print(order_or_bet)
                 self.emit_orders.publish_event('bet', order_or_bet)
+        elif self.asset_type == 'financial':
+            self.orders.append(order_or_bet) # append the order to the list of orders
+            if self.in_real_time and self.send_orders_to_broker:
+                print(order_or_bet)
+                self.emit_orders.publish_event('financial_order', order_or_bet)
         elif self.send_orders_to_broker:
             raise ValueError(f'Asset type {self.asset_type} not supported')
 

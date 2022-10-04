@@ -5,9 +5,9 @@
     2) Test the performance of a strategy with a portfolio.
     3) Run in real time.
 
-    Here the configuration is done in the config_betting.yaml file.
+    Here the configuration is done in the config_crypto.yaml file.
     The configuration is done in the following way:
-    1) The configuration is read from the config_betting.yaml file.
+    1) The configuration is read from the config_crypto.yaml file.
     2) The configuration is validated.
     3) The configuration is used to create the portfolio.
     4) The configuration is used to connect to the data source, run the simulation and run in real time

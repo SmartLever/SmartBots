@@ -7,7 +7,7 @@ from smartbots import conf
 import json
 import logging
 from smartbots.decorators import log_start_end, check_api_key
-from smartbots.events import Bar, Order, Petition, Health, Tick, Odds, Bet
+from smartbots.events import Bar, Order, Petition, Health, Tick, Odds, Bet, Positions
 from dataclasses import dataclass
 import datetime as dt
 import pytz
@@ -15,7 +15,8 @@ import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 events_type = {'bar': Bar, 'order': Order, 'petition': Petition,
-               'health':Health,'tick': Tick, 'odds': Odds, 'bet': Bet}  #define types of events
+               'health': Health, 'tick': Tick, 'odds': Odds, 'bet': Bet,
+               'financial_order': Order, 'positions': Positions, 'order_status': Order}  #define types of events
 
 
 logger = logging.getLogger(__name__)

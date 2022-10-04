@@ -44,6 +44,7 @@ class Petition(Base):
     parameters: Dict[str, Any] = None  # parameters for the function to run
     path_to_saving: str = 'petitions'  # path to saving the data
     name_to_saving: str = 'default'  # name of the key to save the data
+    name_portfolio: str = None
 
 @dataclass_json
 @dataclass
@@ -53,6 +54,15 @@ class Health(Base):
     ticker: str = 'Health_Process' # process for controling
     state: int = 1  # 0 not_working and 1 working
     description: str = ''  # description in case is not working, could be a exception
+
+@dataclass_json
+@dataclass
+class Positions(Base):
+    """ Real Positions """
+    event_type: str = 'positions'
+    ticker: str = 'Real_positions'
+    positions: Dict[str, Any] = None
+    account: str = ''  # name of account
 
 
 ####Financial and crypto events##################################################################
@@ -79,6 +89,7 @@ class Order(Base):
     sender_id: int = None  # id of sender, strategies id
     portfolio_name: str = None  # name of portfolio
     error_description: str = None  # error description if error
+    action_mt4: str = None  # close_trade, close_partial, normal
 
 @dataclass_json
 @dataclass

@@ -10,7 +10,7 @@ services:
       dockerfile:  smartbot-python.dockerfile
     hostname: provider_betting
     volumes:
-      - ..:/app
+      - .:/app
     networks:
       - smartbots_networks
     environment:
@@ -23,7 +23,7 @@ services:
       dockerfile: smartbot-python.dockerfile
     hostname: bot_betting_trading
     volumes:
-      - ..:/app
+      - .:/app
     networks:
       - smartbots_networks
     environment:
@@ -36,7 +36,7 @@ services:
       dockerfile: smartbot-python.dockerfile
     hostname: broker_betting
     volumes:
-      - ..:/app
+      - .:/app
 
     networks:
       - smartbots_networks
@@ -50,7 +50,7 @@ services:
       dockerfile: smartbot-python.dockerfile
     hostname:   telegram_betting
     volumes:
-      - ..:/app
+      - .:/app
 
     networks:
       - smartbots_networks

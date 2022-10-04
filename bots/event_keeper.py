@@ -19,6 +19,8 @@ def main(_name_library='events_keeper') -> None:
             return event.order_id_sender
         elif event.event_type == 'health':  # always the same for service
             return f'{event.ticker}_{event.event_type}'
+        elif event.event_type == 'positions':  # always the same for account
+            return f'{event.account}'
         elif event.event_type == 'odds':
             return f'{event.unique_name}_{event.datetime}_{saved_variable["events"]}'
         elif event.event_type == 'bet':
@@ -32,9 +34,13 @@ def main(_name_library='events_keeper') -> None:
         saved_variable['events'] += 1
         ticker = event.ticker
         unique = get_unique(event)
+        # check if a string is in ASCII
+        if unique.isascii() is False:
+            unique = unique.encode('ascii', 'ignore').decode('ascii')
 
         saved_variable['lib'].write(unique, event, metadata={'datetime': event.datetime,
-                                    'event_type':event.event_type, 'ticker': ticker})
+                                    'event_type': event.event_type, 'ticker': ticker})
+
         print(f'Event saved {event.event_type} {event.datetime}', )
 
         name = f'{_name_library}_{event.datetime.strftime("%Y%m%d")}'

@@ -1,0 +1,35 @@
+---
+Name: PortfolioForex1
+Data_Sources:
+  - ticker: AUDNZD
+    event_type: bar
+    historical_source: mongoDB
+    historical_library: darwinex_historical_1min
+
+  - ticker: EURJPY
+    event_type: bar
+    historical_source: mongoDB
+    historical_library: darwinex_historical_1min
+
+Strategies:
+  - id: 1
+    strategy: Simple_Avg_Cross
+    params:
+      ticker: AUDNZD
+      short_period: 10
+      long_period: 500
+      quantity: 0.01
+      limit_save_values: 1000
+      point_value: 1
+      slippage: 0
+
+  - id: 2
+    strategy: Simple_Avg_Cross
+    params:
+      ticker: EURJPY
+      short_period: 10
+      long_period: 500
+      quantity: 0.01
+      limit_save_values: 1000
+      point_value: 1
+      slippage: 0

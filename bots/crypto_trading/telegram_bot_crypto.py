@@ -204,15 +204,22 @@ def callback_control():
                 lib_keeper = store.get_library(name_library)
                 for service_name in list_services:
                     # check if the service is running
-                    data = lib_keeper.read(service_name).data
+                    try:
+                        data = lib_keeper.read(service_name).data
+                    except:
+                        # not exist this service name in the DB
+                        for user in LIST_OF_ADMINS:
+                            # send alert
+                            msg = 'ALERT, THIS SERVICE IS NOT WORKING: ' + str(service_name.replace('_health', ''))
+                            updater.bot.send_message(text=msg, chat_id=user)
                     datetime_service = data.datetime
                     # compare datetime_service with datetime current, if the difference is greater than 15 minutes, send alert
                     diff_minutes = abs((_time-datetime_service).seconds / 60)
                     if diff_minutes >= 15:
                         # send alert
                         for user in LIST_OF_ADMINS:
-                            msg = '*ALERT*, THIS SERVICE IS NOT WORKING: ' + str(service_name.replace('_health', ''))
-                            updater.bot.send_message(text=msg, chat_id=user, parse_mode=ParseMode.MARKDOWN)
+                            msg = 'ALERT, THIS SERVICE IS NOT WORKING: ' + str(service_name.replace('_health', ''))
+                            updater.bot.send_message(text=msg, chat_id=user)
 
             except Exception as ex:
                 print(ex)
