@@ -53,6 +53,19 @@ Lets see how it works.
       cd docker/
       docker compose -f docker-compose_crypto.yml --env-file ./compose.env up -d
       ```
+      
+## More than 115 exchages implemented for Crypto.
+   Smartbots follows the implementation of ccxt, so you can use all the exchanges that ccxt supports.
+   Please, go to https://github.com/ccxt/ccxt/wiki/Manual#markets 
+   Some of the exchanges that are implemented are more than 115 exchanges.
+   * Binance
+   * Bitmex
+   * Bitfinex
+   * Bittrex
+   * Coinbase
+   * Coinbase Pro
+   .... and more.
+
 ## Basktesting a simple strategy in Crypto
 
 ## Updating the code of the repository changing local files
