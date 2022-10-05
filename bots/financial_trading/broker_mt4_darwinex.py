@@ -97,7 +97,7 @@ def main(send_orders_status=True):
                                     name_service='mt4_darwinex')
 
     # Create trading object
-    trading = Trading(send_orders_status=send_orders_status)
+    trading = Trading(send_orders_status=send_orders_status, type_service='broker')
     check_balance()
     # Launch thread to saving health and saving positions
     x = threading.Thread(target=_schedule)

@@ -29,11 +29,9 @@ async def _callable(data: Dict) -> None:
         "DARWINEX_HOST",
         "CLIENT_IF",
         "PUSH_PORT",
-        "PULL_PORT",
-        "SUB_PORT",
     ]
 )
-def get_client():
+def get_client(conf_port):
     """Get MT4 Darwinex client.
 
     Returns
@@ -41,11 +39,11 @@ def get_client():
     Client
         MT4 client.
     """
-    client = MTZeroMQConnector(host=conf.DARWINEX_HOST,
-                               client_id=conf.CLIENT_IF,
-                               push_port=conf.PUSH_PORT,
-                               pull_port=conf.PULL_PORT,
-                               sub_port=conf.SUB_PORT)
+    client = MTZeroMQConnector(host=conf_port['DARWINEX_HOST'],
+                               client_id=conf_port['CLIENT_IF'],
+                               push_port=conf_port['PUSH_PORT'],
+                               pull_port=conf_port['PULL_PORT'],
+                               sub_port=conf_port['SUB_PORT'])
 
     return client
 
@@ -59,10 +57,22 @@ class Trading(object):
         Darwinex client.
     """
 
-    def __init__(self, send_orders_status: bool = True, name='mt4_darwinex') -> None:
+    def __init__(self, send_orders_status: bool = True, name='mt4_darwinex', type_service='broker') -> None:
         """Initialize class."""
         self.name = name
-        self.client = get_client()
+        if type_service == 'broker':
+            config_port = {'DARWINEX_HOST': conf.DARWINEX_HOST,
+                           'CLIENT_IF': conf.CLIENT_IF,
+                           'PUSH_PORT':  conf.PUSH_PORT,
+                           'PULL_PORT': conf.PULL_PORT_BROKER,
+                           'SUB_PORT': conf.SUB_PORT_BROKER}
+        elif type_service == 'provider':
+            config_port = {'DARWINEX_HOST': conf.DARWINEX_HOST,
+                           'CLIENT_IF': conf.CLIENT_IF,
+                           'PUSH_PORT': conf.PUSH_PORT,
+                           'PULL_PORT': conf.PULL_PORT_PROVIDER,
+                           'SUB_PORT': conf.SUB_PORT_PROVIDER}
+        self.client = get_client(config_port)
         self._open = True
         self.sleep = None
         self.cola_thread = []
@@ -435,10 +445,5 @@ def get_realtime_data(settings: dict = {'symbols': List[str]}, callback: callabl
     """
 
     symbols = settings['symbols']
-    config_port = {'DARWINEX_HOST': conf.DARWINEX_HOST,
-                   'CLIENT_IF': conf.CLIENT_IF,
-                   'PUSH_PORT':  conf.PUSH_PORT,
-                   'PULL_PORT': conf.PULL_PORT_PROVIDER,
-                   'SUB_PORT': conf.SUB_PORT_PROVIDER}
-    trading = Trading(config_port=config_port)
+    trading = Trading(type_service='provider')
     trading.get_stream_quotes_changes(symbols, callback)
