@@ -3,37 +3,36 @@ from time import sleep
 from datetime import datetime
 from threading import Thread
 
-
 class MTZeroMQConnector():
     """
     Setup ZeroMQ -> MetaTrader Connector
     """
 
     def __init__(self,
-                 _ClientID='DLabs_Python',  # Unique ID for this client
-                 _host='localhost',  # Host to connect to
-                 _protocol='tcp',  # Connection protocol
-                 _PUSH_PORT=32768,  # Port for Sending commands
-                 _PULL_PORT=32769,  # Port for Receiving responses
-                 _SUB_PORT=32770,  # Port for Subscribing for prices
-                 _delimiter=';',
-                 _market_data_callback=None,  # Callback for Market data
-                 _verbose=False):  # String delimiter
+                 client_id='DLabs_Python',  # Unique ID for this client
+                 host='localhost',  # Host to connect to
+                 protocol='tcp',  # Connection protocol
+                 push_port=32768,  # Port for Sending commands
+                 pull_port=32769,  # Port for Receiving responses
+                 sub_port=32770,  # Port for Subscribing for prices
+                 delimiter=';',
+                 market_data_callback=None,  # Callback for Market data
+                 verbose=False):  # String delimiter
 
         # Strategy Status (if this is False, ZeroMQ will not listen for data)
         self._ACTIVE = True
 
         # Client ID
-        self._ClientID = _ClientID
+        self._ClientID = client_id
 
         # ZeroMQ Host
-        self._host = _host
+        self._host = host
 
         # Connection Protocol
-        self._protocol = _protocol
+        self._protocol = protocol
 
         # Market data callback
-        self._market_data_callback = _market_data_callback
+        self._market_data_callback = market_data_callback
 
         # ZeroMQ Context
         self._ZMQ_CONTEXT = zmq.Context()
@@ -42,9 +41,9 @@ class MTZeroMQConnector():
         self._URL = self._protocol + "://" + self._host + ":"
 
         # Ports for PUSH, PULL and SUB sockets respectively
-        self._PUSH_PORT = _PUSH_PORT
-        self._PULL_PORT = _PULL_PORT
-        self._SUB_PORT = _SUB_PORT
+        self._PUSH_PORT = push_port
+        self._PULL_PORT = pull_port
+        self._SUB_PORT = sub_port
 
         # Create Sockets
         self._PUSH_SOCKET = self._ZMQ_CONTEXT.socket(zmq.PUSH)
@@ -72,7 +71,7 @@ class MTZeroMQConnector():
         self._poller.register(self._SUB_SOCKET, zmq.POLLIN)
 
         # Start listening for responses to commands and new market data
-        self._string_delimiter = _delimiter
+        self._string_delimiter = delimiter
 
         # BID/ASK Market Data Subscription Threads ({SYMBOL: Thread})
         self._MarketData_Thread = None
@@ -94,7 +93,7 @@ class MTZeroMQConnector():
         self._thread_data_output = None
 
         # Verbosity
-        self._verbose = _verbose
+        self._verbose = verbose
 
     ##########################################################################
 

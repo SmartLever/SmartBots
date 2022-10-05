@@ -95,14 +95,9 @@ def main(send_orders_status=True):
     # Log event health of the service
     health_handler = Health_Handler(n_check=4,
                                     name_service='mt4_darwinex')
-    # Config MT4 ports
-    config_port = {'DARWINEX_HOST': conf.DARWINEX_HOST,
-                   'CLIENT_IF': conf.CLIENT_IF,
-                   'PUSH_PORT':  conf.PUSH_PORT,
-                   'PULL_PORT': conf.PULL_PORT_BROKER,
-                   'SUB_PORT': conf.SUB_PORT_BROKER}
+
     # Create trading object
-    trading = Trading(send_orders_status=send_orders_status, config_port=config_port)
+    trading = Trading(send_orders_status=send_orders_status, type_service='broker')
     check_balance()
     # Launch thread to saving health and saving positions
     x = threading.Thread(target=_schedule)

@@ -6,8 +6,7 @@ from smartbots import conf
 import time
 import datetime as dt
 from smartbots.brokerMQ import Emit_Events
-from smartbots.decorators import log_start_end
-
+from smartbots.decorators import log_start_end, check_api_key
 from smartbots.financial.mt4_connector.mt_zeromq_connector import MTZeroMQConnector
 from time import sleep
 
@@ -25,8 +24,14 @@ async def _callable(data: Dict) -> None:
     """
     print(data)
 
-
-def get_client(config_port: dict):
+@check_api_key(
+    [
+        "DARWINEX_HOST",
+        "CLIENT_IF",
+        "PUSH_PORT",
+    ]
+)
+def get_client(conf_port):
     """Get MT4 Darwinex client.
 
     Returns
@@ -34,18 +39,11 @@ def get_client(config_port: dict):
     Client
         MT4 client.
     """
-    try:
-        if config_port is not None:
-            client = MTZeroMQConnector(_host=config_port['DARWINEX_HOST'],
-                                       _ClientID=config_port['CLIENT_IF'],
-                                       _PUSH_PORT=config_port['PUSH_PORT'],
-                                       _PULL_PORT=config_port['PULL_PORT'],
-                                       _SUB_PORT=config_port['SUB_PORT'])
-        else:
-            client = MTZeroMQConnector()
-
-    except Exception as ex:
-        print(ex)
+    client = MTZeroMQConnector(host=conf_port['DARWINEX_HOST'],
+                               client_id=conf_port['CLIENT_IF'],
+                               push_port=conf_port['PUSH_PORT'],
+                               pull_port=conf_port['PULL_PORT'],
+                               sub_port=conf_port['SUB_PORT'])
 
     return client
 
@@ -59,9 +57,21 @@ class Trading(object):
         Darwinex client.
     """
 
-    def __init__(self, send_orders_status: bool = True, name='mt4_darwinex', config_port: dict = None) -> None:
+    def __init__(self, send_orders_status: bool = True, name='mt4_darwinex', type_service='broker') -> None:
         """Initialize class."""
         self.name = name
+        if type_service == 'broker':
+            config_port = {'DARWINEX_HOST': conf.DARWINEX_HOST,
+                           'CLIENT_IF': conf.CLIENT_IF,
+                           'PUSH_PORT':  conf.PUSH_PORT,
+                           'PULL_PORT': conf.PULL_PORT_BROKER,
+                           'SUB_PORT': conf.SUB_PORT_BROKER}
+        elif type_service == 'provider':
+            config_port = {'DARWINEX_HOST': conf.DARWINEX_HOST,
+                           'CLIENT_IF': conf.CLIENT_IF,
+                           'PUSH_PORT': conf.PUSH_PORT,
+                           'PULL_PORT': conf.PULL_PORT_PROVIDER,
+                           'SUB_PORT': conf.SUB_PORT_PROVIDER}
         self.client = get_client(config_port)
         self._open = True
         self.sleep = None
@@ -435,10 +445,5 @@ def get_realtime_data(settings: dict = {'symbols': List[str]}, callback: callabl
     """
 
     symbols = settings['symbols']
-    config_port = {'DARWINEX_HOST': conf.DARWINEX_HOST,
-                   'CLIENT_IF': conf.CLIENT_IF,
-                   'PUSH_PORT':  conf.PUSH_PORT,
-                   'PULL_PORT': conf.PULL_PORT_PROVIDER,
-                   'SUB_PORT': conf.SUB_PORT_PROVIDER}
-    trading = Trading(config_port=config_port)
+    trading = Trading(type_service='provider')
     trading.get_stream_quotes_changes(symbols, callback)
