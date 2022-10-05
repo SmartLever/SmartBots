@@ -6,8 +6,7 @@ from smartbots import conf
 import time
 import datetime as dt
 from smartbots.brokerMQ import Emit_Events
-from smartbots.decorators import log_start_end
-
+from smartbots.decorators import log_start_end, check_api_key
 from smartbots.financial.mt4_connector.mt_zeromq_connector import MTZeroMQConnector
 from time import sleep
 
@@ -25,8 +24,16 @@ async def _callable(data: Dict) -> None:
     """
     print(data)
 
-
-def get_client(config_port: dict):
+@check_api_key(
+    [
+        "DARWINEX_HOST",
+        "CLIENT_IF",
+        "PUSH_PORT",
+        "PULL_PORT",
+        "SUB_PORT",
+    ]
+)
+def get_client():
     """Get MT4 Darwinex client.
 
     Returns
@@ -34,18 +41,11 @@ def get_client(config_port: dict):
     Client
         MT4 client.
     """
-    try:
-        if config_port is not None:
-            client = MTZeroMQConnector(_host=config_port['DARWINEX_HOST'],
-                                       _ClientID=config_port['CLIENT_IF'],
-                                       _PUSH_PORT=config_port['PUSH_PORT'],
-                                       _PULL_PORT=config_port['PULL_PORT'],
-                                       _SUB_PORT=config_port['SUB_PORT'])
-        else:
-            client = MTZeroMQConnector()
-
-    except Exception as ex:
-        print(ex)
+    client = MTZeroMQConnector(host=conf.DARWINEX_HOST,
+                               client_id=conf.CLIENT_IF,
+                               push_port=conf.PUSH_PORT,
+                               pull_port=conf.PULL_PORT,
+                               sub_port=conf.SUB_PORT)
 
     return client
 
@@ -59,10 +59,10 @@ class Trading(object):
         Darwinex client.
     """
 
-    def __init__(self, send_orders_status: bool = True, name='mt4_darwinex', config_port: dict = None) -> None:
+    def __init__(self, send_orders_status: bool = True, name='mt4_darwinex') -> None:
         """Initialize class."""
         self.name = name
-        self.client = get_client(config_port)
+        self.client = get_client()
         self._open = True
         self.sleep = None
         self.cola_thread = []
