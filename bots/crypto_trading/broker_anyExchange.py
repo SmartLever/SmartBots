@@ -17,7 +17,7 @@ def main(send_orders_status=True, exchange='kucoin'):
 
     def check_balance() -> None:
         try:
-            balance = trading.get_total_balance('USD')
+            balance = trading.get_total_balance_usd()
             print(f'Balance {balance} {dt.datetime.utcnow()}')
             health_handler.check()
         except Exception as e:
@@ -60,5 +60,5 @@ def main(send_orders_status=True, exchange='kucoin'):
 
 
 if __name__ == '__main__':
-    exchange = 'kucoin'
+    exchange = 'kucoin' # set your exchange
     main(exchange =exchange)

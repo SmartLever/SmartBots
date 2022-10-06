@@ -72,7 +72,7 @@ def _get_historical_data_test_files_betfair():
                                volume_matched=tp.volume_matched, win_flag=tp.win_flag))
 
         df_save = pd.DataFrame({'odds': events}, index=df.index)
-        df_save.index.name = 'date'
+        df_save.index.exchange = 'date'
         data[unique_name] = df_save
     return data
 
@@ -85,7 +85,7 @@ def save_historical(symbol_data: Dict = {}, name_library: str = 'provider_histor
     lib = store.get_library(name_library)
 
     for symbol, data in symbol_data.items():
-        data.index.name = 'date'
+        data.index.exchange = 'date'
         ticker = str(data['odds'].iloc[0].ticker)
         dtime = data['odds'].iloc[0].datetime_scheduled_off  # to_pydatetime()
         selection = str(data['odds'].iloc[0].selection)

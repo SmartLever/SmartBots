@@ -6,7 +6,7 @@ services:
     build:
       context: ../..
       dockerfile:  smartbot-python.dockerfile
-    hostname: kukoin_provider
+    hostname: exchange_provider
     volumes:
       - ..:/app
     depends_on:
@@ -16,7 +16,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./bots/crypto_trading/data_realtime_provider_kucoin.py
+    command: python -u ./bots/crypto_trading/data_realtime_provider_exchange.py
 
   bot_crypto_trading1:
     build:
@@ -48,7 +48,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./bots/crypto_trading/broker_kucoin.py
+    command: python -u ./bots/crypto_trading/broker_anyExchange.py
 
   telegram_crypto1:
     build:

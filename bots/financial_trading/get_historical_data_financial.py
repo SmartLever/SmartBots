@@ -30,7 +30,7 @@ def _get_historical_data():
                           volume=tp.volume, exchange='mt4_darwinex', provider='mt4_darwinex', freq='1min'))
 
         df_save = pd.DataFrame({'bar': events}, index=df.index)
-        df_save.index.name = 'date'
+        df_save.index.exchange = 'date'
         data[unique_name] = df_save
     return data
 

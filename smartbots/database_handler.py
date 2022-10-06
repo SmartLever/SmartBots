@@ -6,6 +6,7 @@ More info hear: https://arctic.readthedocs.io/en/latest/index.html
 import logging
 from arctic import Arctic
 from arctic import TICK_STORE
+from arctic import CHUNK_STORE
 from smartbots import conf
 from smartbots.decorators import log_start_end, check_api_key
 
@@ -30,7 +31,7 @@ class Universe():
     def __init__(self):
         self.client = get_client()
 
-    def get_library(self, name_library):
+    def get_library(self, name_library, type_library=CHUNK_STORE):
         if not self.client.library_exists(name_library):
-            self.client.initialize_library(name_library)
+            self.client.initialize_library(name_library, lib_type=type_library)
         return self.client[name_library]

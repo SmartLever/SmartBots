@@ -31,7 +31,7 @@ def get_thread_for_create_bar(interval: str = '1m', verbose: bool = True) -> thr
 
     """ Create thread for bar event """
     def create_bar():
-        bars_info = trading.get_historical_data(timeframe=interval, setting=setting,limit=2)
+        bars_info = trading.get_historical_data(timeframe=interval, symbols=setting['symbols'],limit=2)
         for b in bars_info:
             symbol = b['symbol']
             exchange = b['exchange']

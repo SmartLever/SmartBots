@@ -60,7 +60,7 @@ for k in dict_per_event:
         # sort df by datetime
         df = df.sort_values(by=['datetime'])
         df.index = df['datetime']
-        df.index.name = 'date'
+        df.index.exchange = 'date'
         lib_historical_betfair.write(df['unique_name'].values[0], df, metadata={'datetime': datetime_df,
                                                                                 'ticker': df['ticker'].values[0],
                                                                                 'selection': df['selection'].values[0],
