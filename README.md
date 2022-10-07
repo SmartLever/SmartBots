@@ -11,6 +11,29 @@ SmartBots cover the gaps to make it possible.
 
 Lets see how it works.
 
+## Project Breakdown
+```
+SmartBots
+├── bots                           # folder for bots code
+│   ├── bettings_trading           # folder for bots for betting
+│   ├── crypto_trading             # folder for bots for crypto trading
+│   ├── financial_trading          # folder for bots for  trading in financial markets
+│   └── event_keeper.py            # script for saving events.
+├── docker                         # folder for docker files 
+│   ├── docker-compose_basic.yml   # Configuration for basic components
+│   ├── docker-compose_crypto.yml  # Configuration for trading a portfolio of cryptocurrencies
+│   ├── smartbot-python.dockerfile # Docker file      
+│   ├── compose.env                # Configuration file for setting passwords and other variables
+├── smartbots                      # Main folder with the library of the project 
+│   ├── betting                    # folder for librery and helpers for betting
+│   ├── crypo                      # folder for librery and helpers for crypto trading
+│   ├── financial                  # folder for librery and helpers for crypto trading
+├── conf.env                       # Configuration file for setting passwords and other variables
+├── requirements.txt               # requirements for python
+
+
+```
+
 ## Installation
    1. Clone the Project
 
