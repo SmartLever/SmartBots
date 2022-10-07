@@ -57,7 +57,8 @@ Lets see how it works.
 ## More than 115 exchages implemented for Crypto.
    Smartbots follows the implementation of ccxt, so you can use all the exchanges that ccxt supports.
    Please, go to https://github.com/ccxt/ccxt/wiki/Manual#markets 
-   Some of the exchanges that are implemented are more than 115 exchanges.
+
+   A short List:
    * Binance
    * Bitmex
    * Bitfinex

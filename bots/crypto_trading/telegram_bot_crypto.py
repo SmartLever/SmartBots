@@ -10,7 +10,7 @@ from telegram import ParseMode
 from telegram import ReplyKeyboardMarkup
 import schedule
 from smartbots.database_handler import Universe
-from smartbots.crypto.kucoin_model import Trading
+from smartbots.crypto.exchange_model import Trading
 from smartbots.brokerMQ import Emit_Events
 from smartbots import events
 import math
@@ -303,7 +303,7 @@ def main():
     list_currency_strategy = ['ETH', 'BTC']
 
     # Create trading object to get info from broker
-    trading = Trading()
+    trading = Trading(exchange='kucoin')
     # Launch thread
     x = threading.Thread(target=schedule_callback_control)
     x.start()

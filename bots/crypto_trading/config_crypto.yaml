@@ -4,12 +4,12 @@ Data_Sources:
   - ticker: ETH-USDT
     event_type: bar
     historical_source: mongoDB
-    historical_library: kucoin_historical_1min
+    historical_library: kucoin_historical_1m
 
   - ticker: BTC-USDT
     event_type: bar
     historical_source: mongoDB
-    historical_library: kucoin_historical_1min
+    historical_library: kucoin_historical_1m
 
 Strategies:
 #  - id: 1

@@ -1,4 +1,7 @@
-""" Download historical data frrom Data Exchage and save it for use in the bot.  """
+""" Download historical data frrom Data Exchage and save it for use in the bot.
+ Doc: https://github.com/man-group/arctic/wiki/Chunkstore
+
+ """
 import logging
 import os
 import datetime as dt
@@ -39,7 +42,10 @@ def save_historical(symbol: str, data: pd.DataFrame, name_library: str = 'provid
     lib = store.get_library(name_library)
     # save in chunks of 1 month of data, index have to be a datetime object with name date
     data.index.name = 'date'
-    lib.write(symbol, data, chunk_size='M', metadata={'symbol': symbol, 'end_date': data.index[-1]})
+    if lib.has_symbol(symbol):
+        lib.update(symbol, data, chunk_size='M')
+    else:
+        lib.write(symbol, data, chunk_size='M')
     print(f'Symbol {symbol} saved.')
 
 
@@ -53,7 +59,7 @@ def read_historical(symbol: str, name_library: str = 'provider_historical_1min',
     lib = store.get_library(name_library)
     if lib.has_symbol(symbol) is False:
         return pd.DataFrame()
-    if last_month: # just read last month of data
+    if last_month: # read last month of data
         last_month_range = list(lib.get_chunk_ranges(symbol))[-1]
         end_date = pd.to_datetime(last_month_range[1].decode("utf-8") )
         start_date = pd.to_datetime(last_month_range[0].decode("utf-8") )
@@ -114,5 +120,13 @@ def historical_downloader(symbols: List[str] = ["BTC-USDT"], start_date: dt.date
 
 if __name__ == '__main__':
     # test
-    historical_downloader(symbols=["ETH-USDT"],
-                          start_date=dt.datetime(2022, 9, 28))
+    provider = 'kucoin'
+    interval = '1h'
+    symbols = ["BTC-USDT", "ETH-USDT"]  # List of symbols to download from provider
+    start_date = dt.datetime(2015, 1, 1)  # Start date of data to download
+    end_date = dt.datetime.utcnow()  # End date of data to download
+    # Interval of data to download,
+    historical_downloader(symbols=symbols, start_date=start_date, end_date=dt.datetime.utcnow(),
+                          provider=provider, clean_symbols_database=symbols, interval=interval)
+
+

@@ -143,11 +143,15 @@ class Trading(object):
                             print(f'{symbol} Since: {self.client.iso8601(_since)}')
                             if _since >= _to_date:
                                 keep_going = False
+                        if _df is None and timeframe != '1m':
+                            keep_going = False
                     except Exception as e:
                         print(type(e).__name__, str(e))
                         time.sleep(1)
-
-            return {s: pd.concat(bars[s]) for s in symbols}
+            if len(bars) > 0:
+                return {s: pd.concat(bars[s]) for s in symbols if s in bars}
+            else:
+                return {}
 
     def send_order(self, order: dataclasses.dataclass) -> None:
         """Send order.

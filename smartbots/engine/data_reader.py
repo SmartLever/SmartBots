@@ -1,4 +1,6 @@
-""" Load data from DB and create Events for consumption by portfolio engine """
+""" Load data from DB and create Events for consumption by portfolio engine
+  Doc: https://github.com/man-group/arctic/wiki/Chunkstore
+ """
 import pandas as pd
 import datetime as dt
 from smartbots.events import Bar, Odds, Tick
@@ -6,7 +8,7 @@ from smartbots.database_handler import Universe
 import calendar
 from dateutil import relativedelta
 
-def read_data_to_dataframe(symbol:str, provider:str, interval:str = '1min',
+def read_data_to_dataframe(symbol:str, provider:str, interval:str = '1m',
                            start_date: dt.datetime = dt.datetime(2022, 1, 1),
                            end_date: dt.datetime = dt.datetime.utcnow()):
 
@@ -14,36 +16,7 @@ def read_data_to_dataframe(symbol:str, provider:str, interval:str = '1min',
     store = Universe()  # database handler
     name_library = f'{provider}_historical_{interval}'
     lib = store.get_library(name_library)
-
-    from_month = start_date
-    end_month = calendar.monthrange(from_month.year, from_month.month)
-    to_month = dt.datetime(from_month.year, from_month.month, end_month[1], 23, 59)
-    yyyymm = from_month.strftime('%Y%m')
-
-    datas = []
-    while True:
-        ticker = symbol + '_' + yyyymm
-        if lib.has_symbol(ticker):
-            data = lib.read(ticker).data
-            data = data[data.index <= to_month]
-            datas.append(data)
-
-        # update month
-        from_month = from_month + relativedelta.relativedelta(months=1)
-        from_month = dt.datetime(from_month.year, from_month.month, 1)  # first day of the month
-        end_month = calendar.monthrange(from_month.year, from_month.month)
-        to_month = dt.datetime(from_month.year, from_month.month, end_month[1], 23, 59)
-        yyyymm = from_month.strftime('%Y%m')
-
-        if to_month >= end_date + relativedelta.relativedelta(months=1):  # break if we reach the end of the period
-            break
-
-
-    ### Join all dataframes
-    if len(datas) > 0:
-        df = pd.concat(datas)
-        df.sort_index(inplace=True)
-        df['close'] = [c.close for c in df['bar'].values ]
+    df = lib.read(symbol, chunk_range=pd.date_range(start_date, end_date))
 
     return df
 
@@ -55,64 +28,73 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
         start_date: start date of the query period
         end_date: end date of the query period """
 
-    store = Universe() # database handler
+    # Create list of ticker and library name
+    symbols_to_read = []
+    for info in symbols_lib_name:
+        if 'tickers' in info:
+            for t in info['tickers']:
+                symbols_to_read.append({'ticker': t, 'historical_library': info['historical_library']})
+        elif 'ticker' in info:
+            symbols_to_read.append(info)
+        else:
+            raise ValueError('No tickers or ticker in info')
 
-    from_month = start_date
-    end_month = calendar.monthrange(from_month.year, from_month.month)
-    to_month = dt.datetime(from_month.year, from_month.month, end_month[1], 23, 59)
-    yyyymm = from_month.strftime('%Y%m')
+    store = Universe() # database handler
+    # get_chunk_ranges save
+    _ranges_save = []
+    for info in symbols_to_read:
+        ticker_name =info['ticker']
+        name_library = info['historical_library']
+        lib = store.get_library(name_library)
+        if lib.has_symbol(ticker_name):
+            list_symbol = [[pd.to_datetime(d[0].decode("utf-8")),pd.to_datetime(d[1].decode("utf-8"))]
+                           for d in list(lib.get_chunk_ranges(ticker_name))]
+
+            frame = pd.DataFrame(list_symbol, columns=['start_date', 'end_date'])
+            frame['ticker'] = ticker_name
+            _ranges_save.append(frame)
+
+    ranges_save = pd.concat(_ranges_save)
+    ranges_save = ranges_save.drop_duplicates(subset=['start_date'])
+    ranges_save = ranges_save.sort_values(by=['start_date'])
+    # filter
+    ranges_save = ranges_save[ranges_save['start_date'] >= start_date]
+    ranges_save = ranges_save[ranges_save['start_date'] <= end_date]
     day = {}
-    ant_bar = {}
-    while True:
+    ant_close = {}
+
+    for month in ranges_save.itertuples():
         datas = []
-        for info in symbols_lib_name:
-            symbols_to_read = []
-            if 'tickers' in info:
-                for t in info['tickers']:
-                    symbols_to_read.append(t +'_'+ yyyymm)
-                    day.setdefault(t, None)
-                    ant_bar.setdefault(t, None)
-            elif 'ticker' in info:
-                symbols_to_read.append(info['ticker'] + '_' + yyyymm)
-            else:
-                raise ValueError('No tickers or ticker in info')
-            for symbol in symbols_to_read:
-                ticker_name = symbol.split('_')[0]
-                name_library = info['historical_library']
-                print(f'{symbol}')
-                lib = store.get_library(name_library)
-                if lib.has_symbol(symbol):
-                    data = lib.read(symbol).data
-                    data = data[data.index <= to_month]
+        for info in symbols_to_read:
+            ticker_name = info['ticker']
+            name_library = info['historical_library']
+            lib = store.get_library(name_library)
+            if lib.has_symbol(ticker_name):
+                print(f'Loading {ticker_name} from {month.start_date}')
+                data = lib.read(ticker_name, chunk_range=pd.date_range(month.start_date, month.end_date))
+                if len(data) > 0:
                     datas.append(data)
-                    if ticker_name not in day: # fill day with the first day of the month
+                    if ticker_name not in day:  # fill day with the first day of the month
                         day[ticker_name] = data.index.min().day - 1
-                        ant_bar[ticker_name] = data.iloc[0].bar
+                        ant_close[ticker_name] = {'close':data.iloc[0].close,'datetime':data.index.min()}
 
         ### Sort and Send events to portfolio engine
         if len(datas) > 0:
             df = pd.concat(datas)
             df.sort_index(inplace=True)
-            col_name = df.columns[0]
             for tuple in df.itertuples():
-                t = tuple.bar
-                if day[t.ticker] != t.datetime.day and ant_bar[t.ticker] is not None: # change of day
-                    day[t.ticker] = t.datetime.day
-                    tick = Tick(event_type='tick', tick_type='close_day', price=ant_bar[t.ticker].close,
-                                      ticker=t.ticker, datetime=ant_bar[t.ticker].datetime)
+                # create bar event  for the frecuency of the data
+                bar = Bar(ticker=tuple.symbol, datetime=tuple[0], open=tuple.open, high=tuple.close, low=tuple.low,
+                          close=tuple.close, volume=tuple.volume, exchange=tuple.exchange)
+
+                if day[bar.ticker] != bar.datetime.day: # change of day
+                    day[bar.ticker] = bar.datetime.day
+                    tick = Tick(event_type='tick', tick_type='close_day', price=ant_close[bar.ticker]['close'],
+                                      ticker=bar.ticker, datetime=ant_close[bar.ticker]['datetime'])
                     yield tick # send close_day event
-                yield t # send bar event
-                ant_bar[t.ticker] = t
+                yield bar # send bar event
+                ant_close[bar.ticker] = {'close':bar.close,'datetime': bar.datetime}
 
-        # update month
-        from_month = from_month + relativedelta.relativedelta(months=1)
-        from_month = dt.datetime(from_month.year, from_month.month, 1)  # first day of the month
-        end_month = calendar.monthrange(from_month.year, from_month.month)
-        to_month = dt.datetime(from_month.year, from_month.month, end_month[1], 23, 59)
-        yyyymm = from_month.strftime('%Y%m')
-
-        if to_month >= end_date + relativedelta.relativedelta(months=1):  # break if we reach the end of the period
-            break
 
 def load_tickers_and_create_events_betting(tickers_lib_name: list, start_date: dt.datetime = dt.datetime(2022, 1, 1),
                                            end_date: dt.datetime = dt.datetime.utcnow()):
