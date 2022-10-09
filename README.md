@@ -109,3 +109,25 @@ You can adapt it to your needs.
 #### MongoDB docker: Historical data
 MongoDB is used to store historical data, here more info: https://github.com/man-group/arctic
 For large historical data it use as defaul months chunks, here docs: https://github.com/man-group/arctic/wiki/Chunkstore
+
+
+Other Info
+
+### Subscribe to our news!
+https://smartlever.substack.com/
+
+### Bugs
+
+Please report any bugs or issues on the GitHub's Issues page.
+
+### Disclaimer 
+
+Trading in financial instruments involves high risks, including the risk of losing some or all of your investment amount. It may not be suitable for all investors. Before trading any financial instrument, it's important to be informed of the risks and costs involved. You should also be aware of your investment objectives and risk levels, as well as how much information you want in order to make a decision. That being said, I recommend that you seek out a professional so they can help you find the best outcome!. The data contained in the SmartBot library is not necessarily accurate. The SmartBot website and its provider will not be liable for any loss or damage as a result of using, or your reliance on the information contained therein.
+
+### Contributing
+
+If you would like to support the project, pull requests are welcome.
+
+### Licensing 
+
+**SmartBots** is distributed under the [**GNU GENERAL PUBLIC LICENSE**]. See the [LICENSE](/LICENSE) for more details.
