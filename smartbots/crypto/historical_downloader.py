@@ -22,7 +22,7 @@ def dataframe_to_bars(symbol: str, frame: pd.DataFrame):
         events.append(Bar(datetime=tuple.Index, ticker=symbol, open=tuple.open, high=tuple.high,
                           low=tuple.low, close=tuple.close, volume=tuple.volume))
     df = pd.DataFrame({'bar': events}, index=frame.index)
-    df.index.exchange = 'date'
+    df.index.name = 'date'
     return df
 
 

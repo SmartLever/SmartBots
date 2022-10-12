@@ -1,4 +1,5 @@
 # docker compose -f docker-compose_financial.yml --env-file ./compose.env up -d
+# docker-compose -f docker-compose_financial.yml --env-file ./compose.env up -d
 version: '3.9'
 
 services:

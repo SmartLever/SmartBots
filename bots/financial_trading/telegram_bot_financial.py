@@ -6,13 +6,14 @@ import threading
 import datetime as dt
 import time
 from smartbots import conf
-from telegram import ParseMode
-from telegram import ReplyKeyboardMarkup
+from telegram import ReplyKeyboardMarkup, ParseMode
+from telegram.error import NetworkError, TelegramError
 import schedule
 from smartbots.database_handler import Universe
 from smartbots.brokerMQ import Emit_Events
 from smartbots import events
 import math
+from tabulate import tabulate
 
 reply_keyboard = [['/start']]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
@@ -33,6 +34,45 @@ def restricted(func):
 
     return wrapped
 
+def _send_msg(chat_id: str, msg: str, parse_mode: str = None,
+              disable_notification: bool = False) -> None:
+    """
+    Send given markdown message
+    :param chat_id: chat_id
+    :param msg: message
+    :param parse_mode: telegram parse mode
+    :return: None
+    """
+
+    try:
+        try:
+            updater.bot.send_message(
+                chat_id=chat_id,
+                text=msg,
+                parse_mode=parse_mode,
+                reply_markup=markup,
+                disable_notification=disable_notification,
+            )
+        except NetworkError as network_err:
+            # Sometimes the telegram server resets the current connection,
+            # if this is the case we send the message again.
+            print(
+                'Telegram NetworkError: %s! Trying one more time.',
+                network_err.message
+            )
+            updater.bot.send_message(
+                chat_id=chat_id,
+                text=msg,
+                parse_mode=parse_mode,
+                reply_markup=markup,
+                disable_notification=disable_notification,
+            )
+    except TelegramError as telegram_err:
+        print(
+            'TelegramError: %s! Giving up on that message.',
+            telegram_err.message
+        )
+
 @restricted
 def start(update, context):
     name = update.message.from_user.first_name
@@ -46,7 +86,7 @@ def start(update, context):
           '/positions Current Positions. \n' + \
           '/status State of the Services.'
 
-    updater.bot.send_message(text=msg, chat_id=update.message.chat_id, reply_markup=markup)
+    _send_msg(msg=msg, chat_id=update.message.chat_id)
 
 @restricted
 def mi_id(update, context):
@@ -111,15 +151,19 @@ def create_petition(name_to_saving):
 @restricted
 def positions(update, context):
     """
-    Return id
+    Return Positions
     """
 
     try:
         data = lib_keeper.read(symbol_positions).data
         broker_pos = data.positions
-        msg = '*Current Positions:*' + '\n' + \
-              '' + str(broker_pos)
-        updater.bot.send_message(text=msg, chat_id=update.message.chat_id, parse_mode=ParseMode.MARKDOWN)
+        trades = []
+        for trade in broker_pos:
+            trades.append([trade, broker_pos[trade]])
+        msg = tabulate(trades,
+                       headers=['Symbol', 'Positions'],
+                       tablefmt='simple')
+        _send_msg(msg=f"<pre>{msg}</pre>", chat_id=update.message.chat_id, parse_mode=ParseMode.HTML)
 
     except Exception as e:
         print(e)
@@ -139,7 +183,7 @@ def status(update, context):
         else:
             msg = _health
 
-        updater.bot.send_message(text=msg, chat_id=update.message.chat_id)
+        _send_msg(text=msg, chat_id=update.message.chat_id)
 
     except Exception as e:
         print(e)
@@ -202,7 +246,7 @@ def callback_control():
                         # send alert
                         for user in LIST_OF_ADMINS:
                             msg = 'ALERT, THIS SERVICE IS NOT WORKING: ' + str(service_name.replace('_health', ''))
-                            updater.bot.send_message(text=msg, chat_id=user)
+                            _send_msg(msg=msg, chat_id=user)
 
             except Exception as ex:
                 print(ex)
@@ -237,7 +281,7 @@ def callback_control():
                     if diff_minutes > 1:
                         for user in LIST_OF_ADMINS:
                             msg = '*ALERT*, Positions from darwinex is not saving'
-                            updater.bot.send_message(text=msg, chat_id=user, parse_mode=ParseMode.MARKDOWN)
+                            _send_msg(msg=msg, chat_id=user, parse_mode=ParseMode.MARKDOWN_V2)
                 # Compute diference between broker and portfolio
                 diference = {}
                 for c in agregate.keys():
@@ -259,17 +303,16 @@ def callback_control():
                     for user in LIST_OF_ADMINS:
                         msg = '*ALERT*, simulation and real positions dont match: \n' + \
                               '' + str(diference)
-                        updater.bot.send_message(text=msg, chat_id=user, parse_mode=ParseMode.MARKDOWN)
+                        _send_msg(msg=msg, chat_id=user, parse_mode=ParseMode.MARKDOWN_V2)
 
             except Exception as ex:
                 print(ex)
-
 
 def error(update, error):
     """Log Errors caused by Updates."""
     today = dt.datetime.utcnow()
     event_telegram = {'date_time': today, 'comand': 'error', 'error': error}
-    updater.bot.send_message(text=event_telegram, chat_id=update.message.chat_id)
+    _send_msg(msg=event_telegram, chat_id=update.message.chat_id)
 
 def schedule_callback_control():
     # create scheduler

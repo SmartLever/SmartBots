@@ -72,7 +72,7 @@ def _get_historical_data_test_files_betfair():
                                volume_matched=tp.volume_matched, win_flag=tp.win_flag))
 
         df_save = pd.DataFrame({'odds': events}, index=df.index)
-        df_save.index.exchange = 'date'
+        df_save.index.name = 'date'
         data[unique_name] = df_save
     return data
 
