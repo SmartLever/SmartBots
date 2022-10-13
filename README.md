@@ -28,6 +28,10 @@ SmartBots
 │   ├── betting                    # folder for librery and helpers for betting
 │   ├── crypo                      # folder for librery and helpers for crypto trading
 │   ├── financial                  # folder for librery and helpers for crypto trading
+├── my_smartbots                   # folder with my own strategies, you should create it and put your strategies here
+│   ├── my_betting_strategies      # folder with betting strategies
+    ├── my_crypto_strategies       # folder with crypto strategies
+    ├── my_financial_strategies    # folder with financial strategies
 ├── conf.env                       # Configuration file for setting passwords and other variables
 ├── requirements.txt               # requirements for python
 

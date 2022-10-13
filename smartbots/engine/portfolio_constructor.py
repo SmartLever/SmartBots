@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from smartbots.brokerMQ import Emit_Events, receive_events
 from smartbots.engine import data_reader
 import datetime as dt
+import os
+from smartbots import conf
 import pandas as pd
 from smartbots.engine.equity_handler import Equity_Handler
 from smartbots.database_handler import Universe
@@ -65,7 +67,16 @@ class Portfolio_Constructor(object):
     def _get_strategy(self, asset_type: str, strategy_name: str):
         """ Load the strategy dinamically"""
         try:
+            # check if exist file with the strategy
+            path_to_strategy = os.path.join(conf.path_modulo, asset_type,strategy_name.lower()+'.py')
             name = f'smartbots.{asset_type}.strategies.{strategy_name.lower()}'
+            if not os.path.exists(path_to_strategy):
+                path_to_strategy = os.path.join(conf.path_to_my_strategies[asset_type],strategy_name.lower()+'.py')
+                name = f'my_smartbots.my_{asset_type}_strategies.{strategy_name.lower()}'
+            if not os.path.exists(path_to_strategy):
+                error_msg = f'Error, strategy {strategy_name} not found'
+                raise ValueError(error_msg)
+
             strategy_module = importlib.import_module(name)
             strategy_class = getattr(strategy_module, strategy_name)
             return strategy_class

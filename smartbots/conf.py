@@ -2,16 +2,35 @@ import os
 from dotenv import load_dotenv
 
 
+
+
+
 path = os.path.abspath(__file__)
 path_modulo = os.path.dirname(path)  # path to the module
 path_to_principal = path_modulo.replace('smartbots','')
 path_to_crypto = os.path.join(path_modulo, 'crypto')
 path_to_betting = os.path.join(path_modulo, 'betting')
+path_to_financial = os.path.join(path_modulo, 'financial')
 
 path_to_temp = os.path.join(path_modulo, 'temp')
 # Check is exist temp folder
 if not os.path.exists(path_to_temp):
     os.makedirs(path_to_temp)
+
+# Create folders for my strategies
+patha_to_my_smartbots = os.path.join(path_to_principal, 'my_smartbots')
+path_to_my_strategies = {}
+path_to_my_strategies['crypto'] = os.path.join(patha_to_my_smartbots, 'my_crypto_strategies')
+path_to_my_strategies['financial']  = os.path.join(patha_to_my_smartbots, 'my_financial_strategies')
+path_to_my_strategies['betting']= os.path.join(patha_to_my_smartbots, 'my_betting_strategies')
+
+if not os.path.exists(patha_to_my_smartbots):
+    os.makedirs(patha_to_my_smartbots)
+
+for key in path_to_my_strategies:
+    if not os.path.exists(path_to_my_strategies[key]):
+        os.makedirs(path_to_my_strategies[key])
+
 
 
 if os.getenv('AM_I_IN_A_DOCKER_CONTAINER') == '1': # only with docker running
