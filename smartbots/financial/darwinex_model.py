@@ -1,5 +1,4 @@
 import dataclasses
-import logging
 from typing import Dict, List
 import threading
 from smartbots import conf
@@ -9,8 +8,7 @@ from smartbots.brokerMQ import Emit_Events
 from smartbots.decorators import log_start_end, check_api_key
 from smartbots.financial.mt4_connector.mt_zeromq_connector import MTZeroMQConnector
 from time import sleep
-
-logger = logging.getLogger(__name__)
+from smartbots.base_logger import logger
 
 
 # default Callable
@@ -39,6 +37,7 @@ def get_client(conf_port):
     Client
         MT4 client.
     """
+    logger.info("Connecting to MT4 Darwinex")
     client = MTZeroMQConnector(host=conf_port['DARWINEX_HOST'],
                                client_id=conf_port['CLIENT_IF'],
                                push_port=conf_port['PUSH_PORT'],
@@ -137,6 +136,7 @@ class Trading(object):
         Disconnect
         :return:
         """
+        logger.info("Closing connection to MT4 Darwinex")
         print('Closing connection with API')
         self._open = False
         for thread in self.cola_thread:
@@ -181,6 +181,7 @@ class Trading(object):
         """
         response = self.get_response('t')
         if response is None:
+            logger.error('No response received, either there are no open trades or check the connection')
             print('No response received, either there are no open trades or check the connection')
             return None
         open_trades = {k: dict(zip(
@@ -197,6 +198,7 @@ class Trading(object):
         ----------
         order: event order
         """
+        logger.info(f'Sending Order to MT4 in ticker: {order.ticker} quantity: {order.quantity}')
         self.dict_from_strategies[order.order_id_sender] = order  # save order in dict_from_strategies
         try:
             order_response = self._send_order(order,
@@ -212,13 +214,21 @@ class Trading(object):
                 order.order_id_receiver = str(order_response['_ticket'])
 
                 if order_response['_action'] == 'EXECUTION':
+                    logger.info(f'order executed successfully in ticker: {order.ticker} quantity: {order.quantity} '
+                                f'with id: {order.order_id_receiver}')
                     order.datetime_in = dt.datetime.utcnow()
                     order.status = "open"
                     order.filled_price = float(order_response['_open_price'])
 
                 else:  # error
+                    logger.error(
+                        f'Error in order in ticker: {order.ticker} quantity: {order.quantity} with id: '
+                        f'{order.order_id_receiver}')
                     order.order_status = 'error'
         except Exception as ex:
+            logger.error(
+                f'Error in order in ticker: {order.ticker} quantity: {order.quantity} Exception: {ex}')
+            order.order_status = 'error'
             print(ex)
             order.status = "error"
             order.error_description = str(ex)
@@ -290,12 +300,14 @@ class Trading(object):
 
         elif order.action_mt4 == 'close_trade':
             # Close total
+            logger.info(f'Sending Order to close positions in ticker: {order.ticker} quantity: {order.quantity}')
             self.client._set_response_(None)
             self.client.MTX_CLOSE_TRADE_BY_TICKET_(order.order_id_receiver)
             respond_order = self.get_return()
 
         # partially closed trade
         elif order.action_mt4 == 'close_partial':
+            logger.info(f'Sending Order to close partial positions in ticker: {order.ticker} quantity: {order.quantity}')
             self.client._set_response_(None)
             self.client.MTX_CLOSE_PARTIAL_BY_TICKET_(
                 order.order_id_receiver, order.quantity)
@@ -306,6 +318,8 @@ class Trading(object):
                 # Saving order_id en order
                 order.order_id_receiver = str(respond_order['_ticket'])
                 if respond_order['_action'] == 'CLOSE':
+                    logger.info(f'order closes successfully in ticker: {order.ticker} quantity: {order.quantity}'
+                                f' with id: {order.order_id_receiver}')
                     order.status = 'closed'
                     order.filled_price = float(respond_order['_close_price'])
                     quantity_execute = respond_order['_close_lots']
@@ -313,9 +327,12 @@ class Trading(object):
                     order.quantity_left = order.quantity - quantity_execute
 
                 else:  # error
+                    logger.error(f'Error in order in ticker: {order.ticker} quantity: {order.quantity}'
+                                 f' with id: {order.order_id_receiver}')
                     order.status = 'error'
 
             except Exception as ex:
+                logger.error(f'Error in close order in ticker: {order.ticker} quantity: {order.quantity} Exception: {ex}')
                 order.status = 'error'
                 order.error_description = str(ex)
                 print(ex)
@@ -345,6 +362,7 @@ class Trading(object):
         response = self.get_response('_trades')
 
         if response is None:
+            logger.error('No response received, either there are no open trades or check the connection')
             print('No response received, either there are no open trades or check the connection')
             return None
         else:
@@ -370,6 +388,7 @@ class Trading(object):
         response = self.get_response('_info')
 
         if response is None:
+            logger.error('No response received, either there are no open trades or check the connection')
             print('No response received, either there are no open trades or check the connection')
             return None
         else:
@@ -432,12 +451,12 @@ class Trading(object):
             self.dict_cancel_and_close_orders[order_id] = order
 
 
-@log_start_end(log=logger)
 def get_realtime_data(settings: dict = {'symbols': List[str]}, callback: callable = _callable) -> None:
     """Return realtime data for a list of symbols. [Source: MT4 Darwinex]
 
     Parameters
     ----------
+    settings
     symbols: List[str]
         Symbols of the assets. Example: AUDNZD, EURUSD
     callback: callable (data: Dict) -> None

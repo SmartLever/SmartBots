@@ -2,25 +2,15 @@
 
 
 import dataclasses
-import logging
 from typing import Dict, List
-import os
-import sys
-from asyncio import run, gather
-import asyncio
-import threading
-from smartbots import conf
 import time
 import pandas as pd
 import datetime as dt
 from smartbots.brokerMQ import Emit_Events
-from smartbots.decorators import log_start_end, check_api_key
 import os
 import ccxt
-
+from smartbots.base_logger import logger
 print('CCXT Version:', ccxt.__version__)
-
-logger = logging.getLogger(__name__)
 
 
 # default Callable
@@ -160,6 +150,7 @@ class Trading(object):
         ----------
         order: event order
         """
+        logger.info(f'Sending Order to {self.exchange} in ticker: {order.ticker} quantity: {order.quantity}')
         self.dict_from_strategies[order.order_id_sender] = order  # save order in dict_from_strategies
         try:
             self._send_order(order)
@@ -169,8 +160,11 @@ class Trading(object):
             self._send_order(order)
         except Exception as e:
             print(e)
-
+            logger.error(
+                f'Error in order in ticker: {order.ticker} quantity: {order.quantity} Exception: {e}')
         if order.status == 'error':
+            logger.error(
+                f'Error sending order in ticker: {order.ticker} quantity: {order.quantity}')
             print(f'Error sending order {order}')
             if self.send_orders_status:  # publish order status with error
                 self.emit_orders.publish_event('order_status', order)
@@ -215,6 +209,7 @@ class Trading(object):
         ----------
         order: event order
         """
+        logger.info(f'Cancel order in {order.ticker} with id {order.order_id_receiver}')
         try:
             self._cancel_order(order)
         except ConnectionError as e:
@@ -223,6 +218,7 @@ class Trading(object):
             self._cancel_order(order)
         except Exception as e:
             print(e)
+            logger.error(f'Error Cancel order in {order.ticker} with id {order.order_id_receiver} error: {e}')
 
     def _cancel_order(self, order: dataclasses.dataclass) -> None:
         info_order = self.client.cancel_order(order.order_id_receiver)
@@ -245,7 +241,9 @@ class Trading(object):
             time.sleep(1)
             self._get_info_order(order)
         except Exception as e:
-                print(f'Error getting FillOrders {e}')
+            print(f'Error getting FillOrders {e}')
+            logger.error(f'Error getting FillOrders {e}')
+
 
     def _get_info_order(self, order: dataclasses.dataclass) -> None:
         if order.order_id_receiver is not None:
@@ -298,8 +296,6 @@ class Trading(object):
                 balance_usd += balance['total'][currency]
 
         return balance_usd
-
-
 
 
 if __name__ == '__main__':

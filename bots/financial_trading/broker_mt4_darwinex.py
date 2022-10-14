@@ -1,15 +1,11 @@
 """ Recieved events orders from Portfolio and send it to the broker or exchange for execution"""
-import logging
 from smartbots.brokerMQ import Emit_Events
 from smartbots.events import Positions
-import datetime as dt
 import pytz
-
-logger = logging.getLogger(__name__)
+from smartbots.base_logger import logger
 
 
 def main(send_orders_status=True):
-    from smartbots.decorators import log_start_end
     from smartbots.brokerMQ import receive_events
     import datetime as dt
     from smartbots.financial.darwinex_model import Trading
@@ -25,9 +21,10 @@ def main(send_orders_status=True):
             print(f'Balance {balance} {dt.datetime.utcnow()}')
             health_handler.check()
         except Exception as e:
+            logger.error(f'Error Getting Darwinex Balance: {e}')
             health_handler.send(description=e, state=0)
 
-    def save_postions() -> None:
+    def save_positions() -> None:
         try:
             positions = trading.get_account_positions()
             _d = dt.datetime.utcnow()
@@ -38,12 +35,12 @@ def main(send_orders_status=True):
             emit.publish_event('positions', positions_event)
 
         except Exception as e:
-            print(e)
+            logger.error(f'Error Saving Darwinex Positions: {e}')
 
     def _schedule():
         # create scheduler for saving balance
         schedule.every(1).minutes.do(check_balance)
-        schedule.every(15).seconds.do(save_postions)
+        schedule.every(15).seconds.do(save_positions)
         while True:
             schedule.run_pending()
             time.sleep(1)
@@ -74,6 +71,8 @@ def main(send_orders_status=True):
                                     # Close trade
                                     event.action_mt4 = 'close_trade'
                                     event.order_id_receiver = trade_id
+                                    logger.info(
+                                        f'Sending Order to close positions in ticker: {event.ticker} quantity: {event.quantity}')
                                     trading.send_order(event)
                                     quantity -= trade['_lots']
                                 else:
@@ -81,9 +80,12 @@ def main(send_orders_status=True):
                                     event.action_mt4 = 'close_partial'
                                     event.order_id_receiver = trade_id
                                     event.quantity = quantity
+                                    logger.info(
+                                        f'Sending Order to close partial positions in ticker: {event.ticker} quantity: {event.quantity}')
                                     trading.send_order(event)
                                     quantity = 0
                 if quantity != 0:
+                    logger.info(f'Sending Order to MT4 in ticker: {event.ticker} quantity: {event.quantity}')
                     event.quantity = quantity
                     event.action_mt4 = 'normal'
                     trading.send_order(event)

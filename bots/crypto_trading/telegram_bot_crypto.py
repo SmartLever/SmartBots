@@ -14,6 +14,7 @@ from smartbots.crypto.exchange_model import Trading
 from smartbots.brokerMQ import Emit_Events
 from smartbots import events
 import math
+from smartbots.base_logger import logger
 
 reply_keyboard = [['/start']]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
@@ -28,6 +29,7 @@ def restricted(func):
         user_id = update.effective_user.id
         if user_id not in LIST_OF_ADMINS:
             print("Unauthorized access denied for {}.".format(user_id))
+            logger.info("Unauthorized access denied for {}.".format(user_id))
             update.message.reply_text('You are not authorized, please talk to the administrator, id ' + str(user_id))
             return
         return func(update, *args, **kwargs)
@@ -60,6 +62,7 @@ def _send_msg(chat_id: str, msg: str, parse_mode: str = None,
                 'Telegram NetworkError: %s! Trying one more time.',
                 network_err.message
             )
+            logger.error(f'Telegram NetworkError: {network_err.message}')
             updater.bot.send_message(
                 chat_id=chat_id,
                 text=msg,
@@ -72,8 +75,7 @@ def _send_msg(chat_id: str, msg: str, parse_mode: str = None,
             'TelegramError: %s! Giving up on that message.',
             telegram_err.message
         )
-
-
+        logger.error(f'TelegramError: {telegram_err.message}')
 @restricted
 def start(update, context):
     name = update.message.from_user.first_name
@@ -165,6 +167,7 @@ def positions(update, context):
 
     except Exception as e:
         print(e)
+        logger.error(f'Error getting Positions: {e}')
 
 
 @restricted
@@ -185,6 +188,7 @@ def status(update, context):
 
     except Exception as e:
         print(e)
+        logger.error(f'Error getting service status: {e}')
 
 def _get_status(seconds=300):
     """
@@ -210,6 +214,7 @@ def _get_status(seconds=300):
         return _health
     except Exception as e:
         print(e)
+        logger.error(f'Error getting service status: {e}')
 
 @restricted
 def balance(update, context):
@@ -225,6 +230,7 @@ def balance(update, context):
 
     except Exception as e:
         print(e)
+        logger.error(f'Error getting balance: {e}')
 
 
 #  Controls
@@ -263,6 +269,7 @@ def callback_control():
 
             except Exception as ex:
                 print(ex)
+                logger.error(f'Error in callback_control health: {ex}')
 
         if counters_callback['positions'] >= 10:  # each 10 minutes
             """check every 10 minutes that simulation and real positions match"""
@@ -314,6 +321,7 @@ def callback_control():
 
             except Exception as ex:
                 print(ex)
+                logger.error(f'Error in callback_control positions: {ex}')
 
 
 def error(update, error):

@@ -1,12 +1,10 @@
 """ Historical data from Kucoin"""
-import logging
 import os
 from smartbots import conf
 from typing import Dict
 import pandas as pd
 from smartbots.decorators import log_start_end
 from smartbots.database_handler import Universe
-logger = logging.getLogger(__name__)
 
 def _get_historical_data_test_files_betfair():
     """ Read historical data save in file, normalise it and return it as events"""

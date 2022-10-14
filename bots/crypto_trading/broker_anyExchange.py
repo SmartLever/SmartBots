@@ -1,11 +1,8 @@
 """ Recieved events orders from Portfolio and send it to the broker or exchange for execution"""
-import logging
-
-logger = logging.getLogger(__name__)
+from smartbots.base_logger import logger
 
 
 def main(send_orders_status=True, exchange='kucoin'):
-    from smartbots.decorators import log_start_end
     from smartbots.brokerMQ import receive_events
     import datetime as dt
     from smartbots.crypto.exchange_model import Trading
@@ -18,9 +15,11 @@ def main(send_orders_status=True, exchange='kucoin'):
     def check_balance() -> None:
         try:
             balance = trading.get_total_balance_usd()
+            logger.info(f'Balance {balance} {dt.datetime.utcnow()} in broker {exchange}')
             print(f'Balance {balance} {dt.datetime.utcnow()}')
             health_handler.check()
         except Exception as e:
+            logger.error(f'Error Getting {exchange} Balance: {e}')
             health_handler.send(description=e, state=0)
 
     def schedule_balance():
@@ -39,6 +38,7 @@ def main(send_orders_status=True, exchange='kucoin'):
         """
         if event.event_type == 'order' and conf.SEND_ORDERS_BROKER == 1:
             event.exchange = exchange
+            logger.info(f'Sending Order to broker {exchange} in ticker {event.ticker} quantity {event.quantity}')
             trading.send_order(event)
         elif event.event_type == 'order' and conf.SEND_ORDERS_BROKER == 0:
             event.exchange = exchange
@@ -60,5 +60,5 @@ def main(send_orders_status=True, exchange='kucoin'):
 
 
 if __name__ == '__main__':
-    exchange = 'kucoin' # set your exchange
+    exchange = 'kucoin'  # set your exchange
     main(exchange =exchange)

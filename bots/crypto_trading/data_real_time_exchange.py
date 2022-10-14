@@ -5,28 +5,24 @@ import logging
 from smartbots.crypto.exchange_model import Trading
 import datetime as dt
 import pandas as pd
-from asyncio import run, gather
 from smartbots.events import Bar, Tick
 import schedule
 import time
 import threading
-from smartbots.decorators import log_start_end
 from smartbots.brokerMQ import Emit_Events
 from smartbots.health_handler import Health_Handler
 import os
 import pytz
-
-logger = logging.getLogger(__name__)
-
+from smartbots.base_logger import logger
 
 
-@log_start_end(log=logger)
 def get_thread_for_create_bar(interval: str = '1m', verbose: bool = True) -> threading.Thread:
     def create_tick_closed_day():
         for t in last_bar.values():
             tick = Tick(event_type='tick', tick_type='close_day', price=t.close,
                         ticker=t.ticker, datetime=t.datetime)
             print(f'tick close_day {tick.ticker} {tick.datetime} {tick.price}')
+            logger.info(f'tick close_day {tick.ticker} {tick.datetime} {tick.price}')
             emit.publish_event('tick', tick)
 
     """ Create thread for bar event """
@@ -71,6 +67,7 @@ if __name__ == '__main__':
     global trading, setting, last_bar
     exchange = 'kucoin'
     print(f'* Starting {exchange} provider at {dt.datetime.utcnow()}')
+    logger.info(f'* Starting {exchange} provider at {dt.datetime.utcnow()}')
     trading = Trading(name= exchange)
     symbols = ['BTC-USDT', 'ETH-USDT']
     setting = {'symbols': symbols}

@@ -3,13 +3,11 @@
     Send Events to RabbitMQ for further processing.
 """
 import os
-import logging
 from smartbots.betting.betfair_model import get_realtime_data
 import datetime as dt
 from smartbots.brokerMQ import Emit_Events
 from smartbots.health_handler import Health_Handler
-
-logger = logging.getLogger(__name__)
+from smartbots.base_logger import logger
 
 
 def main():
@@ -35,6 +33,8 @@ def main():
         # 'sports': ['soccer','tennis',basketball, horses],  # used by self.get_event_ids()
         'market_types': ['OVER_UNDER_25'],
         'betting_types': ['ODDS']}
+
+    logger.info('Getting real data from Betfair')
     get_realtime_data(settings, callback=save_odds)
 
 

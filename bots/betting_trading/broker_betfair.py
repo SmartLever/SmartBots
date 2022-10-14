@@ -1,7 +1,5 @@
 """ Recieved events bets from Portfolio and send it to the broker or exchange for execution"""
-import logging
-logger = logging.getLogger(__name__)
-
+from smartbots.base_logger import logger
 
 def main():
     from smartbots.brokerMQ import receive_events
@@ -18,6 +16,7 @@ def main():
             print(f'Balance {balance} {dt.datetime.utcnow()}')
             health_handler.check()
         except Exception as e:
+            logger.error(f'Error getting balance: {e}')
             health_handler.send(description=e, state=0)
 
     def schedule_balance():
@@ -35,6 +34,7 @@ def main():
         bet: event bet
         """
         if _bet.event_type == 'bet':
+            logger.info(f'Send Bet to broker in: {_bet.match_name}')
             trading.send_order(_bet)
 
     # Log event health of the service

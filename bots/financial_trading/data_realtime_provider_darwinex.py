@@ -2,7 +2,6 @@
     recieve data from mt4 Darwinex in ticks and create Bar for frequency.
     Send Events to RabbitMQ for further processing.
 """
-import logging
 from smartbots.financial.darwinex_model import get_realtime_data
 import datetime as dt
 import pandas as pd
@@ -15,8 +14,7 @@ from smartbots.brokerMQ import Emit_Events
 from smartbots.health_handler import Health_Handler
 import os
 import pytz
-
-logger = logging.getLogger(__name__)
+from smartbots.base_logger import logger
 
 
 def save_tick_data(msg=dict) -> None:
@@ -24,7 +22,6 @@ def save_tick_data(msg=dict) -> None:
     save_data[msg['Symbol']].append(msg)
 
 
-@log_start_end(log=logger)
 def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> threading.Thread:
     def create_tick_closed_day():
         for t in last_bar.values():
@@ -43,7 +40,7 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
                 data['price'] = (data['Bid'] + data['Ask']) / 2
             except Exception as e:
                 data = []
-                print(e)
+                logger.error(f'* Error converting data to Dataframe: {e}')
             finally:
                 save_data[symbol] = []  # clear data
             if len(data) > 0:
@@ -83,6 +80,7 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
 
 if __name__ == '__main__':
     print(f'* Starting MT4 Darwinex provider at {dt.datetime.utcnow()}')
+    logger.info(f'Starting MT4 Darwinex provider at {dt.datetime.utcnow()}')
     global save_data , last_bar
     symbols = ['AUDNZD', 'GBPUSD']
     last_bar = {s: None for s in symbols}

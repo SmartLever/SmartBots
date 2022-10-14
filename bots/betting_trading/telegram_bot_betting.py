@@ -11,6 +11,7 @@ from telegram.error import NetworkError, TelegramError
 import schedule
 from smartbots.database_handler import Universe
 from smartbots.betting.betfair_model import Trading
+from smartbots.base_logger import logger
 
 reply_keyboard = [['/start']]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
@@ -26,6 +27,7 @@ def restricted(func):
         if user_id not in LIST_OF_ADMINS:
             print("Unauthorized access denied for {}.".format(user_id))
             update.message.reply_text('You are not authorized, please talk to the administrator, id ' + str(user_id))
+            logger.info("Unauthorized access denied for {}.".format(user_id))
             return
         return func(update, *args, **kwargs)
 
@@ -57,6 +59,7 @@ def _send_msg(chat_id: str, msg: str, parse_mode: str = None,
                 'Telegram NetworkError: %s! Trying one more time.',
                 network_err.message
             )
+            logger.error(f'Telegram NetworkError: {network_err.message}')
             updater.bot.send_message(
                 chat_id=chat_id,
                 text=msg,
@@ -69,6 +72,7 @@ def _send_msg(chat_id: str, msg: str, parse_mode: str = None,
             'TelegramError: %s! Giving up on that message.',
             telegram_err.message
         )
+        logger.error(f'TelegramError: {telegram_err.message}')
 
 @restricted
 def start(update, context):
@@ -113,6 +117,7 @@ def status(update, context):
 
     except Exception as e:
         print(e)
+        logger.error(f'Error getting service status: {e}')
 
 def _get_status(seconds=300):
     """
@@ -137,7 +142,7 @@ def _get_status(seconds=300):
 
         return _health
     except Exception as e:
-        print(e)
+        logger.error(f'Error getting service status: {e}')
 
 @restricted
 def balance(update, context):
@@ -152,7 +157,7 @@ def balance(update, context):
         _send_msg(msg=msg, chat_id=update.message.chat_id, parse_mode=ParseMode.MARKDOWN)
 
     except Exception as e:
-        print(e)
+        logger.error(f'Error getting balance: {e}')
 
 
 #  Controls
@@ -190,7 +195,7 @@ def callback_control():
                             _send_msg(msg=msg, chat_id=user)
 
             except Exception as ex:
-                print(ex)
+                logger.error(f'Error in callback_control health: {ex}')
 
 def error(update, error):
     """Log Errors caused by Updates."""

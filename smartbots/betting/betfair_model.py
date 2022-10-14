@@ -15,8 +15,8 @@ from concurrent.futures import ThreadPoolExecutor, wait
 from smartbots.events import Odds
 import json
 import threading
+from smartbots.base_logger import logger
 
-logger = logging.getLogger(__name__)
 BASE_DIR = Path(__file__).resolve().parent
 
 #######################################################
@@ -124,16 +124,22 @@ def get_client():
     Client
         Betfair client.
     """
-    certs_path = join(BASE_DIR, 'certs')
-    aus = False
-    client = Api(certs_path, aus=aus, ssl_prefix=conf.USERNAME_BETFAIR)
-    client.app_key = conf.APP_KEYS_BETFAIR
-    # login to betfair api-ng
-    resp = client.login(conf.USERNAME_BETFAIR, conf.PASSWORD_BETFAIR)
-    if resp == 'SUCCESS':
-        return client
-    else:
-        raise Exception(str(resp))
+    try:
+        logger.info(f'Connect to betfair user: {conf.USERNAME_BETFAIR}')
+        certs_path = join(BASE_DIR, 'certs')
+        aus = False
+        client = Api(certs_path, aus=aus, ssl_prefix=conf.USERNAME_BETFAIR)
+        client.app_key = conf.APP_KEYS_BETFAIR
+        # login to betfair api-ng
+        resp = client.login(conf.USERNAME_BETFAIR, conf.PASSWORD_BETFAIR)
+        if resp == 'SUCCESS':
+            return client
+        else:
+            logger.error(f'Betfair connection failure by user: {conf.USERNAME_BETFAIR}')
+            raise Exception(str(resp))
+
+    except Exception as e:
+        logger.exception(f'Betfair connection failure, excepcion: {e}')
 
 
 class Trading(object):
@@ -163,6 +169,7 @@ class Trading(object):
         bet: event bet
         """
 
+        logger.info(f'Bet received: {bet.match_name}')
         bet_info = bet.bet_prepare()
         msg = 'PLACING %d BETS...\n' % len(bet_info)
         msg += '%s' % bet_info
@@ -173,6 +180,7 @@ class Trading(object):
             if resp['status'] == 'SUCCESS':
                 # updated bets field
                 bet.bet_id = resp['instructionReports'][0]['betId']
+                logger.info(f'Bet placed correctly: {bet.match_name} with betiId: {bet.bet_id}')
                 if resp['instructionReports'][0]['sizeMatched'] == bet.quantity:
                     bet.quantity_execute = bet.quantity
                     bet.quantity_left = 0
@@ -186,6 +194,7 @@ class Trading(object):
             bet_failed = True
         # raise error if bet placement failed
         if bet_failed:
+            logger.info(f'Bet NO placed: {bet.match_name}')
             bet.status = 'Failed'
             bet.quantity_execute = 0
             bet.quantity_left = bet.quantity
@@ -194,15 +203,18 @@ class Trading(object):
             if bet.quantity_execute < bet.quantity:
                 # pending bets
                 bet.status = 'Pending'
+                logger.info(f'Bet Pending: {bet.match_name} with betiId: {bet.bet_id}')
                 print('BET NO COMPLETED :')
                 try:
                     self.manage_pending_bet(bet)
 
                 except Exception as e:
+                    logger.error(f'Error manage pending bet in {bet.match_name} with betiId: {bet.bet_id}')
                     print('Fail to cancel bet ' + e)
 
             else:
                 # completed bets
+                logger.info(f'Bet Completed: {bet.match_name} with betiId: {bet.bet_id}')
                 bet.status = 'Completed'
                 print('BET COMPLETED :' + str(bet))
                 bet.filled_price = float(resp['instructionReports'][0]['averagePriceMatched'])
@@ -236,6 +248,7 @@ class Trading(object):
                             _bet.quantity_left = _bet.quantity - _bet.quantity_execute
                             self.cancel_bet(_bet)
                         else:  # if it executed
+                            logger.info(f'Bet Completed: {_bet.match_name} with betiId: {_bet.bet_id}')
                             print('BETS COMPLETED IN' + str(_bet.cancel_seconds) + ' SECONDS')
                             _bet.quantity_left = 0
                             _bet.filled_price = float(currentOrder['averagePriceMatched'])
@@ -248,12 +261,16 @@ class Trading(object):
                             _bet.quantity_execute = _bet.quantity
                             _bet.quantity_left = 0
                             print('BETS COMPLETED IN' + str(_bet.cancel_seconds) + ' SECONDS')
+                            logger.info(f'Bet Completed: {_bet.match_name} with betiId: {_bet.bet_id}')
                             _bet.filled_price = float(bet_settled['priceMatched'])
                             no_found = False
-                except:
+
+                except Exception as e:
                     print('Error to get_settled_bets_market_id')
+                    logger.error(f'Error get settled betd in {_bet.match_name} with betiId: {_bet.bet_id}')
 
             if no_found:
+                logger.info(f'Bet dont found: {_bet.match_name} with betiId: {_bet.bet_id}')
                 msg = 'manage_pending_bet dont match ' + str(_bet.bet_id) + ' :' + str(disc_mens)
                 print(msg)
 
@@ -286,6 +303,7 @@ class Trading(object):
                     list_result.append(result)
         else:
             print('Fail get_current_bets' + str(resp))
+            logger.error('Fail get_current_bets')
         return list_result
 
     def get_settled_bets(self, init_datetime=datetime(2022, 8, 1), end_datetime=datetime.now(), req_id=1):
@@ -329,7 +347,8 @@ class Trading(object):
                         maximum = cleared_order['placed_date']
                     list_result.append(cleared_order)
             else:
-                print('Fail get_current_bets' + str(resp))
+                logger.error('Fail get_settled_bets')
+                print('Fail get_settled_bets' + str(resp))
         return list_result
 
     def cancel_bet(self, bet):
@@ -342,12 +361,14 @@ class Trading(object):
 
         bet_failed = False
         try:
+            logger.info(f'Cancel bet in {bet.match_name} with betiId {bet.bet_id}')
             resp = self.client.cancelOrders(betId=bet.bet_id, market_id=bet.ticker_id)
             print('Canceling bet' + 'bet_id: ' + str(bet.bet_id) +
                   'event_id' + str(bet.ticker_id))
 
         except Exception as e:
             print(e)
+            logger.error(f'Error Cancel bet in {bet.match_name} with betiId {bet.bet_id} error: {e}')
 
         if type(resp) is dict and 'status' in resp:
             if resp['status'] == 'SUCCESS':
@@ -360,17 +381,23 @@ class Trading(object):
         # raise error if bet placement failed
         if bet_failed:
             print('cancelOrders error')
+            logger.error(f'Error Cancel bet in {bet.match_name} with betiId {bet.bet_id}')
             print(resp)
 
     def get_account_details(self):
         """ get details from account"""
+        try:
+            return self.client.get_account_details()
 
-        return self.client.get_account_details()
+        except Exception as e:
+            logger.error(f'Error get_account_details {e}')
 
     def get_account_funds(self):
         """ get balance from account"""
-
-        return self.client.get_account_funds()
+        try:
+            return self.client.get_account_funds()
+        except Exception as e:
+            logger.error(f'Error get_account_funds {e}')
 
     def get_events(self):
         """ get live events and next events"""
@@ -386,7 +413,7 @@ class Trading(object):
                     ticker.extend(self.client.get_markets(param))
                     sleep(0.1)
                 except Exception as e:
-                    print(e)
+                    logger.error(f'Error get_events {e}')
             names = []
             if len(ticker) > 0:
                 if li:
@@ -426,6 +453,7 @@ class Trading(object):
         wait(threads)
 
         if len(market_books) == 0:
+            logger.error('Error get_market_books')
             print('error en get_market_books : ' + str(market_books))
 
         return market_books
@@ -657,7 +685,6 @@ class Trading(object):
         return in_play
 
 
-@log_start_end(log=logger)
 def get_realtime_data(settings: dict, callback: callable = _callable) -> None:
     """Return realtime data for a list of tickers (Events). [Source: Betfair]
 

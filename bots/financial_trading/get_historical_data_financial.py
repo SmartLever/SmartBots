@@ -1,12 +1,10 @@
 """ Historical data from Financial"""
-import logging
 import os
 from smartbots import conf
 from typing import Dict
 import pandas as pd
 from smartbots.decorators import log_start_end
 from smartbots.database_handler import Universe
-logger = logging.getLogger(__name__)
 
 def _get_historical_data():
     """ Read historical data save in file, return it as events"""
