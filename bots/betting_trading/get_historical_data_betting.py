@@ -3,7 +3,6 @@ import os
 from smartbots import conf
 from typing import Dict
 import pandas as pd
-from smartbots.decorators import log_start_end
 from smartbots.database_handler import Universe
 
 def _get_historical_data_test_files_betfair():
@@ -80,7 +79,7 @@ def save_historical(symbol_data: Dict = {}, name_library: str = 'provider_histor
         Here the docs: https://github.com/man-group/arctic"""
 
     store = Universe()
-    lib = store.get_library(name_library)
+    lib = store.get_library(name_library, type_library=False)
 
     for symbol, data in symbol_data.items():
         data.index.exchange = 'date'
@@ -93,7 +92,6 @@ def save_historical(symbol_data: Dict = {}, name_library: str = 'provider_histor
                                           'selection':selection, 'sport_id': sports_id})
 
 
-@log_start_end(log=logger)
 def main(provider='betfair_files'):
     """ Main function """
     if provider == 'betfair_files':

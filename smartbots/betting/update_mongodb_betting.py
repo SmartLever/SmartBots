@@ -61,9 +61,9 @@ def update_mongodb():
     name_yesterday = f'{name_library}_{yesterday.strftime("%Y%m%d")}'
     store = Universe()
     # libraries
-    lib_keeper = store.get_library(name)
-    lib_keeper_yesterday = store.get_library(name_yesterday)
-    lib_historical_betfair = store.get_library('betfair_files_historical')
+    lib_keeper = store.get_library(name, type_library=False)
+    lib_keeper_yesterday = store.get_library(name_yesterday, type_library=False)
+    lib_historical_betfair = store.get_library('betfair_files_historical', type_library=False)
     list_symbols = lib_keeper.list_symbols(regex="over")
     list_symbols_yesterday = lib_keeper_yesterday.list_symbols(regex="over")
     for sim in list_symbols:

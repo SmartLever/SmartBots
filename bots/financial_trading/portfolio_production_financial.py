@@ -14,7 +14,7 @@
     to produce orders that will send to trading.
     """
 import datetime as dt
-
+import pandas as pd
 
 def main(run_real: bool = False, send_orders_to_broker: bool = True,
          start_date: dt.datetime = dt.datetime(2022, 7, 1)) -> None:
@@ -26,8 +26,26 @@ def main(run_real: bool = False, send_orders_to_broker: bool = True,
     path_bot = os.path.dirname(path)  # path to the module
     path_to_config = os.path.join(path_bot, "config_financial.yaml")
     conf_portfolio = get_config(path_to_config)  # get the configuration from the config file
-    # run the portfolio engine, set run_real=True to run in real time
 
+    # if our strategy is in a csv file
+    list_strategy = []
+    if conf_portfolio['Strategies_Load_From']['from']:
+        # load strategy from csv
+        path_info_strategy = os.path.join(path_bot, conf_portfolio['Strategies_Load_From']['from'])
+        info_strategy = pd.read_csv(path_info_strategy)
+        for index, strategy in info_strategy.iterrows():
+            dict_strategy = {'params': {}}
+            for k in strategy.keys():
+                if k == 'id':
+                    dict_strategy['id'] = strategy[k]
+                elif k == 'name':
+                    dict_strategy['strategy'] = strategy[k]
+                else:
+                    dict_strategy['params'][k] = strategy[k]
+            list_strategy.append(dict_strategy)
+        conf_portfolio['Strategies'] = list_strategy
+
+    # run the portfolio engine, set run_real=True to run in real time
     portfolio_production = Portfolio_Constructor(conf_portfolio, run_real=run_real, asset_type='financial',
                                                  send_orders_to_broker=send_orders_to_broker, start_date=start_date)
     portfolio_production.run()

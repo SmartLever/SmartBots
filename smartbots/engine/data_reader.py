@@ -85,12 +85,13 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
             for tuple in df.itertuples():
                 # create bar event  for the frecuency of the data
                 bar = Bar(ticker=tuple.symbol, datetime=tuple[0], open=tuple.open, high=tuple.close, low=tuple.low,
-                          close=tuple.close, volume=tuple.volume, exchange=tuple.exchange)
+                          close=tuple.close, volume=tuple.volume, exchange=tuple.exchange, multiplier=tuple.multiplier,
+                          ask=tuple.ask, bid=tuple.bid)
 
                 if day[bar.ticker] != bar.datetime.day: # change of day
                     day[bar.ticker] = bar.datetime.day
                     tick = Tick(event_type='tick', tick_type='close_day', price=ant_close[bar.ticker]['close'],
-                                      ticker=bar.ticker, datetime=ant_close[bar.ticker]['datetime'])
+                                ticker=bar.ticker, datetime=ant_close[bar.ticker]['datetime'])
                     yield tick # send close_day event
                 yield bar # send bar event
                 ant_close[bar.ticker] = {'close':bar.close,'datetime': bar.datetime}
