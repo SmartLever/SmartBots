@@ -25,7 +25,7 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - ./mongo-data:/data/db
+      - /home/ubuntu/db/mongo-data:/data/db
 
   portainer:
     image: portainer/portainer-ce:latest
