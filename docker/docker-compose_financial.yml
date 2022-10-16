@@ -5,8 +5,8 @@ version: '3.9'
 services:
   data_provider_darwinex:
     build:
-      context: ../..
-      dockerfile:  smartbot-python.dockerfile
+      context: .
+      dockerfile: smartbot-python.dockerfile
     hostname: data_provider_darwinex
     volumes:
       - ..:/app
@@ -18,7 +18,7 @@ services:
 
   bot_financial_trading:
     build:
-      context: ../..
+      context: .
       dockerfile: smartbot-python.dockerfile
     hostname: bot_financial_trading
     volumes:
@@ -27,11 +27,11 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./bots/crypto_trading/portfolio_production_financial.py
+    command: python -u ./bots/financial_trading/portfolio_production_financial.py
 
   broker_darwinex:
     build:
-      context: ../..
+      context: .
       dockerfile: smartbot-python.dockerfile
     hostname: broker_darwinex
     volumes:
@@ -40,7 +40,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./bots/crypto_trading/broker_mt4_darwinex.py
+    command: python -u ./bots/financial_trading/broker_mt4_darwinex.py
 
   telegram_financial:
     build:
@@ -53,7 +53,7 @@ services:
       - smartbots_networks
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
-    command: python -u ./bots/crypto_trading/telegram_bot_financial.py
+    command: python -u ./bots/financial_trading/telegram_bot_financial.py
 
 networks:
   smartbots_networks:

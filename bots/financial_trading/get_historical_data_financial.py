@@ -19,12 +19,12 @@ def _get_historical_data(name_library):
         df['exchange'] = 'mt4_darwinex'
         df['provider'] = 'mt4_darwinex'
         df['freq'] = '1min'
-        df['datetime'] = df['date']
+        df['datetime'] = df['date_time']
         df['dtime_zone'] = 'UTC'
         # rename columns dataframe
         df.rename(columns={"multiplicador": "multiplier"},inplace=True)
-        df.index = pd.to_datetime(df['date'])
-        df.drop(['date'], axis=1, inplace=True)
+        df.index = pd.to_datetime(df['datetime'])
+        df.drop(['date_time'], axis=1, inplace=True)
         unique_name = df['contract'].values[0]
         df.index.name = 'date'
         save_historical(unique_name, df, name_library)

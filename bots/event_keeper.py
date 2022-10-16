@@ -45,7 +45,7 @@ def main(_name_library='events_keeper') -> None:
 
         name = f'{_name_library}_{event.datetime.strftime("%Y%m%d")}'
         if name != saved_variable['name']:
-            saved_variable['lib'] = store.get_library(name)
+            saved_variable['lib'] = store.get_library(name, type_library=False)
             saved_variable['name'] = name
             print('New library created', name)
 
@@ -55,7 +55,7 @@ def main(_name_library='events_keeper') -> None:
     store = Universe()
     # Create library for saving events
     name = f'{_name_library}_{dt.datetime.utcnow().strftime("%Y%m%d")}'
-    saved_variable['lib'] = store.get_library(name)
+    saved_variable['lib'] = store.get_library(name, type_library=False)
     saved_variable['name'] = name
 
     # Connect to brokerMQ for receiving events
