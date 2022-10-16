@@ -145,7 +145,7 @@ class Portfolio_Constructor(object):
                     name_library = event.path_to_saving
                     name = event.name_to_saving
                     store = Universe()
-                    lib = store.get_library(name_library)
+                    lib = store.get_library(name_library, type_library=False)
                     lib.write(name, data_to_save)
                     print(f'Save {name} in {name_library}.')
 
