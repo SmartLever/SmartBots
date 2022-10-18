@@ -2,7 +2,7 @@
     This bot is used to produce a portfolio of Financial Markets.
     It is used to:
     1) Test the perfomance of a combination of strategies.
-    2) Test the performance of a strategy with a portfolio.
+    2) Test the stats of a strategy with a portfolio.
     3) Run in real time.
 
     Here the configuration is done in the config_financial.yaml file.

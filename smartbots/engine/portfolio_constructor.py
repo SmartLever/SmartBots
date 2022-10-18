@@ -225,7 +225,7 @@ class Portfolio_Constructor(object):
                 strategy.add_event(event)    
                 
         elif event.event_type == 'timer':
-            for strategy in self.total_strategies:
+            for strategy in self.total_strategies_with_timer:
                 strategy.add_timer(event)
 
         elif event.event_type == 'petition': # petition to get data from the portfolio

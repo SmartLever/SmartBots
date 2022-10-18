@@ -73,6 +73,12 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
                 print(f'Loading {ticker_name} from {month.start_date}')
                 data = lib.read(ticker_name, chunk_range=pd.date_range(month.start_date, month.end_date))
                 data['event_type'] = 'bar'
+                if 'multiplier' not in data.columns:
+                    data['multiplier'] = 1 # default value
+                if 'ask' not in data.columns:
+                    data['ask'] = data['close']
+                if 'bid' not in data.columns:
+                    data['bid'] = data['close']
                 if len(data) > 0:
                     datas.append(data)
                     if ticker_name not in day:  # fill day with the first day of the month
