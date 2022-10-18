@@ -5,7 +5,7 @@
 from smartbots.financial.darwinex_model import get_realtime_data
 import datetime as dt
 import pandas as pd
-from smartbots.events import Bar, Tick
+from smartbots.events import Bar, Tick, Timer
 import schedule
 import time
 import threading
@@ -52,26 +52,32 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
                 dtime = dt.datetime(ohlc.index[0].year, ohlc.index[0].month, ohlc.index[0].day,
                                     ohlc.index[0].hour, ohlc.index[0].minute, ohlc.index[0].second,0,pytz.UTC)
                 bar = Bar(ticker=symbol, datetime=dtime, dtime_zone='UTC',
-                          open=ohlc.open[0],
+                          open=ohlc.open[0], bid=data['Bid'].values[-1], ask=data['Ask'].values[-1],
                           high=ohlc.high[0], low=ohlc.low[0], close=ohlc.close[0],
                           volume=ohlc.volume[0], exchange='mt4_darwinex', provider='mt4_darwinex', freq=interval)
+
                 if verbose:
                     print(f'bar {bar.ticker} {bar.datetime} {bar.close}')
                 emit.publish_event('bar', bar)
                 last_bar[symbol] = bar
                 health_handler.check()
 
+    def create_timer():
+        timer = Timer(datetime=dt.datetime.utcnow())
+        print(timer)
+        emit.publish_event('timer', timer)
 
 
     # create scheduler for bar event
     schedule.every().minute.at(":00").do(create_bar)
     # create scheduler for close_day event
     schedule.every().day.at("00:00").do(create_tick_closed_day)
+    schedule.every().minute.at(":00").do(create_timer)
     # Start publishing events in MQ
     emit = Emit_Events()
     #
     health_handler = Health_Handler(n_check=10,
-                                    name_service=os.path.basename(__file__).split('.')[0])
+                                    name_service='data_realtime_provider_darwinex')
 
     while True:
         schedule.run_pending()
@@ -82,7 +88,7 @@ if __name__ == '__main__':
     print(f'* Starting MT4 Darwinex provider at {dt.datetime.utcnow()}')
     logger.info(f'Starting MT4 Darwinex provider at {dt.datetime.utcnow()}')
     global save_data , last_bar
-    symbols = ['AUDNZD', 'GBPUSD']
+    symbols = ['AUDNZD', 'GBPUSD', 'EURNOK', 'EURUSD', 'USDSEK', 'EURJPY']
     last_bar = {s: None for s in symbols}
     save_data = {symbol: [] for symbol in symbols}
     x = threading.Thread(target=get_thread_for_create_bar)

@@ -159,6 +159,7 @@ def positions(update, context):
     """
 
     try:
+        lib_keeper = store.get_library(name_library)
         data = lib_keeper.read(symbol_positions).data
         broker_pos = data.positions
         trades = []
@@ -187,7 +188,7 @@ def status(update, context):
         else:
             msg = _health
 
-        _send_msg(text=msg, chat_id=update.message.chat_id)
+        _send_msg(msg=msg, chat_id=update.message.chat_id)
 
     except Exception as e:
         print(e)
@@ -244,7 +245,7 @@ def callback_control():
                         for user in LIST_OF_ADMINS:
                             # send alert
                             msg = 'ALERT, THIS SERVICE IS NOT WORKING: ' + str(service_name.replace('_health', ''))
-                            updater.bot.send_message(text=msg, chat_id=user)
+                            updater.bot.send_message(msg=msg, chat_id=user)
                     datetime_service = data.datetime
                     # compare datetime_service with datetime current, if the difference is greater than 15 minutes, send alert
                     diff_minutes = abs((_time-datetime_service).seconds / 60)
@@ -285,10 +286,10 @@ def callback_control():
                 # check if positions is saving
                 if _time > data.datetime:
                     diff_minutes = abs((_time - data.datetime).seconds / 60)
-                    if diff_minutes > 1:
+                    if diff_minutes > 4:
                         for user in LIST_OF_ADMINS:
-                            msg = '*ALERT*, Positions from darwinex is not saving'
-                            _send_msg(msg=msg, chat_id=user, parse_mode=ParseMode.MARKDOWN_V2)
+                            msg = 'ALERT, Positions from darwinex is not saving'
+                            _send_msg(msg=msg, chat_id=user)
                 # Compute diference between broker and portfolio
                 diference = {}
                 for c in agregate.keys():
@@ -308,9 +309,9 @@ def callback_control():
                         send_alert = True
                 if send_alert:
                     for user in LIST_OF_ADMINS:
-                        msg = '*ALERT*, simulation and real positions dont match: \n' + \
+                        msg = 'ALERT, simulation and real positions dont match: \n' + \
                               '' + str(diference)
-                        _send_msg(msg=msg, chat_id=user, parse_mode=ParseMode.MARKDOWN_V2)
+                        _send_msg(msg=msg, chat_id=user)
 
             except Exception as ex:
                 print(ex)

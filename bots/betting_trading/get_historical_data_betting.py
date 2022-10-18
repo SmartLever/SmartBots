@@ -79,7 +79,7 @@ def save_historical(symbol_data: Dict = {}, name_library: str = 'provider_histor
         Here the docs: https://github.com/man-group/arctic"""
 
     store = Universe()
-    lib = store.get_library(name_library, type_library=False)
+    lib = store.get_library(name_library, library_chunk_store=False)
 
     for symbol, data in symbol_data.items():
         data.index.exchange = 'date'

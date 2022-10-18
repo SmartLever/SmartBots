@@ -3,7 +3,7 @@
  """
 import pandas as pd
 import datetime as dt
-from smartbots.events import Bar, Odds, Tick
+from smartbots.events import Bar, Odds, Tick, Timer
 from smartbots.database_handler import Universe
 import calendar
 from dateutil import relativedelta
@@ -72,11 +72,18 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
             if lib.has_symbol(ticker_name):
                 print(f'Loading {ticker_name} from {month.start_date}')
                 data = lib.read(ticker_name, chunk_range=pd.date_range(month.start_date, month.end_date))
+                data['event_type'] = 'bar'
                 if len(data) > 0:
                     datas.append(data)
                     if ticker_name not in day:  # fill day with the first day of the month
                         day[ticker_name] = data.index.min().day - 1
                         ant_close[ticker_name] = {'close':data.iloc[0].close,'datetime':data.index.min()}
+                        
+        # create timer
+        timer_index = pd.date_range(month.start_date, month.end_date, freq='2min')
+        df_timer = pd.DataFrame(index=timer_index)
+        df_timer['event_type'] = 'timer'
+        datas.append(df_timer)
 
         ### Sort and Send events to portfolio engine
         if len(datas) > 0:
@@ -84,18 +91,23 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
             df.sort_index(inplace=True)
             for tuple in df.itertuples():
                 # create bar event  for the frecuency of the data
-                bar = Bar(ticker=tuple.symbol, datetime=tuple[0], open=tuple.open, high=tuple.close, low=tuple.low,
-                          close=tuple.close, volume=tuple.volume, exchange=tuple.exchange, multiplier=tuple.multiplier,
-                          ask=tuple.ask, bid=tuple.bid)
-
-                if day[bar.ticker] != bar.datetime.day: # change of day
-                    day[bar.ticker] = bar.datetime.day
-                    tick = Tick(event_type='tick', tick_type='close_day', price=ant_close[bar.ticker]['close'],
-                                ticker=bar.ticker, datetime=ant_close[bar.ticker]['datetime'])
-                    yield tick # send close_day event
-                yield bar # send bar event
-                ant_close[bar.ticker] = {'close':bar.close,'datetime': bar.datetime}
-
+                event_type = tuple.event_type
+                if event_type == 'bar':
+                    bar = Bar(ticker=tuple.symbol, datetime=tuple[0], open=tuple.open, high=tuple.close, low=tuple.low,
+                              close=tuple.close, volume=tuple.volume, exchange=tuple.exchange, multiplier=tuple.multiplier,
+                              ask=tuple.ask, bid=tuple.bid)
+    
+                    if day[bar.ticker] != bar.datetime.day: # change of day
+                        day[bar.ticker] = bar.datetime.day
+                        tick = Tick(event_type='tick', tick_type='close_day', price=ant_close[bar.ticker]['close'],
+                                    ticker=bar.ticker, datetime=ant_close[bar.ticker]['datetime'])
+                        yield tick # send close_day event
+                    yield bar # send bar event
+                    ant_close[bar.ticker] = {'close':bar.close,'datetime': bar.datetime}
+                    
+                elif event_type == 'timer':
+                    timer = Timer(datetime=tuple[0])
+                    yield timer  # send timer event
 
 def load_tickers_and_create_events_betting(tickers_lib_name: list, start_date: dt.datetime = dt.datetime(2022, 1, 1),
                                            end_date: dt.datetime = dt.datetime.utcnow()):

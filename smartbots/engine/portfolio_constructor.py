@@ -29,6 +29,7 @@ class Portfolio_Constructor(object):
         self.asset_type = asset_type
         self.ticker_to_strategies = {}  # fill with function load_strategies_conf()
         self.ticker_to_id_strategies = {}
+        self.total_strategies_with_timer = []
         self._load_strategies_conf()
         self.send_orders_to_broker = send_orders_to_broker
         self.orders = []
@@ -61,6 +62,10 @@ class Portfolio_Constructor(object):
                 self.ticker_to_id_strategies[ticker] = []
             strategy_obj = list_stra[strategy_name](parameters['params'], id_strategy=_id,
                                                     callback=self._callback_orders, set_basic = set_basic)
+
+            if hasattr(strategy_obj, 'add_timer'):
+                # if the strategy has this method, add timer
+                self.total_strategies_with_timer.append(strategy_obj)
             self.ticker_to_strategies[ticker].append(strategy_obj)
             self.ticker_to_id_strategies[ticker].append(_id)
 
@@ -145,7 +150,7 @@ class Portfolio_Constructor(object):
                     name_library = event.path_to_saving
                     name = event.name_to_saving
                     store = Universe()
-                    lib = store.get_library(name_library, type_library=False)
+                    lib = store.get_library(name_library, library_chunk_store=False)
                     lib.write(name, data_to_save)
                     print(f'Save {name} in {name_library}.')
 
@@ -217,7 +222,12 @@ class Portfolio_Constructor(object):
                 self.ticker_to_strategies[event.ticker] = []  # default empty list
                 strategies = self.ticker_to_strategies[event.ticker]
             for strategy in strategies:
-                strategy.add_event(event)
+                strategy.add_event(event)    
+                
+        elif event.event_type == 'timer':
+            for strategy in self.total_strategies:
+                strategy.add_timer(event)
+
         elif event.event_type == 'petition': # petition to get data from the portfolio
             """ If the petition do not work it keeps working"""
             try:

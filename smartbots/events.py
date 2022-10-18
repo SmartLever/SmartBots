@@ -26,6 +26,14 @@ class Base:
 
 @dataclass_json
 @dataclass
+class Timer:
+    """ Class from Timer """
+    event_type: str = 'timer'
+    datetime: dt.datetime = field(default=None, metadata=dataclass_json_config)
+    dtime_zone: str = 'UTC'
+    
+@dataclass_json
+@dataclass
 class Tick(Base):
     """ Tick event, generic case for data events """
     event_type: str = 'tick'

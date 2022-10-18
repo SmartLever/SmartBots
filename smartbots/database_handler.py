@@ -31,9 +31,9 @@ class Universe():
     def __init__(self):
         self.client = get_client()
 
-    def get_library(self, name_library, type_library=True):
+    def get_library(self, name_library, library_chunk_store=True):
         if not self.client.library_exists(name_library):
-            if type_library:
+            if library_chunk_store:
                 self.client.initialize_library(name_library, lib_type=CHUNK_STORE)
             else:
                 self.client.initialize_library(name_library)

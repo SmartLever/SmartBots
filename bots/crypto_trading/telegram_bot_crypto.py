@@ -315,9 +315,9 @@ def callback_control():
                         send_alert = True
                 if send_alert:
                     for user in LIST_OF_ADMINS:
-                        msg = '*ALERT*, simulation and real positions dont match: \n' + \
+                        msg = 'ALERT, simulation and real positions dont match: \n' + \
                               '' + str(diference)
-                        _send_msg(msg=msg, chat_id=user, parse_mode=ParseMode.MARKDOWN_V2)
+                        _send_msg(msg=msg, chat_id=user)
 
             except Exception as ex:
                 print(ex)
