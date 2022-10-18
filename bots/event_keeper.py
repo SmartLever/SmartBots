@@ -31,23 +31,24 @@ def main(_name_library='events_keeper') -> None:
 
     def callback(event : dataclasses.dataclass) -> None:
         """Callback for saving events to DataBase"""
-        saved_variable['events'] += 1
-        ticker = event.ticker
-        unique = get_unique(event)
-        # check if a string is in ASCII
-        if unique.isascii() is False:
-            unique = unique.encode('ascii', 'ignore').decode('ascii')
+        if event.event_type != 'timer':
+            saved_variable['events'] += 1
+            ticker = event.ticker
+            unique = get_unique(event)
+            # check if a string is in ASCII
+            if unique.isascii() is False:
+                unique = unique.encode('ascii', 'ignore').decode('ascii')
 
-        saved_variable['lib'].write(unique, event, metadata={'datetime': event.datetime,
-                                    'event_type': event.event_type, 'ticker': ticker})
+            saved_variable['lib'].write(unique, event, metadata={'datetime': event.datetime,
+                                        'event_type': event.event_type, 'ticker': ticker})
 
-        print(f'Event saved {event.event_type} {event.datetime}', )
+            print(f'Event saved {event.event_type} {event.datetime}', )
 
-        name = f'{_name_library}_{event.datetime.strftime("%Y%m%d")}'
-        if name != saved_variable['name']:
-            saved_variable['lib'] = store.get_library(name, library_chunk_store=False)
-            saved_variable['name'] = name
-            print('New library created', name)
+            name = f'{_name_library}_{event.datetime.strftime("%Y%m%d")}'
+            if name != saved_variable['name']:
+                saved_variable['lib'] = store.get_library(name, library_chunk_store=False)
+                saved_variable['name'] = name
+                print('New library created', name)
 
     # variable
     saved_variable = {'events': 0}
