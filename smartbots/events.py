@@ -44,6 +44,15 @@ class Tick(Base):
 
 @dataclass_json
 @dataclass
+class WebHook(Base):
+    """ WebHook event"""
+    event_type: str = 'webhook'
+    hook_type: str = None  # indicator, strategy
+    msg:  Dict[str, Any] = None
+
+
+@dataclass_json
+@dataclass
 class Petition(Base):
     """ Petition for getting data from a data source from running processes """
     event_type: str = 'petition'

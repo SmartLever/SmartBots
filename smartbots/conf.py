@@ -12,6 +12,14 @@ path_to_crypto = os.path.join(path_modulo, 'crypto')
 path_to_betting = os.path.join(path_modulo, 'betting')
 path_to_financial = os.path.join(path_modulo, 'financial')
 
+# create folders for code your strategies
+path_to_my_strategies = os.path.join(path_to_crypto, 'strategies')
+path_to_my_strategies_betting = os.path.join(path_to_betting, 'strategies')
+if not os.path.exists(path_to_my_strategies):
+    os.makedirs(path_to_my_strategies)
+if not os.path.exists(path_to_my_strategies_betting):
+    os.makedirs(path_to_my_strategies_betting)
+
 path_to_temp = os.path.join(path_modulo, 'temp')
 # Check is exist temp folder
 if not os.path.exists(path_to_temp):
@@ -77,3 +85,8 @@ PULL_PORT_PROVIDER = os.getenv("PULL_PORT_PROVIDER") or "REPLACE_ME"
 PULL_PORT_BROKER = os.getenv("PULL_PORT_BROKER") or "REPLACE_ME"
 SUB_PORT_PROVIDER = os.getenv("SUB_PORT_PROVIDER") or "REPLACE_ME"
 SUB_PORT_BROKER = os.getenv("SUB_PORT_BROKER") or "REPLACE_ME"
+
+
+# Info Webhook
+WEBHOOKS = {}
+WEBHOOKS['TRADINGVIEW_KEY'] = os.getenv("WEBHOOKS_TRADINGVIEW_KEY") or "REPLACE_ME"
