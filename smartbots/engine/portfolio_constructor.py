@@ -159,7 +159,7 @@ class Portfolio_Constructor(object):
         self.in_real_time = True
         print('running real  of the Portfolio, waitig Events')
         if self.asset_type in ['crypto', 'financial']:
-            receive_events(routing_key='bar,petition', callback=self._callback_datafeed)
+            receive_events(routing_key='bar,petition,timer', callback=self._callback_datafeed)
         elif self.asset_type == 'betting':
             receive_events(routing_key='odds,petition', callback=self._callback_datafeed_betting)
         else:

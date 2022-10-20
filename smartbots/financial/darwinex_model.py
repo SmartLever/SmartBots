@@ -443,7 +443,6 @@ class Trading(object):
                 list_changing.append(order_id)
             if self.send_orders_status:  # publish order status
                 self.emit_orders.publish_event('order_status', order)
-            print(f'Order {order.status} {order}')
 
         for order_id in list_changing:
             # eliminate from dict_open_orders and create in dict_cancel_and_close_orders
