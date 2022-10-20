@@ -168,6 +168,8 @@ def positions(update, context):
     except Exception as e:
         print(e)
         logger.error(f'Error getting Positions: {e}')
+        msg = 'Failed to get Positions, please try again'
+        _send_msg(msg=msg, chat_id=update.message.chat_id)
 
 
 @restricted
@@ -189,6 +191,8 @@ def status(update, context):
     except Exception as e:
         print(e)
         logger.error(f'Error getting service status: {e}')
+        msg = 'Failed to get status, please try again'
+        _send_msg(msg=msg, chat_id=update.message.chat_id)
 
 def _get_status(seconds=300):
     """
@@ -231,6 +235,8 @@ def balance(update, context):
     except Exception as e:
         print(e)
         logger.error(f'Error getting balance: {e}')
+        msg = 'Failed to get balance, please try again'
+        _send_msg(msg=msg, chat_id=update.message.chat_id)
 
 
 #  Controls

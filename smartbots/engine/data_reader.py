@@ -72,21 +72,26 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
             if lib.has_symbol(ticker_name):
                 print(f'Loading {ticker_name} from {month.start_date}')
                 data = lib.read(ticker_name, chunk_range=pd.date_range(month.start_date, month.end_date))
-                data['event_type'] = 'bar'
-                if 'multiplier' not in data.columns:
-                    data['multiplier'] = 1 # default value
-                if 'ask' not in data.columns:
-                    data['ask'] = data['close']
-                if 'bid' not in data.columns:
-                    data['bid'] = data['close']
-                if len(data) > 0:
-                    datas.append(data)
-                    if ticker_name not in day:  # fill day with the first day of the month
-                        day[ticker_name] = data.index.min().day - 1
-                        ant_close[ticker_name] = {'close':data.iloc[0].close,'datetime':data.index.min()}
-                        
+                if len(data):
+                    data['event_type'] = 'bar'
+                    if 'multiplier' not in data.columns:
+                        data['multiplier'] = 1 # default value
+                    if 'ask' not in data.columns:
+                        data['ask'] = data['close']
+                    if 'bid' not in data.columns:
+                        data['bid'] = data['close']
+                    if len(data) > 0:
+                        datas.append(data)
+                        if ticker_name not in day:  # fill day with the first day of the month
+                            day[ticker_name] = data.index.min().day - 1
+                            ant_close[ticker_name] = {'close':data.iloc[0].close,'datetime':data.index.min()}
+
+        today = dt.datetime.utcnow()
+        month_end_date = month.end_date
+        if month_end_date > today:
+            month_end_date = today
         # create timer
-        timer_index = pd.date_range(month.start_date, month.end_date, freq='2min')
+        timer_index = pd.date_range(month.start_date, month_end_date, freq='2min')
         df_timer = pd.DataFrame(index=timer_index)
         df_timer['event_type'] = 'timer'
         datas.append(df_timer)
@@ -102,7 +107,8 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
                     bar = Bar(ticker=tuple.symbol, datetime=tuple[0], open=tuple.open, high=tuple.close, low=tuple.low,
                               close=tuple.close, volume=tuple.volume, exchange=tuple.exchange, multiplier=tuple.multiplier,
                               ask=tuple.ask, bid=tuple.bid)
-    
+
+
                     if day[bar.ticker] != bar.datetime.day: # change of day
                         day[bar.ticker] = bar.datetime.day
                         tick = Tick(event_type='tick', tick_type='close_day', price=ant_close[bar.ticker]['close'],
@@ -110,6 +116,7 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
                         yield tick # send close_day event
                     yield bar # send bar event
                     ant_close[bar.ticker] = {'close':bar.close,'datetime': bar.datetime}
+
                     
                 elif event_type == 'timer':
                     timer = Timer(datetime=tuple[0])

@@ -12,7 +12,6 @@ import schedule
 from smartbots.database_handler import Universe
 from smartbots.brokerMQ import Emit_Events
 from smartbots import events
-import math
 from tabulate import tabulate
 from smartbots.base_logger import logger
 
@@ -88,7 +87,8 @@ def start(update, context):
           '/start Start Bot.\n' + \
           '/mi_id Get Telegram ID\n' + \
           '/positions Current Positions. \n' + \
-          '/status State of the Services.'
+          '/status State of the Services. \n' + \
+          '/prices Price of Symbols'
 
     _send_msg(msg=msg, chat_id=update.message.chat_id)
 
@@ -105,34 +105,6 @@ def mi_id(update, context):
     chat_id_str = str(update.message.chat_id)
     update.message.reply_text(str(chat_id_str))
 
-
-def round_decimals_down(number:float, decimals:int=2):
-    """
-    Returns a value rounded down to a specific number of decimal places.
-    """
-    if not isinstance(decimals, int):
-        raise TypeError("decimal places must be an integer")
-    elif decimals < 0:
-        raise ValueError("decimal places has to be 0 or more")
-    elif decimals == 0:
-        return math.floor(number)
-
-    factor = 10 ** decimals
-    return math.floor(number * factor) / factor
-
-def round_decimals_up(number:float, decimals:int=2):
-    """
-    Returns a value rounded up to a specific number of decimal places.
-    """
-    if not isinstance(decimals, int):
-        raise TypeError("decimal places must be an integer")
-    elif decimals < 0:
-        raise ValueError("decimal places has to be 0 or more")
-    elif decimals == 0:
-        return math.ceil(number)
-
-    factor = 10 ** decimals
-    return math.ceil(number * factor) / factor
 
 def get_data_petition(name):
     for i in range(10):
@@ -159,19 +131,43 @@ def positions(update, context):
     """
 
     try:
+        # Get simultad positions
+        name_to_saving = f'positions_{dt.datetime.now().strftime("%Y%m%d%H%M%S")}'
+        # first create the petition
+        create_petition(name_to_saving)
+        # Get data Petition
+        data_petition = get_data_petition(name_to_saving)
+        ## Agregate data_petition by ticker base
+        agregate = {}
+        tickers = []
+        for _id in data_petition.keys():
+            p = data_petition[_id]
+            t = data_petition[_id]['ticker']
+            if t not in tickers:
+                tickers.append(t)
+            agregate.setdefault(t, 0)
+            agregate[t] += p['position'] * p['quantity']
+            agregate[t] = round(agregate[t], 2)
+
+        # Get real positions
         lib_keeper = store.get_library(name_library)
         data = lib_keeper.read(symbol_positions).data
         broker_pos = data.positions
         trades = []
-        for trade in broker_pos:
-            trades.append([trade, broker_pos[trade]])
+        for trade in agregate:
+            real = 0
+            if trade in broker_pos:
+                real = broker_pos[trade]
+            trades.append([trade, real, agregate[trade]])
         msg = tabulate(trades,
-                       headers=['Symbol', 'Positions'],
+                       headers=['Symbol', 'Real', 'Simulated'],
                        tablefmt='simple')
         _send_msg(msg=f"<pre>{msg}</pre>", chat_id=update.message.chat_id, parse_mode=ParseMode.HTML)
 
     except Exception as e:
         logger.error(f'Error getting Positions: {e}')
+        msg = 'Failed to getting Positions, please try again'
+        _send_msg(msg=msg, chat_id=update.message.chat_id)
 
 
 @restricted
@@ -193,6 +189,8 @@ def status(update, context):
     except Exception as e:
         print(e)
         logger.error(f'Error getting service status: {e}')
+        msg = 'Failed to get Status, please try again'
+        _send_msg(msg=msg, chat_id=update.message.chat_id)
 
 def _get_status(seconds=300):
     """
@@ -219,6 +217,50 @@ def _get_status(seconds=300):
     except Exception as e:
         print(e)
         logger.error(f'Error getting service status: {e}')
+
+
+@restricted
+def prices(update, context):
+    """
+    Send Price
+    """
+    try:
+        lib_keeper = store.get_library(name_library)
+        now = dt.datetime.utcnow()
+        initial_time = now.strftime("%Y-%m-%d 00:00:00")
+
+        prices = []
+        # Get price for each symbols
+        for s in symbols:
+            initial_price_symbol = f'{s}_{initial_time}_bar'
+            initial_price_data = lib_keeper.read(initial_price_symbol).data
+            initial_price = initial_price_data.close
+            _range = range(0, 4, 1)
+            # Check If the symbol exist
+            for minute in _range:
+                _now = now - dt.timedelta(minutes=minute)
+                current_time = _now.strftime("%Y-%m-%d %H:%M:00")
+                current_price_symbol = f'{s}_{current_time}_bar'
+                if lib_keeper.has_symbol(current_price_symbol):
+                    break
+            # get current price
+            current_price_data = lib_keeper.read(current_price_symbol).data
+            current_price = current_price_data.close
+            perc = round((current_price - initial_price) / initial_price * 100, 2)
+            # Insert info to list
+            prices.append([s, current_price, perc])
+
+        msg = tabulate(prices,
+                       headers=['Symbol', 'Price', 'Perc'],
+                       tablefmt='simple')
+
+        _send_msg(msg=f"<pre>{msg}</pre>", chat_id=update.message.chat_id, parse_mode=ParseMode.HTML)
+
+    except Exception as e:
+        print(e)
+        logger.error(f'Error getting Price: {e}')
+        msg = 'Failed to get price, please try again or no new data'
+        _send_msg(msg=msg, chat_id=update.message.chat_id)
 
 
 #  Controls
@@ -279,6 +321,7 @@ def callback_control():
                         tickers.append(t)
                     agregate.setdefault(t, 0)
                     agregate[t] += p['position'] * p['quantity']
+                    agregate[t] = round(agregate[t], 2)
 
                 lib_keeper = store.get_library(name_library)
                 data = lib_keeper.read(symbol_positions).data
@@ -299,9 +342,9 @@ def callback_control():
                         quantity_broker = broker_pos[c]
                     diference[c] = agregate[c] - quantity_broker
                     if diference[c] > 0:
-                        diference[c] = round_decimals_down(diference[c], 4)
+                        diference[c] = round(diference[c], 2)
                     else:
-                        diference[c] = round_decimals_up(diference[c], 4)
+                        diference[c] = round(diference[c], 2)
 
                 send_alert = False
                 for cu in diference:
@@ -333,17 +376,19 @@ def schedule_callback_control():
 
 def main():
     global LIST_OF_ADMINS, updater, counters_callback, name_library, _name_library, lib_keeper, store, list_services
-    global lib_petitions, emiter, name_portfolio, symbol_positions
+    global lib_petitions, emiter, name_portfolio, symbol_positions, symbols
 
     # token from telegram
     token = conf.TOKEN_TELEGRAM_FINANCIAL
     #  Parameters
     LIST_OF_ADMINS = []
     list_services = ['mt4_darwinex_health', 'data_realtime_provider_darwinex_health']
-    # name of portfolio which we want to know positions
+    # name of portfolio which we want to know simulated positions
     name_portfolio = 'PortfolioForex1'
-    # symbol to read positions
+    # symbol to read real positions
     symbol_positions = 'darwinex_mt4_positions'
+    # symbols to get price
+    symbols = ['AUDNZD', 'GBPUSD', 'EURNOK', 'USDSEK', 'EURJPY']
 
     # Launch thread
     x = threading.Thread(target=schedule_callback_control)
@@ -356,6 +401,7 @@ def main():
     lib_keeper = store.get_library(name_library)
     lib_petitions = store.get_library('petitions')
 
+
     # Conection to broker mq
     emiter = Emit_Events()
 
@@ -366,6 +412,8 @@ def main():
                                                   status))
     updater.dispatcher.add_handler(CommandHandler('positions',
                                                   positions))
+    updater.dispatcher.add_handler(CommandHandler('prices',
+                                                  prices))
     updater.dispatcher.add_handler(CommandHandler('mi_id',
                                                   mi_id))
 

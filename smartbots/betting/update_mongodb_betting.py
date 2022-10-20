@@ -32,8 +32,8 @@ def save_historical_data():
         datetime_df = pd.to_datetime(df['datetime'].values[0])
         search_last_row = df[df['last_row'] == 1]
         if len(search_last_row) > 0:
-            # sort df by datetime
             del dict_per_event[k]
+            # sort df by datetime
             df = df.sort_values(by=['datetime'])
             df.index = df['datetime']
             df.index.name = 'date'
@@ -64,8 +64,12 @@ def update_mongodb():
     lib_keeper = store.get_library(name, library_chunk_store=False)
     lib_keeper_yesterday = store.get_library(name_yesterday, library_chunk_store=False)
     lib_historical_betfair = store.get_library('betfair_files_historical', library_chunk_store=False)
-    list_symbols = lib_keeper.list_symbols(regex="over")
-    list_symbols_yesterday = lib_keeper_yesterday.list_symbols(regex="over")
+    list_symbols_over = lib_keeper.list_symbols(regex="over")
+    list_symbols_match_odd = lib_keeper.list_symbols(regex="match odds")
+    list_symbols_yesterday_over = lib_keeper_yesterday.list_symbols(regex="over")
+    list_symbols_yesterday_match_odd = lib_keeper_yesterday.list_symbols(regex="match odds")
+    list_symbols = list_symbols_over + list_symbols_match_odd
+    list_symbols_yesterday = list_symbols_yesterday_over + list_symbols_yesterday_match_odd
     for sim in list_symbols:
         if 'None' in sim:
             last_part = len(sim.split('_')[-1]) + 1
