@@ -9,18 +9,15 @@ from smartbots.events import Bar, Tick, Timer
 import schedule
 import time
 import threading
-from smartbots.decorators import log_start_end
 from smartbots.brokerMQ import Emit_Events
 from smartbots.health_handler import Health_Handler
-import os
 import pytz
 from smartbots.base_logger import logger
-
+from smartbots import conf
 
 def save_tick_data(msg=dict) -> None:
     """ Save tick data in dictionary """
     save_data[msg['Symbol']].append(msg)
-
 
 def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> threading.Thread:
     def create_tick_closed_day():
@@ -46,8 +43,10 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
             if len(data) > 0:
                 data.index = pd.to_datetime(data['Time'], format='%Y-%m-%d %H:%M:%S.%f')
                 ohlc = data['price'].astype(float).resample(interval).ohlc()
+                # there are two bars and 2 dates
                 if len(ohlc) > 1:
-                    ohlc = ohlc[ohlc.index == ohlc.index.max()]
+                    ohlc = ohlc[ohlc.index == ohlc.index.min()]
+
                 ohlc['volume'] = float(0)
                 dtime = dt.datetime(ohlc.index[0].year, ohlc.index[0].month, ohlc.index[0].day,
                                     ohlc.index[0].hour, ohlc.index[0].minute, ohlc.index[0].second,0,pytz.UTC)
@@ -66,7 +65,6 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
         timer = Timer(datetime=dt.datetime.utcnow())
         print(timer)
         emit.publish_event('timer', timer)
-
 
     # create scheduler for bar event
     schedule.every().minute.at(":00").do(create_bar)
@@ -87,8 +85,8 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
 if __name__ == '__main__':
     print(f'* Starting MT4 Darwinex provider at {dt.datetime.utcnow()}')
     logger.info(f'Starting MT4 Darwinex provider at {dt.datetime.utcnow()}')
-    global save_data , last_bar
-    symbols = ['AUDNZD', 'GBPUSD', 'EURNOK', 'EURUSD', 'USDSEK', 'EURJPY']
+    global save_data, last_bar
+    symbols = conf.FINANCIAL_SYMBOLS
     last_bar = {s: None for s in symbols}
     save_data = {symbol: [] for symbol in symbols}
     x = threading.Thread(target=get_thread_for_create_bar)

@@ -1,8 +1,6 @@
 import os
 from dotenv import load_dotenv
-
-
-
+import ast
 
 
 path = os.path.abspath(__file__)
@@ -85,8 +83,17 @@ PULL_PORT_PROVIDER = os.getenv("PULL_PORT_PROVIDER") or "REPLACE_ME"
 PULL_PORT_BROKER = os.getenv("PULL_PORT_BROKER") or "REPLACE_ME"
 SUB_PORT_PROVIDER = os.getenv("SUB_PORT_PROVIDER") or "REPLACE_ME"
 SUB_PORT_BROKER = os.getenv("SUB_PORT_BROKER") or "REPLACE_ME"
-
+FINANCIAL_SYMBOLS = os.getenv("FINANCIAL_SYMBOLS") or "REPLACE_ME"
+# is a list
+if '[' in FINANCIAL_SYMBOLS:
+    FINANCIAL_SYMBOLS = ast.literal_eval(FINANCIAL_SYMBOLS)
 
 # Info Webhook
 WEBHOOKS = {}
 WEBHOOKS['TRADINGVIEW_KEY'] = os.getenv("WEBHOOKS_TRADINGVIEW_KEY") or "REPLACE_ME"
+
+# Credential ftp to download data historical from Darwinex
+DWT_FTP_USER = os.getenv("DWT_FTP_USER") or "REPLACE_ME"
+DWT_FTP_PASS = os.getenv("DWT_FTP_PASS") or "REPLACE_ME"
+DWT_FTP_HOSTNAME = os.getenv("DWT_FTP_HOSTNAME") or "REPLACE_ME"
+DWT_FTP_PORT = os.getenv("DWT_FTP_PORT") or "REPLACE_ME"

@@ -388,7 +388,7 @@ def main():
     # symbol to read real positions
     symbol_positions = 'darwinex_mt4_positions'
     # symbols to get price
-    symbols = ['AUDNZD', 'GBPUSD', 'EURNOK', 'USDSEK', 'EURJPY']
+    symbols = conf.FINANCIAL_SYMBOLS
 
     # Launch thread
     x = threading.Thread(target=schedule_callback_control)
@@ -400,7 +400,6 @@ def main():
     store = Universe()
     lib_keeper = store.get_library(name_library)
     lib_petitions = store.get_library('petitions')
-
 
     # Conection to broker mq
     emiter = Emit_Events()

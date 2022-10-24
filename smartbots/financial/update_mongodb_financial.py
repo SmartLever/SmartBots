@@ -2,13 +2,12 @@ from smartbots.database_handler import Universe
 import pandas as pd
 import datetime as dt
 from datetime import timedelta
-import warnings
-import numpy as np
 import schedule
 import time
-warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
+from smartbots.financial.utils import read_historical, save_historical
+from smartbots import conf
 
-"""Script to update historical Darwinex"""
+"""Script to update historical Darwinex with mongodb data"""
 
 def read_data(lib, symbol):
     """Read data from MongoDB"""
@@ -22,38 +21,6 @@ def read_data(lib, symbol):
                 dict_per_ticker[data.ticker].append(data.__dict__)
     except:
         pass
-
-def read_historical(symbol: str, name_libray_historical: str = 'darwinex_historical_1min',
-                    start_date: dt.datetime = dt.datetime(2022, 7, 1),
-                    end_date: dt.datetime = dt.datetime.utcnow(),last_month: bool=False) -> pd.DataFrame:
-    """ Read historical data from initial month and end month.
-        Symbols as save as :symbol_monthYear as a way to identify the data.
-        """
-    store = Universe()
-    lib = store.get_library(name_libray_historical)
-    if lib.has_symbol(symbol) is False:
-        return pd.DataFrame()
-    if last_month: # read last month of data
-        last_month_range = list(lib.get_chunk_ranges(symbol))[-1]
-        end_date = pd.to_datetime(last_month_range[1].decode("utf-8") )
-        start_date = pd.to_datetime(last_month_range[0].decode("utf-8") )
-    else:
-        end_date = end_date + dt.timedelta(days=1)
-    return lib.read(symbol, chunk_range=pd.date_range(start_date, end_date))
-
-
-def save_historical(symbol: str, data: pd.DataFrame, name_library: str = 'darwinex_historical_1min') -> None:
-    """ Save historical in database in the library."""
-    store = Universe()
-    lib = store.get_library(name_library)
-    # save in chunks of 1 month of data, index have to be a datetime object with name date
-    data.index.name = 'date'
-    if lib.has_symbol(symbol):
-        lib.update(symbol, data, chunk_size='M')
-    else:
-        lib.write(symbol, data, chunk_size='M')
-    print(f'Symbol {symbol} saved.')
-
 
 def update_mongodb():
     global dict_per_ticker
@@ -131,6 +98,6 @@ if __name__ == '__main__':
     """ Update mongo db"""
     name_library = 'events_keeper'
     name_libray_historical = 'darwinex_historical_1min'
-    tickers = ['AUDNZD', 'GBPUSD', 'EURNOK', 'USDSEK', 'EURJPY']
+    tickers = conf.FINANCIAL_SYMBOLS
 
     main()

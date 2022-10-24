@@ -16,6 +16,7 @@ def read_data_to_dataframe(symbol:str, provider:str, interval:str = '1m',
     store = Universe()  # database handler
     name_library = f'{provider}_historical_{interval}'
     lib = store.get_library(name_library)
+    end_date = end_date + dt.timedelta(days=1)
     df = lib.read(symbol, chunk_range=pd.date_range(start_date, end_date))
 
     return df
@@ -71,7 +72,8 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
             lib = store.get_library(name_library)
             if lib.has_symbol(ticker_name):
                 print(f'Loading {ticker_name} from {month.start_date}')
-                data = lib.read(ticker_name, chunk_range=pd.date_range(month.start_date, month.end_date))
+                month_end = month.end_date + dt.timedelta(days=1)
+                data = lib.read(ticker_name, chunk_range=pd.date_range(month.start_date, month_end))
                 if len(data):
                     data['event_type'] = 'bar'
                     if 'multiplier' not in data.columns:

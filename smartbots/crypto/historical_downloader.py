@@ -61,7 +61,7 @@ def read_historical(symbol: str, name_library: str = 'provider_historical_1min',
         return pd.DataFrame()
     if last_month: # read last month of data
         last_month_range = list(lib.get_chunk_ranges(symbol))[-1]
-        end_date = pd.to_datetime(last_month_range[1].decode("utf-8") )
+        end_date = pd.to_datetime(last_month_range[1].decode("utf-8") ) + dt.timedelta(days=1)
         start_date = pd.to_datetime(last_month_range[0].decode("utf-8") )
     else:
         end_date = end_date + dt.timedelta(days=1)
