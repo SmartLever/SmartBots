@@ -1,4 +1,8 @@
-""" Webhook socket and send to MQ broker """
+""" Webhook socket and send to MQ broker
+Msg, this keys are required:
+msg = { "key": "",
+       'type':  "", 'ticker':  ""}
+"""
 from flask import Flask, request
 from smartbots import conf
 import datetime as dt

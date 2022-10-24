@@ -73,6 +73,23 @@ services:
       - smartbots_networks
     command: python -u ./bots/event_keeper.py
 
+  webhook:
+    build:
+      context: .
+      dockerfile: smartbot-python.dockerfile
+    hostname: webhook
+    ports:
+      - 8080:8080
+    volumes:
+      - ..:/app
+    depends_on:
+      - rabbitmq
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    networks:
+      - smartbots_networks
+    command: python -u ./bots/webhook.py
+
 networks:
   smartbots_networks:
     ipam:
