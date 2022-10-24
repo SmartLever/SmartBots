@@ -187,3 +187,6 @@ yarl==1.8.1
 yfinance==0.1.77
 zipp==3.9.0
 zmq==0.0.0
+flask
+waitress
+Darwinex-ticks
