@@ -43,6 +43,7 @@ def webhook():
 
             else:
                 print("[X]", dtime, "Alert Received & Refused! (Wrong Key)")
+                print(data)
                 return "Refused alert", 400
 
     except Exception as e:
