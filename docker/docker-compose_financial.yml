@@ -1,5 +1,5 @@
 # docker compose -f docker-compose_financial.yml --env-file ./compose.env up -d
-# docker-compose -f docker-compose_financial.yml --env-file ./compose.env up -d
+# docker compose -f docker-compose_financial.yml --env-file ./compose.env up -d update_mongodb_financial
 version: '3.9'
 
 services:
@@ -54,6 +54,19 @@ services:
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     command: python -u ./bots/financial_trading/telegram_bot_financial.py
+
+  update_mongodb_financial:
+    build:
+      context: .
+      dockerfile: smartbot-python.dockerfile
+    hostname: update_mongodb_financial
+    volumes:
+      - ..:/app
+    networks:
+      - smartbots_networks
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    command: python -u ./smartbots/financial/update_mongodb_financial.py
 
 networks:
   smartbots_networks:

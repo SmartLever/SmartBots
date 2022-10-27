@@ -81,6 +81,15 @@ class Positions(Base):
     positions: Dict[str, Any] = None
     account: str = ''  # name of account
 
+@dataclass_json
+@dataclass
+class Balance(Base):
+    """ Balance """
+    event_type: str = 'balance'
+    ticker: str = 'balance'
+    balance: float = None
+    account: str = ''  # name of account
+
 
 ####Financial and crypto events##################################################################
 @dataclass_json

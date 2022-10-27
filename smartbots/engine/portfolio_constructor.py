@@ -114,6 +114,12 @@ class Portfolio_Constructor(object):
 
         return dict_values
 
+    def close_all_positions(self):
+        for t in self.ticker_to_strategies.keys():
+            for strategy in self.ticker_to_strategies[t]:
+                if hasattr(strategy, 'close_all_positions'):
+                    strategy.close_all_positions()
+
     def run(self):
         print(f'running Portfolio {self.name}')
         self.run_simulation()
@@ -146,6 +152,8 @@ class Portfolio_Constructor(object):
                     data_to_save = self.get_saved_values_strategy()
                 elif event.function_to_run == 'get_saved_values_strategies_last':
                     data_to_save = self.get_saved_values_strategies_last()
+                elif event.function_to_run == 'close_all_positions':
+                    self.close_all_positions()
                 if data_to_save is not None:
                     name_library = event.path_to_saving
                     name = event.name_to_saving

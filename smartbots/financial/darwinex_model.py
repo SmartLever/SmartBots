@@ -89,11 +89,15 @@ class Trading(object):
         """Start update orders status."""
         def run_status_orders():
             while True:
-                if len(self.dict_open_orders) > 0:  # if there are open orders
-                    self.check_order()
-                    time.sleep(30)
-                else:
-                    time.sleep(1)
+                try:
+                    if len(self.dict_open_orders) > 0:  # if there are open orders
+                        self.check_order()
+                        time.sleep(30)
+                    else:
+                        time.sleep(1)
+                except Exception as ex:
+                    logger.error(
+                        f'Error check_order Exception: {ex}')
         x = threading.Thread(target=run_status_orders)
         x.start()
 

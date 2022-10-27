@@ -34,6 +34,7 @@ def update_mongodb():
     # libraries
     lib_keeper = store.get_library(name, library_chunk_store=False)
     lib_keeper_yesterday = store.get_library(name_yesterday, library_chunk_store=False)
+    print(dt.datetime.utcnow())
     for ticker in tickers:
         # Read historical data
         data_last = read_historical(ticker, name_libray_historical, last_month=True)
@@ -84,8 +85,6 @@ def update_mongodb():
 
 
 def main():
-    """ Main function """
-    # create scheduler for update db
     """ Main function """
     # create scheduler for update db
     schedule.every().hour.at(":30").do(update_mongodb)

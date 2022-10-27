@@ -14,7 +14,7 @@ def main(_name_library='events_keeper') -> None:
         """ Get unique key for event """
         # Get first key from dict
         if event.event_type == 'bar':
-            return f'{event.ticker}_{event.datetime}_{event.event_type}_{saved_variable["events"]}'
+            return f'{event.ticker}_{event.datetime}_{event.event_type}'
         elif event.event_type == 'order':
             return event.order_id_sender
         elif event.event_type == 'health':  # always the same for service
