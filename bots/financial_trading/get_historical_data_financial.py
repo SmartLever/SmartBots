@@ -10,7 +10,8 @@ dwt = darwinex_ticks.DarwinexTicksConnection(dwx_ftp_user=conf.DWT_FTP_USER,
                                              dwx_ftp_hostname=conf.DWT_FTP_HOSTNAME,
                                              dwx_ftp_port=conf.DWT_FTP_PORT)
 
-def _get_historical_data(name_library, start_date=dt.datetime(2022, 7, 1), end_date=dt.datetime.utcnow(),
+
+def _get_historical_data(name_library, tickers, start_date=dt.datetime(2022, 7, 1), end_date=dt.datetime.utcnow(),
                          interval='1min'):
     """ Read historical data save in file, and Saving in MongoDB"""
 
@@ -72,14 +73,13 @@ def _get_historical_data(name_library, start_date=dt.datetime(2022, 7, 1), end_d
 
 def main():
     """ Main function """
-    global tickers
 
     provider = 'darwinex'
     name_library = f'{provider}_historical_1min'
+    start_date = dt.datetime(2022, 5, 1)
+    end_date = dt.datetime(2022, 5, 31)
     tickers = conf.FINANCIAL_SYMBOLS
-    start_date = dt.datetime(2022, 10, 1)
-    end_date = dt.datetime(2022, 10, 30)
-    _get_historical_data(name_library, start_date=start_date, end_date=end_date,
+    _get_historical_data(name_library, tickers, start_date=start_date, end_date=end_date,
                          interval='1min')
 
 

@@ -287,7 +287,7 @@ def callback_control():
                         for user in LIST_OF_ADMINS:
                             # send alert
                             msg = 'ALERT, THIS SERVICE IS NOT WORKING: ' + str(service_name.replace('_health', ''))
-                            updater.bot.send_message(msg=msg, chat_id=user)
+                            _send_msg(msg=msg, chat_id=user)
                     datetime_service = data.datetime
                     # compare datetime_service with datetime current, if the difference is greater than 15 minutes, send alert
                     diff_minutes = abs((_time-datetime_service).seconds / 60)
