@@ -6,6 +6,7 @@ msg = { "key": "",
 from flask import Flask, request
 from smartbots import conf
 import datetime as dt
+import json
 from smartbots.events import WebHook as WebHookEvent
 from smartbots.brokerMQ import Emit_Events
 
@@ -25,8 +26,8 @@ def get_datetime():
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
+    dtime = get_datetime()
     try:
-        dtime = get_datetime()
         if request.method == "POST":
             data = request.get_json()
             key = data["key"]
@@ -47,8 +48,8 @@ def webhook():
                 return "Refused alert", 400
 
     except Exception as e:
-        print("[X]", dtime, "Error:\n>", e)
-        return "Error", 400
+         print("[X]", dtime, "Error:\n>", e)
+         return "Error", 400
 
 
 if __name__ == "__main__":
