@@ -185,8 +185,9 @@ class Trading(object):
         """
         response = self.get_response('t')
         if response is None:
-            logger.error('No response received, either there are no open trades or check the connection')
-            print('No response received, either there are no open trades or check the connection')
+            msg = 'No response received, either there are no open trades or check the connection'
+            logger.error(msg)
+            print(msg)
             return None
         open_trades = {k: dict(zip(
             ['_symbol', '_lots', '_type'],
@@ -302,22 +303,22 @@ class Trading(object):
         if order.action_mt4 == 'normal':
             self.send_order_normal(order)
 
-        elif order.action_mt4 == 'close_trade':
-            # Close total
-            logger.info(f'Sending Order to close positions in ticker: {order.ticker} quantity: {order.quantity}')
-            self.client._set_response_(None)
-            self.client.MTX_CLOSE_TRADE_BY_TICKET_(order.order_id_receiver)
-            respond_order = self.get_return()
+        else:
+            if order.action_mt4 == 'close_trade':
+                # Close total
+                logger.info(f'Sending Order to close positions in ticker: {order.ticker} quantity: {order.quantity}')
+                self.client._set_response_(None)
+                self.client.MTX_CLOSE_TRADE_BY_TICKET_(order.order_id_receiver)
+                respond_order = self.get_return()
 
-        # partially closed trade
-        elif order.action_mt4 == 'close_partial':
-            logger.info(f'Sending Order to close partial positions in ticker: {order.ticker} quantity: {order.quantity}')
-            self.client._set_response_(None)
-            self.client.MTX_CLOSE_PARTIAL_BY_TICKET_(
-                order.order_id_receiver, order.quantity)
-            respond_order = self.get_return()
+            # partially closed trade
+            elif order.action_mt4 == 'close_partial':
+                logger.info(f'Sending Order to close partial positions in ticker: {order.ticker} quantity: {order.quantity}')
+                self.client._set_response_(None)
+                self.client.MTX_CLOSE_PARTIAL_BY_TICKET_(
+                    order.order_id_receiver, order.quantity)
+                respond_order = self.get_return()
 
-        if order.action_mt4 != 'normal':
             try:
                 # Saving order_id en order
                 order.order_id_receiver = str(respond_order['_ticket'])
@@ -366,8 +367,9 @@ class Trading(object):
         response = self.get_response('_trades')
 
         if response is None:
-            logger.error('No response received, either there are no open trades or check the connection')
-            print('No response received, either there are no open trades or check the connection')
+            msg = 'No response received, either there are no open trades or check the connection'
+            logger.error(msg)
+            print(msg)
             return None
         else:
             return response
@@ -392,8 +394,9 @@ class Trading(object):
         response = self.get_response('_info')
 
         if response is None:
-            logger.error('No response received, either there are no open trades or check the connection')
-            print('No response received, either there are no open trades or check the connection')
+            msg = 'No response received, either there are no open trades or check the connection'
+            logger.error(msg)
+            print(msg)
             return None
         else:
             return response
