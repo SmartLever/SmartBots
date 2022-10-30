@@ -16,6 +16,7 @@ def main(send_orders_status=True):
     import threading
     from smartbots.database_handler import Universe
     from smartbots import events
+    
     def check_balance() -> None:
         try:
             balance = trading.get_balance()['_equity']
@@ -42,17 +43,21 @@ def main(send_orders_status=True):
             if lib_balance.has_symbol(unique) and conf.PERCENTAGE_CLOSE_POSITIONS_DARWINEX is not None:
                 # compare current balance and objective balance
                 data = lib_balance.read(unique).data
-                diff_perce = (balance - data.balance) / data.balance * 100
-                # if current return is lower than objective, send close positions
-                if diff_perce <= float(conf.PERCENTAGE_CLOSE_POSITIONS_DARWINEX):
-                    # send to close all positions
-                    function_to_run = 'close_all_positions'  # get_saved_values_strategy
-                    petition_pos = events.Petition(datetime=now, function_to_run=function_to_run,
-                                                   name_portfolio=name_portfolio)
+                try:
+                    diff_perce = (balance - data.balance) / data.balance * 100
+                    # if current return is lower than objective, send close positions
+                    if diff_perce <= float(conf.PERCENTAGE_CLOSE_POSITIONS_DARWINEX):
+                        # send to close all positions
+                        function_to_run = 'close_all_positions'  # get_saved_values_strategy
+                        petition_pos = events.Petition(datetime=now, function_to_run=function_to_run,
+                                                       name_portfolio=name_portfolio)
+    
+                        print(f'Send close all positions: Percetage Diff {diff_perce}')
+                        emit.publish_event('petition', petition_pos)
 
-                    print(f'Send close all positions: Percetage Diff {diff_perce}')
-                    emit.publish_event('petition', petition_pos)
-
+                except Exception as e:
+                    logger.error(f'Error closing positions in Darwinex: {e}')
+                    pass
             health_handler.check()
         except Exception as e:
             logger.error(f'Error Getting Darwinex Balance: {e}')
