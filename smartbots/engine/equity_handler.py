@@ -61,7 +61,7 @@ class Equity():
                 cost = abs(_update['price']) * (self.fees + self.slippage)
             elif _update['price'] != 0 and self.is_cost_percentage is False: # per 1 unit
                 cost = abs(_update['quantity']) * (self.fees + self.slippage)
-            self.equity += self.quantity * (_update['price'] - self.price) - cost
+            self.equity += self.quantity * (_update['price'] - self.price) * self.point_value - cost
             self.datetime = _update['datetime']
             self.price = _update['price']
             if abs(_update['quantity']) > 0:
