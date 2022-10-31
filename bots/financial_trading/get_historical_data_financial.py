@@ -1,7 +1,7 @@
 """ Historical data from Financial"""
 import pandas as pd
 import datetime as dt
-from smartbots.financial.utils import read_historical, save_historical, get_day_per_month
+from smartbots.historical_utils import read_historical, save_historical, get_day_per_month
 from smartbots import conf
 import darwinex_ticks
 
@@ -53,7 +53,7 @@ def _get_historical_data(name_library, tickers, start_date=dt.datetime(2022, 7, 
             ohlc['multiplier'] = 1
             ohlc['month'] = ohlc['datetime'].dt.month.astype(str) + '_' + ohlc['datetime'].dt.year.astype(str)
             ohlc = ohlc.fillna(method="ffill")
-            if len(ohlc) >0:  # save data
+            if len(ohlc) > 0:  # save data
                 # for each month
                 for m in ohlc['month'].unique():
                     # Read historical data for this month

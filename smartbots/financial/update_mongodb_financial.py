@@ -4,7 +4,7 @@ import datetime as dt
 from datetime import timedelta
 import schedule
 import time
-from smartbots.financial.utils import read_historical, save_historical
+from smartbots.historical_utils import read_historical, save_historical
 from smartbots import conf
 from smartbots.base_logger import logger
 

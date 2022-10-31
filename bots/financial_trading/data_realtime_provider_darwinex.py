@@ -2,7 +2,7 @@
     recieve data from mt4 Darwinex in ticks and create Bar for frequency.
     Send Events to RabbitMQ for further processing.
 """
-from smartbots.financial.darwinex_model import get_realtime_data
+from smartbots.financial.mt4_model import get_realtime_data
 import datetime as dt
 import pandas as pd
 from smartbots.events import Bar, Tick, Timer

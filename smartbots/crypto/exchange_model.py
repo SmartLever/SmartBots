@@ -298,6 +298,8 @@ class Trading(object):
         return balance_usd
 
 
+
+
 if __name__ == '__main__':
     """ Test"""
     exchange = 'kucoin'

@@ -8,7 +8,7 @@ from smartbots.base_logger import logger
 def main(send_orders_status=True):
     from smartbots.brokerMQ import receive_events
     import datetime as dt
-    from smartbots.financial.darwinex_model import Trading
+    from smartbots.financial.mt4_model import Trading
     import schedule
     from smartbots import conf
     from smartbots.health_handler import Health_Handler

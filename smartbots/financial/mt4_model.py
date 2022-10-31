@@ -9,6 +9,8 @@ from smartbots.decorators import log_start_end, check_api_key
 from smartbots.financial.mt4_connector.mt_zeromq_connector import MTZeroMQConnector
 from time import sleep
 from smartbots.base_logger import logger
+import pandas as pd
+import darwinex_ticks
 
 
 # default Callable
@@ -58,6 +60,7 @@ class Trading(object):
 
     def __init__(self, send_orders_status: bool = True, name='mt4_darwinex', type_service='broker') -> None:
         """Initialize class."""
+        self.dwt = None # darwinex_ticks with FTP connection
         self.name = name
         if type_service == 'broker':
             config_port = {'DARWINEX_HOST': conf.DARWINEX_HOST,
@@ -84,6 +87,84 @@ class Trading(object):
             self.emit_orders = Emit_Events()
         else:
             self.emit_orders = None
+        if self.name == 'darwinex':
+            self.get_historical_data = self._get_historical_data_darwinex
+
+
+    def get_historical_data(self, timeframe: str = '1min', start_date: dt.datetime = None,
+                            end_date: dt.datetime = dt.datetime.utcnow(),
+                            symbols: List[str] = ['EURUSD']) -> List[Dict]:
+         pass
+
+
+    def _get_historical_data_darwinex(self, timeframe: str = '1min', start_date: dt.datetime = None,
+                            end_date: dt.datetime = dt.datetime.utcnow(),
+                            symbols: List[str] = ['EURUSD']) -> List[Dict]:
+        """Return realtime data on freq for a list of symbols.
+        Parameters
+        ----------
+        exchange: str (default: 'darwinex')
+        timeframe: str (default: '1m')
+        limit: int (default: 2, last ohlcv)
+        since: from timestamp (default: None)
+        setting: dict (default: {'symbols': List[str]})
+            Symbols of the assets. Example: EURUSD, etc.
+        """
+        if timeframe == '1m':
+            timeframe = '1min'
+        elif timeframe == '5m':
+            timeframe = '5min'
+
+        if self.dwt is not None: # connection already exists
+            self.dwt = darwinex_ticks.DarwinexTicksConnection(dwx_ftp_user=conf.DWT_FTP_USER,
+                                                         dwx_ftp_pass=conf.DWT_FTP_PASS,
+                                                         dwx_ftp_hostname=conf.DWT_FTP_HOSTNAME,
+                                                         dwx_ftp_port=conf.DWT_FTP_PORT)
+        _start_date = start_date.strftime("%Y-%m-%d")
+        _end_date = end_date.strftime("%Y-%m-%d")
+        bars = {}
+        for ticker in symbols:
+            print(dt.datetime.utcnow())
+            # Read historical data from darwinex
+
+            data = self.dwt.ticks_from_darwinex(ticker, start=_start_date,
+                                                end=_end_date)
+
+            if len(data) > 0:
+                data.index = data.index.tz_localize(None)
+                data['datetime'] = data.index
+                data['date'] = data['datetime'].dt.floor('Min')
+                data['price'] = (data['Ask'] + data['Bid']) / 2
+                data['volume'] = data['Ask_size'] + data['Bid_size']
+                # Get open, low, high and close
+                ohlc = data['price'].astype(float).resample(timeframe).ohlc()
+                # Group by volume, bid and ask and get this values
+                groupby_volume = data.groupby(["date"])["volume"].sum().to_frame()
+                groupby_volume.index.name = 'datetime'
+                groupby_ask = data.groupby(["date"])["Ask"].last().to_frame()
+                groupby_ask.index.name = 'datetime'
+                groupby_bid = data.groupby(["date"])["Bid"].last().to_frame()
+                groupby_bid.index.name = 'datetime'
+                # Fill columns
+                ohlc['volume'] = groupby_volume['volume']
+                ohlc['bid'] = groupby_bid['Bid']
+                ohlc['ask'] = groupby_ask['Ask']
+                ohlc['ticker'] = ticker
+                ohlc['symbol'] = ticker
+                ohlc['datetime'] = ohlc.index
+                ohlc['dtime_zone'] = 'UTC'
+                ohlc['exchange'] = 'mt4_darwinex'
+                ohlc['provider'] = 'mt4_darwinex'
+                ohlc['freq'] = timeframe
+                ohlc['multiplier'] = 1
+                ohlc['month'] = ohlc['datetime'].dt.month.astype(str) + '_' + ohlc['datetime'].dt.year.astype(str)
+                ohlc = ohlc.fillna(method="ffill")
+                if len(ohlc) > 0:  #
+                    bars[ticker] = ohlc
+        return bars
+
+
+
 
     def start_update_orders_status(self) -> None:
         """Start update orders status."""
