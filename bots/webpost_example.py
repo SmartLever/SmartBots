@@ -10,7 +10,7 @@ def run():
     def send():
         # Send post
 
-        webhook_url = 'http://140.238.85.81:80/webhook'
+        webhook_url = 'http://localhost/webhook'
         data = {'name': 'This is an example for webhook', "key": "1234ase",
                 'type': 'indicator', 'ticker': 'indicator1'}
 
