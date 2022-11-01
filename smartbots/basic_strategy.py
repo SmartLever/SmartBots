@@ -20,6 +20,7 @@ class Basic_Strategy(object):
             self.limit_save_values = 0
         self.ticker = parameters['ticker']
         self.quantity = parameters['quantity']
+        self.contracts = 0 # number of contract in the position
         self.id_strategy = id_strategy
         self.n_events = 0  # number of events received
         self.n_orders = 0  # number of orders sent
@@ -86,6 +87,18 @@ class Basic_Strategy(object):
 
     def send_order(self, price=None, quantity=None, action=None, ticker=None, type='market', datetime=None):
         """ Send order to exchange or broker """
+        # contract tracking
+        if action == 'buy':
+            self.contracts += quantity
+        elif action == 'sell':
+            self.contracts -= quantity
+        # update position tracking
+        if self.contracts < 0:
+            self.position = -1
+        elif self.contracts > 0:
+            self.position = 1
+        elif self.contracts == 0:
+            self.position = 0
 
         sender_id = self.get_order_id_sender()
         order_id_sender = self.get_order_id_sender()
@@ -117,12 +130,10 @@ class Basic_Strategy(object):
             if self.n_events % self.parameters['entry'] == 0:
                 self.send_order(ticker=event.ticker, price=event.close, quantity=self.parameters['quantity'],
                                 action=self.parameters['inicial_action'], type='market',datetime=event.datetime)
-                # Chamge action
+                # Change action
                 if self.parameters['inicial_action'] == 'buy':
-                    self.position = 1
                     self.parameters['inicial_action'] = 'sell'
                 elif self.parameters['inicial_action'] == 'sell':
-                    self.position = 0
                     self.parameters['inicial_action'] = 'buy'
             # save values
             self.saves_values['datetime'].append(event.datetime)
