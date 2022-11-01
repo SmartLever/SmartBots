@@ -44,9 +44,14 @@ class Basic_Strategy(object):
         point_value = 1
         if 'point_value' in self.parameters:
             point_value = self.parameters['point_value']
+        if 'base_currency' in self.parameters:
+            base_currency = self.parameters['base_currency']
+        else:
+            base_currency = {'ticker':'USD','value':1} # default base currency if the product is in USD already
 
         self.equity_hander_estrategy = Equity(ticker=self.ticker, asset_type='crypto', fees=fees, slippage = slippage,
-                                              point_value= point_value, id_strategy=self.id_strategy)
+                                              point_value = point_value, id_strategy=self.id_strategy,
+                                              base_currency = base_currency)
 
         if set_basic:
             self.add_bar = self._add_event_example

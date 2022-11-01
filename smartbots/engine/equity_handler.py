@@ -3,7 +3,8 @@ import pandas as pd
 import datetime as dt
 class Equity():
     def __init__(self, ticker: str, asset_type: str, fees: float = 0,
-                 slippage: float = 0, point_value: float = 1, is_cost_percentage: bool = True, id_strategy=-1):
+                 slippage: float = 0, point_value: float = 1, is_cost_percentage: bool = True, id_strategy=-1,
+                 base_currency={'ticker':'USD','value': 1}):
         """Calcule equity for a ticker: could be stock, futures, crypto
                 Parameters
                 ----------
@@ -17,6 +18,9 @@ class Equity():
         self.asset_type = asset_type
         self.price = None
         self.equity = None
+        self.ticker_currency_base = base_currency['ticker']
+        self.change_to_currency_base = base_currency['value'] # inicial value
+        self.equity_base_currency = None
         self.equity_pct = None # porcentage equity
         self.equity_vector = [] # equity vector
         self.equity_day = []  # equity vector
@@ -30,14 +34,17 @@ class Equity():
         self.init = False
         self.id_strategy = id_strategy
 
+    def set_value_currency_base(self, value):
+        self.change_to_currency_base = value
+
     def fill_equity_vector(self):
         self.equity_vector.append({'datetime': self.datetime, 'equity': self.equity,'equity_pct': self.equity_pct,
-                                   'quantity': self.quantity,'price': self.price,'leverage': self.leverage})
+                                   'quantity': self.quantity,'price': self.price, 'leverage': self.leverage})
 
     def fill_equity_day(self):
         dtime = dt.datetime(self.datetime.year, self.datetime.month, self.datetime.day)
-        self.equity_day.append({'datetime': dtime, 'equity': self.equity,'equity_pct': self.equity_pct,
-                                   'quantity': self.quantity,'price': self.price, 'leverage': self.leverage})
+        self.equity_day.append({'datetime': dtime, 'equity': self.equity, 'equity_pct': self.equity_pct,
+                                'quantity': self.quantity,'price': self.price, 'leverage': self.leverage})
 
     def get_equity_vector(self):
         df = pd.DataFrame(self.equity_vector)
@@ -72,6 +79,8 @@ class Equity():
             self.price = _update['price']
             if abs(_update['quantity']) > 0:
                 self.quantity += _update['quantity']
+            #todo: add chage to base currency
+            self.equity_base_currency += var/self.change_to_currency_base
         elif self.datetime is None:
             self.init = True
             self.datetime = _update['datetime']
@@ -80,6 +89,7 @@ class Equity():
             self.equity = 0
             self.leverage = 0
             self.equity_pct = 100
+            self.equity_base_currency = 0
 
 
 class Equity_Handler():
@@ -131,7 +141,7 @@ class Equity_Handler():
         # Get equity for strategy and sum with total
         for ticker in self.ticker_to_strategies.keys():
             for strategy in self.ticker_to_strategies[ticker]:
-                value = strategy.equity_hander_estrategy.equity
+                value = strategy.equity_hander_estrategy.equity_base_currency
                 if value is None:
                     value = 0
                 equity['equity'] += value

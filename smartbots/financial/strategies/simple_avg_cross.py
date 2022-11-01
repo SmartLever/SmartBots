@@ -1,4 +1,4 @@
-from smartbots.financial.strategies.basic_strategy import Basic_Strategy, dataclass
+from smartbots.basic_strategy import Basic_Strategy, dataclass
 from smartbots.indicators.simple_average import Simple_Average
 
 class Simple_Avg_Cross(Basic_Strategy):
