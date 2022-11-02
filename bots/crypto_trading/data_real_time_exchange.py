@@ -1,7 +1,6 @@
 """ Data provider all crypto exchange.
     Follow https://github.com/ccxt/ccxt
 """
-import logging
 from smartbots.crypto.exchange_model import Trading
 import datetime as dt
 import pandas as pd
@@ -14,6 +13,7 @@ from smartbots.health_handler import Health_Handler
 import os
 import pytz
 from smartbots.base_logger import logger
+from smartbots import conf
 
 
 def get_thread_for_create_bar(interval: str = '1m', verbose: bool = True) -> threading.Thread:
@@ -65,7 +65,7 @@ def get_thread_for_create_bar(interval: str = '1m', verbose: bool = True) -> thr
 
 if __name__ == '__main__':
     global trading, setting, last_bar
-    exchange = 'kucoin'
+    exchange = conf.BROKER_CRYPTO
     print(f'* Starting {exchange} provider at {dt.datetime.utcnow()}')
     logger.info(f'* Starting {exchange} provider at {dt.datetime.utcnow()}')
     trading = Trading(name= exchange)

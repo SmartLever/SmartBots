@@ -222,9 +222,9 @@ def main():
     #  Parameters
     # token from telegram
     token = conf.TOKEN_TELEGRAM_BETTING
-    LIST_OF_ADMINS = []
-    list_services = ['broker_betfair_health', 'data_realtime_provider_betfair_health']
-    initial_balance = 100
+    LIST_OF_ADMINS = conf.LIST_OF_ADMINS_BETTING
+    list_services = conf.LIST_SERVICES_BETTING
+    initial_balance = conf.INITIAL_BALANCE_BETTING
 
     # Create trading object to get info from broker
     trading = Trading()

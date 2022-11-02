@@ -58,7 +58,7 @@ def historical_downloader(symbols: List[str] = ["EURUSD"], start_date: dt.dateti
 
         # change types to float for columns with numeric values (in this case all columns)
         for c in data.columns:
-            if c not in ['symbol', 'datetime', 'exchange']:
+            if c not in ['symbol', 'datetime', 'exchange', 'ticker', 'dtime_zone', 'provider', 'freq']:
                 data[c] = data[c].astype(float)
 
         if len(data) > 0 and len(data_last) > 0:  #

@@ -1,16 +1,16 @@
 """ Recieved events orders from Portfolio and send it to the broker or exchange for execution"""
 from smartbots.base_logger import logger
-
+from smartbots import conf
 
 def main(send_orders_status=True, exchange='kucoin'):
     from smartbots.brokerMQ import receive_events
     import datetime as dt
     from smartbots.crypto.exchange_model import Trading
     import schedule
-    from smartbots import conf
     from smartbots.health_handler import Health_Handler
     import time
     import threading
+
 
     def check_balance() -> None:
         try:
@@ -60,5 +60,5 @@ def main(send_orders_status=True, exchange='kucoin'):
 
 
 if __name__ == '__main__':
-    exchange = 'kucoin'  # set your exchange
-    main(exchange =exchange)
+    exchange = conf.BROKER_CRYPTO  # set your exchange
+    main(exchange=exchange)

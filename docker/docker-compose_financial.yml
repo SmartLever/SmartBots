@@ -3,18 +3,18 @@
 version: '3.9'
 
 services:
-  data_provider_darwinex:
+  data_provider_mt4:
     build:
       context: .
       dockerfile: smartbot-python.dockerfile
-    hostname: data_provider_darwinex
+    hostname: data_provider_mt4
     volumes:
       - ..:/app
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./bots/financial_trading/data_realtime_provider_darwinex.py
+    command: python -u ./bots/financial_trading/data_realtime_provider_mt4.py
 
   bot_financial_trading:
     build:
@@ -29,18 +29,18 @@ services:
       - smartbots_networks
     command: python -u ./bots/financial_trading/portfolio_production_financial.py
 
-  broker_darwinex:
+  broker_mt4:
     build:
       context: .
       dockerfile: smartbot-python.dockerfile
-    hostname: broker_darwinex
+    hostname: broker_mt4
     volumes:
       - ..:/app
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./bots/financial_trading/broker_mt4_darwinex.py
+    command: python -u ./bots/financial_trading/broker_mt4.py
 
   telegram_financial:
     build:

@@ -1,5 +1,5 @@
-""" Data provider for Darwinex.
-    recieve data from mt4 Darwinex in ticks and create Bar for frequency.
+""" Data provider for MT4.
+    recieve data from mt4 in ticks and create Bar for frequency.
     Send Events to RabbitMQ for further processing.
 """
 from smartbots.financial.mt4_model import get_realtime_data
@@ -15,9 +15,11 @@ import pytz
 from smartbots.base_logger import logger
 from smartbots import conf
 
+
 def save_tick_data(msg=dict) -> None:
     """ Save tick data in dictionary """
     save_data[msg['Symbol']].append(msg)
+
 
 def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> threading.Thread:
     def create_tick_closed_day():
@@ -53,7 +55,7 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
                 bar = Bar(ticker=symbol, datetime=dtime, dtime_zone='UTC',
                           open=ohlc.open[0], bid=data['Bid'].values[-1], ask=data['Ask'].values[-1],
                           high=ohlc.high[0], low=ohlc.low[0], close=ohlc.close[0],
-                          volume=ohlc.volume[0], exchange='mt4_darwinex', provider='mt4_darwinex', freq=interval)
+                          volume=ohlc.volume[0], exchange='mt4', provider='mt4', freq=interval)
 
                 if verbose:
                     print(f'bar {bar.ticker} {bar.datetime} {bar.close}')
@@ -75,7 +77,7 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
     emit = Emit_Events()
     #
     health_handler = Health_Handler(n_check=10,
-                                    name_service='data_realtime_provider_darwinex')
+                                    name_service='data_realtime_provider_mt4')
 
     while True:
         schedule.run_pending()
@@ -83,8 +85,8 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
 
 
 if __name__ == '__main__':
-    print(f'* Starting MT4 Darwinex provider at {dt.datetime.utcnow()}')
-    logger.info(f'Starting MT4 Darwinex provider at {dt.datetime.utcnow()}')
+    print(f'* Starting MT4 provider at {dt.datetime.utcnow()}')
+    logger.info(f'Starting MT4 provider at {dt.datetime.utcnow()}')
     global save_data, last_bar
     symbols = conf.FINANCIAL_SYMBOLS
     last_bar = {s: None for s in symbols}

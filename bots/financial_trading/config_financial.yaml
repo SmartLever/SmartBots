@@ -11,6 +11,7 @@ Data_Sources:
     historical_source: mongoDB
     historical_library: darwinex_historical_1min
 
+
 Strategies_Load_From:
   from:
 

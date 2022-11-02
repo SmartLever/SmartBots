@@ -336,6 +336,7 @@ def error(update, error):
     event_telegram = {'date_time': today, 'comand': 'error', 'error': error}
     _send_msg(msg=event_telegram, chat_id=update.message.chat_id)
 
+
 def schedule_callback_control():
     # create scheduler
     schedule.every(1).minutes.do(callback_control)
@@ -351,13 +352,13 @@ def main():
     #  Parameters
     # token from telegram
     token = conf.TOKEN_TELEGRAM_CRYPTO
-    LIST_OF_ADMINS = []
-    list_services = ['broker_kucoin_health', 'data_realtime_provider_kucoin_health']
-    initial_balance_usd = 100
-    list_currency_strategy = ['ETH', 'BTC']
+    LIST_OF_ADMINS = conf.LIST_OF_ADMINS_CRYPTO
+    list_services = conf.LIST_SERVICES_CRYPTO
+    initial_balance_usd = conf.INITIAL_BALANCE_CRYPTO
+    list_currency_strategy = conf.CRYPTO_SYMBOLS
 
     # Create trading object to get info from broker
-    trading = Trading(exchange='kucoin')
+    trading = Trading(exchange=conf.BROKER_CRYPTO)
     # Launch thread
     x = threading.Thread(target=schedule_callback_control)
     x.start()

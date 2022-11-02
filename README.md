@@ -73,10 +73,10 @@ SmartBots
       Wellcome to SmartBots, you can now start coding and testing your strategies and run it in real time.
       
       Backtesting an Strategy Example:
-      On jupyter Lab, go and open to bots/crypto_trading/backtesting.ipynb and run the code.
+      On jupyter Lab, go and open to bots/backtesting.ipynb and run the code.
       
       Live Trading:
-     ```bash
+      ```bash
       cd docker/
       docker compose -f docker-compose_crypto.yml --env-file ./compose.env up -d
       ```
@@ -103,6 +103,70 @@ SmartBots
           
 ## Live Trading a simple strategy in Crypto
 ### Open a account in Kucoin and get the Keys
+
+## Smartbots Betting
+At Smartbots Betting you can automate your sports strategy in any market offered by the broker,
+in our case betfair. To make the betting platform work you first need to create an account at www.betfair.com,
+once you have an account you should follow these steps to obtain the necessary keys and certs files at that url:
+https://docs.developer.betfair.com/display/1smk3cen4v3lu3yomq5qye0ni .
+
+When you have account, Api keys and Certs files you can execute this command:
+ ```bash
+ cd docker/
+ docker compose -f docker-compose_betting.yml --env-file ./compose.env up -d
+ ```
+Your Username, Password and Keys should be put in path docker/compose.env and the certs file in smartbots/betting/certs/
+
+Inside the docker compose we have these services:
+ * provider_betting: Connect with the broker and obtain the data that will feed the strategy, in addition to saving in mongodb
+ * bot_betting_trading: This service executes the strategy in this case, it is a very simple strategy, feel free to create your own strategy.
+   The strategy configuration is found in this location: bots/betting_trading/config_betting.yaml
+ * broker_betting: This service receives the bet and sends it to the broker and also manages the pending bets.
+ * telegram_betting: For this service to work you must obtain a token by following the first part of this manual: https://www.pragnakalp.com/create-telegram-bot-using-python-tutorial-with-examples/ .
+   Once you have the token you should put it in compose.env.
+   With this service you will be able to control that the previous services work correctly 
+   and your current balance, although many more things could be included, this is just the first version
+
+You can also simulate the basic strategy as an example or any strategy you want to create. In the path bots/betting_trading folder there is a notebook called backtesting_betting, 
+there you can download some test data, simulate and see a several of statistical ratios.
+
+## Smartbots Financial
+In smartbots financial you can create and automate any financial strategy and apply it to any asset (cfd, forex, future, shares etc...).
+In this first version of financial smartbots we have developed all the logic to be able to operate with any broker that offers Metatrader 4,
+in our case we have focused on darwinex.
+
+For the financial platform to work, you should first create an account at www.darwinex.com, when you are logged in create an mt4 account in test mode for example.
+Follow the steps to download mt4 on your computer, once you have mt4 installed
+we have followed this tutorial to run this service and prepare it.
+https://github.com/paduel/MT_zeromq_vnc_docker
+
+When we have mt4 running in docker and with the necessary ports open, we are ready to run docker compose with all services.
+Also keep in mind to put all the variables necessary for the services work correctly
+in the path docker/compose.env
+
+Run this command:
+ ```bash
+ cd docker/
+ docker compose -f docker-compose_financial.yml --env-file ./compose.env up -d
+ ```
+ 
+Inside the docker compose we have these services:
+ * data_provider_mt4: This service connects to mt4 and generates minute bars of the symbols we want.
+ * bot_financial_trading: This service executes the strategy and receives the bars that feed the strategy, 
+   the configuration of the strategy is found in this location: bots/financial_trading/config_financial.yaml
+ * broker_mt4: Receive the order and send the order to mt4, in addition to saving balance and active positions.
+ * telegram_financial: For this service to work you must obtain a token by following the first part of this manual: https://www.pragnakalp.com/create-telegram-bot-using-python-tutorial-with-examples/ .
+   Once you have the token you should put it in compose.env.
+   With this service you will be able to control that the previous services work correctly, in addition to seeing the real and simulated positions.
+   One of the advantages of this service is that if the positions do not match or any service fails, you will receive an alert.
+ * update_mongodb_financial: Updates the library where we are saving the data historical, that is, we transfer the data that is being saved in the keeper library to the historical.
+
+You can also simulate the simple_avg_cross as an example or any strategy you want to create. In path bots/ there is a notebook called backtesting,
+there you can download data, simulate and see a several of statistical ratios.
+To download the data in this case from darwinex you need to have the credentials that darwinex provides you on its website in the
+historical_ticks section, those credentials should be put in the docker/compose.env configuration file
+
+
 
 
 ## Infrastructure

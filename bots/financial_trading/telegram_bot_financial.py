@@ -331,7 +331,7 @@ def callback_control():
                     diff_minutes = abs((_time - data.datetime).seconds / 60)
                     if diff_minutes > 4:
                         for user in LIST_OF_ADMINS:
-                            msg = 'ALERT, Positions from darwinex is not saving'
+                            msg = 'ALERT, Positions from mt4 is not saving'
                             _send_msg(msg=msg, chat_id=user)
                 # Compute diference between broker and portfolio
                 diference = {}
@@ -381,12 +381,12 @@ def main():
     # token from telegram
     token = conf.TOKEN_TELEGRAM_FINANCIAL
     #  Parameters
-    LIST_OF_ADMINS = []
-    list_services = ['mt4_darwinex_health', 'data_realtime_provider_darwinex_health']
+    LIST_OF_ADMINS = conf.LIST_OF_ADMINS_FINANCIAL
+    list_services = conf.LIST_SERVICES_FINANCIAL
     # name of portfolio which we want to know simulated positions
-    name_portfolio = 'PortfolioForex1'
-    # symbol to read real positions
-    symbol_positions = 'darwinex_mt4_positions'
+    name_portfolio = conf.NAME_FINANCIAL_PORTOFOLIO
+    # symbol to read real positions from mongo
+    symbol_positions = f'real_positions_{conf.BROKER_MT4_NAME}'
     # symbols to get price
     symbols = conf.FINANCIAL_SYMBOLS
 

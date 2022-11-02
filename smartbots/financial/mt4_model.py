@@ -5,17 +5,16 @@ from smartbots import conf
 import time
 import datetime as dt
 from smartbots.brokerMQ import Emit_Events
-from smartbots.decorators import log_start_end, check_api_key
+from smartbots.decorators import check_api_key
 from smartbots.financial.mt4_connector.mt_zeromq_connector import MTZeroMQConnector
 from time import sleep
 from smartbots.base_logger import logger
-import pandas as pd
 import darwinex_ticks
 
 
 # default Callable
 async def _callable(data: Dict) -> None:
-    """Callback function for realtime data. [Source: MT4 Darwinex]
+    """Callback function for realtime data. [Source: MT4]
 
     Parameters
     ----------
@@ -26,21 +25,21 @@ async def _callable(data: Dict) -> None:
 
 @check_api_key(
     [
-        "DARWINEX_HOST",
+        "MT4_HOST",
         "CLIENT_IF",
         "PUSH_PORT",
     ]
 )
 def get_client(conf_port):
-    """Get MT4 Darwinex client.
+    """Get MT4 client.
 
     Returns
     -------
     Client
         MT4 client.
     """
-    logger.info("Connecting to MT4 Darwinex")
-    client = MTZeroMQConnector(host=conf_port['DARWINEX_HOST'],
+    logger.info("Connecting to MT4")
+    client = MTZeroMQConnector(host=conf_port['MT4_HOST'],
                                client_id=conf_port['CLIENT_IF'],
                                push_port=conf_port['PUSH_PORT'],
                                pull_port=conf_port['PULL_PORT'],
@@ -50,34 +49,32 @@ def get_client(conf_port):
 
 
 class Trading(object):
-    """Class for trading on MT4 Darwinex.
+    """Class for trading on MT4.
 
     Attributes
     ----------
     client: Client
-        Darwinex client.
+         MT4 client.
     """
 
-    def __init__(self, send_orders_status: bool = True, name='mt4_darwinex', type_service='broker') -> None:
+    def __init__(self, send_orders_status: bool = True, name='darwinex', type_service='broker') -> None:
         """Initialize class."""
-        self.dwt = None # darwinex_ticks with FTP connection
+        self.dwt = None  # darwinex_ticks with FTP connection
         self.name = name
         if type_service == 'broker':
-            config_port = {'DARWINEX_HOST': conf.DARWINEX_HOST,
+            config_port = {'MT4_HOST': conf.MT4_HOST,
                            'CLIENT_IF': conf.CLIENT_IF,
                            'PUSH_PORT':  conf.PUSH_PORT,
                            'PULL_PORT': conf.PULL_PORT_BROKER,
                            'SUB_PORT': conf.SUB_PORT_BROKER}
         elif type_service == 'provider':
-            config_port = {'DARWINEX_HOST': conf.DARWINEX_HOST,
+            config_port = {'MT4_HOST': conf.MT4_HOST,
                            'CLIENT_IF': conf.CLIENT_IF,
                            'PUSH_PORT': conf.PUSH_PORT,
                            'PULL_PORT': conf.PULL_PORT_PROVIDER,
                            'SUB_PORT': conf.SUB_PORT_PROVIDER}
         self.client = get_client(config_port)
-        self._open = True
         self.sleep = None
-        self.cola_thread = []
         # variables of status orders
         self.dict_open_orders = {}  # key is the order_id_sender, open order in the broker
         self.dict_cancel_and_close_orders = {}  # key is the order_id_sender, closed or cancelled order in the broker
@@ -90,14 +87,12 @@ class Trading(object):
         if self.name == 'darwinex':
             self.get_historical_data = self._get_historical_data_darwinex
 
-
-    def get_historical_data(self, timeframe: str = '1min', start_date: dt.datetime = None,
+    def get_historical_data(self, timeframe: str = '1min', limit: int = 1500, start_date: dt.datetime = None,
                             end_date: dt.datetime = dt.datetime.utcnow(),
                             symbols: List[str] = ['EURUSD']) -> List[Dict]:
          pass
 
-
-    def _get_historical_data_darwinex(self, timeframe: str = '1min', start_date: dt.datetime = None,
+    def _get_historical_data_darwinex(self, timeframe: str = '1min', limit: int = 1500, start_date: dt.datetime = None,
                             end_date: dt.datetime = dt.datetime.utcnow(),
                             symbols: List[str] = ['EURUSD']) -> List[Dict]:
         """Return realtime data on freq for a list of symbols.
@@ -115,11 +110,11 @@ class Trading(object):
         elif timeframe == '5m':
             timeframe = '5min'
 
-        if self.dwt is not None: # connection already exists
+        if self.dwt is None:  # connection already exists
             self.dwt = darwinex_ticks.DarwinexTicksConnection(dwx_ftp_user=conf.DWT_FTP_USER,
-                                                         dwx_ftp_pass=conf.DWT_FTP_PASS,
-                                                         dwx_ftp_hostname=conf.DWT_FTP_HOSTNAME,
-                                                         dwx_ftp_port=conf.DWT_FTP_PORT)
+                                                              dwx_ftp_pass=conf.DWT_FTP_PASS,
+                                                              dwx_ftp_hostname=conf.DWT_FTP_HOSTNAME,
+                                                              dwx_ftp_port=conf.DWT_FTP_PORT)
         _start_date = start_date.strftime("%Y-%m-%d")
         _end_date = end_date.strftime("%Y-%m-%d")
         bars = {}
@@ -157,14 +152,10 @@ class Trading(object):
                 ohlc['provider'] = 'mt4_darwinex'
                 ohlc['freq'] = timeframe
                 ohlc['multiplier'] = 1
-                ohlc['month'] = ohlc['datetime'].dt.month.astype(str) + '_' + ohlc['datetime'].dt.year.astype(str)
                 ohlc = ohlc.fillna(method="ffill")
                 if len(ohlc) > 0:  #
                     bars[ticker] = ohlc
         return bars
-
-
-
 
     def start_update_orders_status(self) -> None:
         """Start update orders status."""
@@ -172,7 +163,7 @@ class Trading(object):
             while True:
                 try:
                     if len(self.dict_open_orders) > 0:  # if there are open orders
-                        self.check_order()
+                        self._check_order()
                         time.sleep(30)
                     else:
                         time.sleep(1)
@@ -181,8 +172,128 @@ class Trading(object):
                         f'Error check_order Exception: {ex}')
         x = threading.Thread(target=run_status_orders)
         x.start()
+    
+    def send_order(self, order: dataclasses.dataclass):
+        """
+        Send Normal order or close trade
+        Parameters
+        ----------
+        order: event order
+        """
 
-    def get_response(self, key, _delay=0.1, _wbreak=10):
+        if order.action_mt4 == 'normal':
+            self._send_order_normal(order)
+
+        else:
+            if order.action_mt4 == 'close_trade':
+                # Close total
+                logger.info(f'Sending Order to close positions in ticker: {order.ticker} quantity: {order.quantity}')
+                self.client._set_response_(None)
+                self.client.MTX_CLOSE_TRADE_BY_TICKET_(order.order_id_receiver)
+                respond_order = self._get_return()
+
+            # partially closed trade
+            elif order.action_mt4 == 'close_partial':
+                logger.info(f'Sending Order to close partial positions in ticker: {order.ticker} quantity: {order.quantity}')
+                self.client._set_response_(None)
+                self.client.MTX_CLOSE_PARTIAL_BY_TICKET_(
+                    order.order_id_receiver, order.quantity)
+                respond_order = self._get_return()
+
+            try:
+                # Saving order_id en order
+                order.order_id_receiver = str(respond_order['_ticket'])
+                if respond_order['_action'] == 'CLOSE':
+                    logger.info(f'order closes successfully in ticker: {order.ticker} quantity: {order.quantity}'
+                                f' with id: {order.order_id_receiver}')
+                    order.status = 'closed'
+                    order.filled_price = float(respond_order['_close_price'])
+                    quantity_execute = respond_order['_close_lots']
+                    order.quantity_execute = quantity_execute
+                    order.quantity_left = order.quantity - quantity_execute
+
+                else:  # error
+                    logger.error(f'Error in order in ticker: {order.ticker} quantity: {order.quantity}'
+                                 f' with id: {order.order_id_receiver}')
+                    order.status = 'error'
+
+            except Exception as ex:
+                logger.error(f'Error in close order in ticker: {order.ticker} quantity: {order.quantity} Exception: {ex}')
+                order.status = 'error'
+                order.error_description = str(ex)
+                print(ex)
+
+            if order.status == "error":
+                print(f'Error sending order {order}')
+                if self.send_orders_status:  # publish order status with error
+                    self.emit_orders.publish_event('order_status', order)
+
+            else:
+                # eliminate from dict_from_strategies and create it in dict_open_orders
+                if order.order_id_sender in self.dict_from_strategies:
+                    self.dict_from_strategies.pop(order.order_id_sender)
+                if order.order_id_sender in self.dict_open_orders:
+                    self.dict_open_orders[order.order_id_sender] = order
+
+    def get_account_positions(self):
+        """
+           Account positions
+        """
+        sign = {0: 1, 1: -1, 2: 0, 3: 0}
+        positions = {}
+        open_trades = self.get_trades()
+        trades_id = list(open_trades.keys())
+        for trade in trades_id:
+            symbol = open_trades[trade]['_symbol']
+            try:
+                positions[symbol] = positions[symbol] + sign[open_trades[trade][
+                    '_type']] * open_trades[trade]['_lots']
+            except KeyError:
+                positions[symbol] = sign[open_trades[trade]['_type']] * \
+                                    open_trades[trade]['_lots']
+
+        return positions
+
+    def close_all_positions(self):
+        """
+        Close all positions.
+        """
+        self.client.MTX_CLOSE_ALL_TRADES_()
+
+    def get_stream_quotes_changes(self, tickers, callback=None):
+
+        """
+        :param tickers, list of ticker
+        :param callback:
+        :return:
+        """
+
+        self.client.MTX_SET_MARKETDATA_CALLBACK(callback)
+
+        for _ti in tickers:
+            self.client.MTX_SUBSCRIBE_MARKETDATA_(_symbol=_ti)
+
+    def get_total_balance(self, _delay=0.1, _wbreak=10):
+        """
+        Get Balance
+        """
+        response = self._get_response('_info')
+
+        if response is None:
+            msg = 'No response received, either there are no open trades or check the connection'
+            logger.error(msg)
+            print(msg)
+            return None
+        else:
+            return response
+
+    def cancel_order(self):
+        pass
+
+    def get_info_order(self):
+        pass
+
+    def _get_response(self, key, _delay=0.1, _wbreak=10):
         """
         Returns active positions, balance
         """
@@ -216,55 +327,35 @@ class Trading(object):
                 return _response[key]
         return None
 
-    def close(self):
-        """
-        Disconnect
-        :return:
-        """
-        logger.info("Closing connection to MT4 Darwinex")
-        print('Closing connection with API')
-        self._open = False
-        for thread in self.cola_thread:
-            thread.join()
+    def _get_return(self,
+                    _delay=0.250,
+                    _wbreak=22,
+                    _check='_action'):
 
-    def get_account_positions(self):
-        """
-           Account positions
-        """
-        sign = {0: 1, 1: -1, 2: 0, 3: 0}
-        positions = {}
-        open_trades = self.get_trades()
-        trades_id = list(open_trades.keys())
-        for trade in trades_id:
-            symbol = open_trades[trade]['_symbol']
-            try:
-                positions[symbol] = positions[symbol] + sign[open_trades[trade][
-                    '_type']] * open_trades[trade]['_lots']
-            except KeyError:
-                positions[symbol] = sign[open_trades[trade]['_type']] * \
-                                    open_trades[trade]['_lots']
+        # While loop start time reference
+        _ws = dt.datetime.utcnow()
 
-        return positions
+        # While data not received, sleep until timeout
+        while not self.client._valid_response_('zmq'):
+            sleep(_delay)
 
-    def _get_OrderConfirmId(self, account_key, id_generator):
-        """
-        OrderConfirmId = id_generator +_+  Unix epoch time +_+ AccountKey
-        OrderConfirmId:string [ 1 .. 25 ] characters
-                                    A unique identifier regarding an order used to prevent duplicates.
-                                    Must be unique per API key, per order, per user.
-        """
-        now = str(dt.datetime.utcnow().timestamp()).split('.')[0]
-        order_confirm_id = str(id_generator) + '_' + now + '_' + str(account_key)
-        if len(order_confirm_id) > 25:
-            order_confirm_id = order_confirm_id[:25]
+            if (dt.datetime.utcnow() - _ws).total_seconds() > (
+                    _delay * _wbreak):
+                break
 
-        return order_confirm_id
+        # If data received, return response
+        if self.client._valid_response_('zmq'):
+            msg = self.client._get_response_()
+            if _check in msg.keys():
+                return msg
+        # Default
+        return None
 
-    def get_trades(self):
+    def _get_trades(self):
         """
            Returns open trades
         """
-        response = self.get_response('t')
+        response = self._get_response('t')
         if response is None:
             msg = 'No response received, either there are no open trades or check the connection'
             logger.error(msg)
@@ -277,7 +368,7 @@ class Trading(object):
         ) for k, v in response.items()}
         return open_trades
 
-    def send_order_normal(self, order: dataclasses.dataclass, up_date=False):
+    def _send_order_normal(self, order: dataclasses.dataclass, up_date=False):
         """
         Send Normal order
         Parameters
@@ -371,81 +462,13 @@ class Trading(object):
             print('\n[{}] {} -> MetaTrader'.format(exec_dict['_comment'],
                                                    str(exec_dict)))
 
-        return self.get_return(_check=_check)
+        return self._get_return(_check=_check)
 
-    def send_order(self, order: dataclasses.dataclass):
-        """
-        Send Normal order or close trade
-        Parameters
-        ----------
-        order: event order
-        """
-
-        if order.action_mt4 == 'normal':
-            self.send_order_normal(order)
-
-        else:
-            if order.action_mt4 == 'close_trade':
-                # Close total
-                logger.info(f'Sending Order to close positions in ticker: {order.ticker} quantity: {order.quantity}')
-                self.client._set_response_(None)
-                self.client.MTX_CLOSE_TRADE_BY_TICKET_(order.order_id_receiver)
-                respond_order = self.get_return()
-
-            # partially closed trade
-            elif order.action_mt4 == 'close_partial':
-                logger.info(f'Sending Order to close partial positions in ticker: {order.ticker} quantity: {order.quantity}')
-                self.client._set_response_(None)
-                self.client.MTX_CLOSE_PARTIAL_BY_TICKET_(
-                    order.order_id_receiver, order.quantity)
-                respond_order = self.get_return()
-
-            try:
-                # Saving order_id en order
-                order.order_id_receiver = str(respond_order['_ticket'])
-                if respond_order['_action'] == 'CLOSE':
-                    logger.info(f'order closes successfully in ticker: {order.ticker} quantity: {order.quantity}'
-                                f' with id: {order.order_id_receiver}')
-                    order.status = 'closed'
-                    order.filled_price = float(respond_order['_close_price'])
-                    quantity_execute = respond_order['_close_lots']
-                    order.quantity_execute = quantity_execute
-                    order.quantity_left = order.quantity - quantity_execute
-
-                else:  # error
-                    logger.error(f'Error in order in ticker: {order.ticker} quantity: {order.quantity}'
-                                 f' with id: {order.order_id_receiver}')
-                    order.status = 'error'
-
-            except Exception as ex:
-                logger.error(f'Error in close order in ticker: {order.ticker} quantity: {order.quantity} Exception: {ex}')
-                order.status = 'error'
-                order.error_description = str(ex)
-                print(ex)
-
-            if order.status == "error":
-                print(f'Error sending order {order}')
-                if self.send_orders_status:  # publish order status with error
-                    self.emit_orders.publish_event('order_status', order)
-
-            else:
-                # eliminate from dict_from_strategies and create it in dict_open_orders
-                if order.order_id_sender in self.dict_from_strategies:
-                    self.dict_from_strategies.pop(order.order_id_sender)
-                if order.order_id_sender in self.dict_open_orders:
-                    self.dict_open_orders[order.order_id_sender] = order
-
-    def close_all_positions(self):
-        """
-        Close all positions.
-        """
-        self.client.MTX_CLOSE_ALL_TRADES_()
-
-    def get_trades_all_info(self, _delay=0.1, _wbreak=10):
+    def _get_trades_all_info(self, _delay=0.1, _wbreak=10):
         """ Fails when there are more than 16 open orders
            Returns the open trades with all the information
         """
-        response = self.get_response('_trades')
+        response = self._get_response('_trades')
 
         if response is None:
             msg = 'No response received, either there are no open trades or check the connection'
@@ -455,62 +478,11 @@ class Trading(object):
         else:
             return response
 
-    def get_stream_quotes_changes(self, tickers, callback=None):
-
-        """
-        :param tickers, list of ticker
-        :param callback:
-        :return:
-        """
-
-        self.client.MTX_SET_MARKETDATA_CALLBACK(callback)
-
-        for _ti in tickers:
-            self.client.MTX_SUBSCRIBE_MARKETDATA_(_symbol=_ti)
-
-    def get_balance(self, _delay=0.1, _wbreak=10):
-        """
-        Get Balance
-        """
-        response = self.get_response('_info')
-
-        if response is None:
-            msg = 'No response received, either there are no open trades or check the connection'
-            logger.error(msg)
-            print(msg)
-            return None
-        else:
-            return response
-
-    def get_return(self,
-                   _delay=0.250,
-                   _wbreak=22,
-                   _check='_action'):
-
-        # While loop start time reference
-        _ws = dt.datetime.utcnow()
-
-        # While data not received, sleep until timeout
-        while not self.client._valid_response_('zmq'):
-            sleep(_delay)
-
-            if (dt.datetime.utcnow() - _ws).total_seconds() > (
-                    _delay * _wbreak):
-                break
-
-        # If data received, return response
-        if self.client._valid_response_('zmq'):
-            msg = self.client._get_response_()
-            if _check in msg.keys():
-                return msg
-        # Default
-        return None
-
-    def check_order(self):
+    def _check_order(self):
         """ Check open order and send changes to Portfolio  and for saving in the database"""
-        current_positions = self.get_trades_all_info()
+        current_positions = self._get_trades_all_info()
         if current_positions is None:
-            current_positions = self.get_trades()
+            current_positions = self._get_trades()
         list_changing = []
         for order_id in self.dict_open_orders.keys():
             order = self.dict_open_orders[order_id]
@@ -537,9 +509,9 @@ class Trading(object):
             self.dict_open_orders.pop(order_id)
             self.dict_cancel_and_close_orders[order_id] = order
 
-
+   
 def get_realtime_data(settings: dict = {'symbols': List[str]}, callback: callable = _callable) -> None:
-    """Return realtime data for a list of symbols. [Source: MT4 Darwinex]
+    """Return realtime data for a list of symbols. [Source: MT4]
 
     Parameters
     ----------

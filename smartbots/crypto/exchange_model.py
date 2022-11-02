@@ -9,6 +9,7 @@ import datetime as dt
 from smartbots.brokerMQ import Emit_Events
 import os
 import ccxt
+import threading
 from smartbots.base_logger import logger
 print('CCXT Version:', ccxt.__version__)
 
@@ -143,6 +144,24 @@ class Trading(object):
             else:
                 return {}
 
+    def start_update_orders_status(self) -> None:
+        """Start update orders status."""
+
+        def run_status_orders():
+            while True:
+                try:
+                    if len(self.dict_open_orders) > 0:  # if there are open orders
+                        self._check_order()
+                        time.sleep(30)
+                    else:
+                        time.sleep(1)
+                except Exception as ex:
+                    logger.error(
+                        f'Error check_order Exception: {ex}')
+
+        x = threading.Thread(target=run_status_orders)
+        x.start()
+
     def send_order(self, order: dataclasses.dataclass) -> None:
         """Send order.
 
@@ -226,7 +245,6 @@ class Trading(object):
             print(f"Order cancelled {order}")
             order.status = "cancelled"
 
-
     def get_info_order(self, order: dataclasses.dataclass) -> None:
         """Get fills.
 
@@ -264,7 +282,7 @@ class Trading(object):
                 order.commission_fee = float(fills['fees'][0]['cost'])
                 order.fee_currency = str(fills['fees'][0]['currency'])
 
-    def check_order(self):
+    def _check_order(self):
         """ Check open order and send changes to Portfolio  and for saving in the database"""
         list_changing = []
         for order_id in self.dict_open_orders.keys():
@@ -297,7 +315,11 @@ class Trading(object):
 
         return balance_usd
 
-
+    def close_all_positions(self):
+        pass
+    
+    def get_account_positions(self):
+        pass
 
 
 if __name__ == '__main__':
