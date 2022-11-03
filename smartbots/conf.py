@@ -109,7 +109,7 @@ if '[' in FINANCIAL_SYMBOLS:
     FINANCIAL_SYMBOLS = ast.literal_eval(FINANCIAL_SYMBOLS)
 
 PERCENTAGE_CLOSE_POSITIONS_MT4 = os.getenv("PERCENTAGE_CLOSE_POSITIONS_MT4") or None
-NAME_FINANCIAL_PORTOFOLIO = os.getenv("FINANCIAL_SYMBOLS") or "REPLACE_ME"  # Name of the Portfolio which is running in production
+NAME_FINANCIAL_PORTOFOLIO = os.getenv("NAME_FINANCIAL_PORTOFOLIO") or "REPLACE_ME"  # Name of the Portfolio which is running in production
 BROKER_MT4_NAME = os.getenv("BROKER_MT4_NAME") or "REPLACE_ME"  # Name of the broker-mt4, you are going to connect
 LIST_SERVICES_FINANCIAL = os.getenv("LIST_SERVICES_FINANCIAL") or "REPLACE_ME"
 # is a list

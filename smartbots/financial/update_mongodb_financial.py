@@ -68,10 +68,7 @@ def main():
             for sim in list_symbols_yesterday:
                 read_data(lib_keeper_yesterday, sim)
 
-            try:
-                data = pd.DataFrame(dict_per_ticker[ticker])
-            except:
-                stop=1
+            data = pd.DataFrame(dict_per_ticker[ticker])
             # Sort data
             data = data.sort_values(by=['datetime'])
             data.index = data['datetime']

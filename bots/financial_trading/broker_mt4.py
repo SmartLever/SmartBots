@@ -19,7 +19,7 @@ def main(send_orders_status=True):
     
     def check_balance() -> None:
         try:
-            balance = trading.get_balance()
+            balance = trading.get_total_balance()
             if balance is not None:
                 balance = balance['_equity']
                 now = dt.datetime.utcnow()
