@@ -241,7 +241,7 @@ class Trading(object):
         """
         sign = {0: 1, 1: -1, 2: 0, 3: 0}
         positions = {}
-        open_trades = self._get_trades()
+        open_trades = self.get_trades()
         trades_id = list(open_trades.keys())
         for trade in trades_id:
             symbol = open_trades[trade]['_symbol']
@@ -351,7 +351,7 @@ class Trading(object):
         # Default
         return None
 
-    def _get_trades(self):
+    def get_trades(self):
         """
            Returns open trades
         """
@@ -482,7 +482,7 @@ class Trading(object):
         """ Check open order and send changes to Portfolio  and for saving in the database"""
         current_positions = self._get_trades_all_info()
         if current_positions is None:
-            current_positions = self._get_trades()
+            current_positions = self.get_trades()
         list_changing = []
         for order_id in self.dict_open_orders.keys():
             order = self.dict_open_orders[order_id]
