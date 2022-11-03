@@ -386,7 +386,7 @@ def main():
     # name of portfolio which we want to know simulated positions
     name_portfolio = conf.NAME_FINANCIAL_PORTOFOLIO
     # symbol to read real positions from mongo
-    symbol_positions = f'real_positions_{conf.BROKER_MT4_NAME}'
+    symbol_positions = f'{conf.BROKER_MT4_NAME}_mt4_positions'
     # symbols to get price
     symbols = conf.FINANCIAL_SYMBOLS
 

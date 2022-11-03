@@ -241,7 +241,7 @@ class Trading(object):
         """
         sign = {0: 1, 1: -1, 2: 0, 3: 0}
         positions = {}
-        open_trades = self.get_trades()
+        open_trades = self._get_trades()
         trades_id = list(open_trades.keys())
         for trade in trades_id:
             symbol = open_trades[trade]['_symbol']
