@@ -4,6 +4,7 @@ import datetime as dt
 from typing import Dict, List
 
 
+
 class Abstract_Trading(ABC):
     """ Abstract class for financial Broker or conectivity with crypto exchange
     All brokers must inherit from this class"""
