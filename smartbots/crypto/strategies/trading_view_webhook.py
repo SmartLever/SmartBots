@@ -1,7 +1,7 @@
-from smartbots.basic_strategy import Basic_Strategy, dataclass
+from smartbots.abstractions.abstract_strategy import AbstractStrategy, dataclass
 import datetime as dt
 
-class Trading_View_Webhook(Basic_Strategy):
+class Trading_View_Webhook(AbstractStrategy):
     """ Read signals from Trading View and send orders
 
         Format of the message in tradingview for strategies :
@@ -31,7 +31,7 @@ class Trading_View_Webhook(Basic_Strategy):
     def __init__(self, params, id_strategy=None, callback=None, set_basic=False):
         super().__init__(params, id_strategy, callback, set_basic)
         self.saves_values = {'datetime':[], 'position':[], 'close':[],'contracts':[]}
-
+        self.type_trading = 'crypto'
     def add_event(self,  event: dataclass):
         """ Logic of the Strategy goes here """
         if event.event_type == 'webhook': # logic with OHLC bars

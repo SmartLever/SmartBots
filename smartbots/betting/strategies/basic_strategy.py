@@ -1,24 +1,17 @@
 """ Basic strategic for testing purposes, Back and Lay at entry time """
-from dataclasses import dataclass
-from smartbots.events import Bet
+from smartbots.abstractions.abstract_strategy import AbstractStrategy, dataclass
 
-
-class Basic_Strategy(object):
-    def __init__(self, parameters: dict = None, id_strategy: int = None,
-                 callback: callable = None, set_basic: bool = True):
-        if callback is None:
-            self.callback = self._callback_default
-        else:
-            self.callback = callback
-        self.parameters = parameters
-        self.ticker = parameters['ticker']
+class Basic_Strategy(AbstractStrategy):
+    def __init__(self, params, id_strategy=None, callback=None, set_basic=False):
+        super().__init__(params, id_strategy, callback, set_basic)
+        parameters = params
         self.selection = parameters['selection']
         self.action = parameters['action']  # action
-        self.quantity = parameters['quantity']  # quantity
         self.init_odd = parameters['init_odd']  # init_odd
         self.end_odd = parameters['end_odd']  # end_odd
         self.init_time = parameters['init_time']  # init_time
         self.end_time = parameters['end_time']  # end_time
+        self.type_trading = 'betting'
         if 'cancel_seconds' not in parameters:
             self.cancel_seconds = 100
         else:
@@ -29,11 +22,6 @@ class Basic_Strategy(object):
         self.n_events = {}  # dict with unique as key and number of events as value
         self.unique_control = {}  # dict with unique as key and true or false as value
         self.saves_values = []  # list of bets
-        if set_basic:
-            self.add_event
-
-    def _callback_default(self, event_bet: dataclass):
-        """ callback for Bet by defalt """
 
     def _fill_unique_data(self, unique: str):
         """ Fill the unique data for event type"""
@@ -57,18 +45,6 @@ class Basic_Strategy(object):
         else:
             return False
 
-    def send_order(self, odds):
-        """ Send order to exchange or broker """
-
-        bet = Bet(datetime=odds.datetime, dtime_zone=odds.dtime_zone, ticker=self.ticker,
-                  selection=odds.selection, odds=odds.odds_last_traded, quantity=self.quantity,
-                  match_name=odds.match_name, ticker_id=odds.ticker_id,
-                  selection_id=odds.selection_id, action=self.action,
-                  cancel_seconds=self.cancel_seconds, unique_name=odds.unique_name
-                  )
-
-        self.callback(bet)  # send bet to betting platform
-
     def get_saved_values(self):
         """ Return values saved """
         return self.saves_values
@@ -88,6 +64,11 @@ class Basic_Strategy(object):
                             if self.end_odd >= odds.odds_last_traded >= self.init_odd:
                                 # just one bet for event
                                 self.n_events[unique] += 1
-                                self.send_order(odds)
+                                self.send_order(datetime=odds.datetime, ticker=self.ticker,
+                                                selection=odds.selection, price=odds.odds_last_traded,
+                                                quantity=self.quantity,
+                                                match_name=odds.match_name, ticker_id=odds.ticker_id,
+                                                selection_id=odds.selection_id, action=self.action,
+                                                cancel_seconds=self.cancel_seconds, unique_name=odds.unique_name)
 
 

@@ -25,13 +25,13 @@ def main(send_orders_status=True):
                 now = dt.datetime.utcnow()
                 print(f'Balance {balance} {dt.datetime.utcnow()}')
                 # Control Balance
-                control_balance = dt.datetime(now.year, now.month, now.day, 19, 0, 0)
+                control_balance = dt.datetime(now.year, now.month, now.day, 20, 0, 0)
                 unique = f'{name_portfolio}_{control_balance.strftime("%Y-%m-%d %H:00:00")}'
                 # if time is lower control balance, compare with yesterday balance
                 if now < control_balance:
                     control_balance = control_balance - dt.timedelta(days=1)
                     unique = f'{name_portfolio}_{control_balance.strftime("%Y-%m-%d %H:00:00")}'
-                # if time is greater 19 utc and weekday is monday to friday
+                # if time is greater 20 utc and weekday is monday to friday
                 if now >= control_balance and now.weekday() in [0, 1, 2, 3, 4]:
                     # check if the symbols is saving
                     if lib_balance.has_symbol(unique) is False:
@@ -47,6 +47,7 @@ def main(send_orders_status=True):
                     data = lib_balance.read(unique).data
                     try:
                         diff_perce = (balance - data.balance) / data.balance * 100
+                        print(f'Current diff {diff_perce}')
                         # if current return is lower than objective, send close positions
                         if diff_perce <= float(conf.PERCENTAGE_CLOSE_POSITIONS_MT4):
                             # send to close all positions

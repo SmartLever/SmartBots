@@ -1,7 +1,7 @@
-from smartbots.basic_strategy import Basic_Strategy, dataclass
+from smartbots.abstractions.abstract_strategy import AbstractStrategy, dataclass
 from smartbots.indicators.simple_average import Simple_Average
 
-class Simple_Avg_Cross(Basic_Strategy):
+class Simple_Avg_Cross(AbstractStrategy):
     """ Strategy Simple_Avg_Cross  using  Basic_Strategy as base class
         Have to be implemented add_event method with the logic of the strategy.
 
@@ -27,6 +27,7 @@ class Simple_Avg_Cross(Basic_Strategy):
         self.short_avg_value = None
         self.long_avg_value = None
         self.saves_values = {'datetime':[],'short_avg_value':[], 'long_avg_value':[], 'position':[], 'close':[]}
+        self.type_trading = 'crypto'
 
     def add_event(self,  event: dataclass):
         """ Logic of the Strategy goes here """
