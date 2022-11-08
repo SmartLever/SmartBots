@@ -285,7 +285,7 @@ def callback_control():
                 name_to_saving = f'positions_{dt.datetime.now().strftime("%Y%m%d%H%M%S")}'
                 # first create the petition
                 create_petition(name_to_saving)
-                # Get data_crypto Petition
+                # Get data Petition
                 data_petition = get_data_petition(name_to_saving)
                 ## Agregate data_petition by ticker base
                 agregate = {}

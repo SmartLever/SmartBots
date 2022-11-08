@@ -59,7 +59,7 @@ class Simple_Avg_Cross(Abstract_Strategy):
             self.inicial_values = True
 
         elif event.event_type == 'tick' and event.tick_type == 'close_day' and self.inicial_values:
-            """Logic of the Strategy goes here for calculate data_crypto at the end of the day if it was necessary"""
+            """Logic of the Strategy goes here for calculate data at the end of the day if it was necessary"""
             # update equity strategy
             self.update_equity(event)
 

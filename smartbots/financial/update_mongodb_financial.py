@@ -8,14 +8,14 @@ from smartbots.historical_utils import read_historical, save_historical
 from smartbots import conf
 from smartbots.base_logger import logger
 
-"""Script to update historical with mongodb data_crypto"""
+"""Script to update historical with mongodb data"""
 
 
 def main():
     """ Main function """
 
     def read_data(lib, symbol):
-        """Read data_crypto from MongoDB"""
+        """Read data from MongoDB"""
         try:
             data = lib.read(symbol).data
             if data.event_type == 'bar':
@@ -41,7 +41,7 @@ def main():
         lib_keeper_yesterday = store.get_library(name_yesterday, library_chunk_store=False)
         print(dt.datetime.utcnow())
         for ticker in tickers:
-            # Read historical data_crypto
+            # Read historical data
             data_last = read_historical(ticker, name_libray_historical, last_month=True)
             # Pass to datetime
             data_last['datetime'] = pd.to_datetime(data_last['datetime'], format='%Y-%m-%d %H:%M:%S')
@@ -49,16 +49,16 @@ def main():
             max_index_historical = data_last.index.max()
             # same day, don't read symbols from yesterday
             if max_index_historical.day == today.day:
-                # range of dates from last data_crypto
+                # range of dates from last data
                 list_dates = pd.date_range(max_index_historical, today, freq='1min')
                 list_symbols_yesterday = []
                 list_symbols_today = [f'{ticker}_{x.strftime("%Y-%m-%d %H:%M:00")}_bar' for x in list_dates]
             # different day, read symbols from yesterday
             else:
-                # calculate end of the day from the last data_crypto
+                # calculate end of the day from the last data
                 end_day = dt.datetime(max_index_historical.year, max_index_historical.month,
                                       max_index_historical.day, 23, 59, 0)
-                # range of dates from last data_crypto
+                # range of dates from last data
                 list_dates = pd.date_range(max_index_historical, end_day, freq='1min')
                 list_symbols_yesterday = [f'{ticker}_{x.strftime("%Y-%m-%d %H:%M:00")}_bar' for x in list_dates]
                 list_symbols_today = lib_keeper.list_symbols(regex=ticker)
@@ -69,16 +69,16 @@ def main():
                 read_data(lib_keeper_yesterday, sim)
 
             data = pd.DataFrame(dict_per_ticker[ticker])
-            # Sort data_crypto
+            # Sort data
             data = data.sort_values(by=['datetime'])
             data.index = data['datetime']
             data['symbol'] = data['ticker']
             if len(data) > 0 and len(data_last) > 0:  #
-                # update data_crypto
+                # update data
                 data = data[data.index > data_last.index.max() - timedelta(days=1)]
                 data = pd.concat([data_last, data])
 
-            if len(data) > 0:  # save data_crypto
+            if len(data) > 0:  # save data
                 save_historical(ticker, data, name_libray_historical)
             # clean dict_per_ticker
             dict_per_ticker = {}

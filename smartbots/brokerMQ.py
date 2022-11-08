@@ -38,7 +38,7 @@ class CallBack_Handler(object):
         print(event)
 
     def callback_recieved(self, ch, method, properties, body):
-        """ Callback function for realtime data_crypto"""
+        """ Callback function for realtime data"""
         event = events_type[method.routing_key].from_json(body)
         if 'datetime' in event.__dict__:
             if event.datetime is not None:

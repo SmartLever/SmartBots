@@ -16,12 +16,12 @@ print('CCXT Version:', ccxt.__version__)
 
 # default Callable
 async def _callable(data: Dict) -> None:
-    """Callback function for realtime data_crypto. [Source: Crypto Exchange]
+    """Callback function for realtime data. [Source: Crypto Exchange]
 
     Parameters
     ----------
     data: Dict
-        Realtime data_crypto.
+        Realtime data.
     """
     print(data)
 
@@ -80,7 +80,7 @@ class Trading(Abstract_Trading):
     def get_historical_data(self, timeframe :str ='1m', limit: int =2, start_date : dt.datetime =None,
                             end_date: dt.datetime= dt.datetime.utcnow(),
                             symbols: List[str] = ['BCT-USDC']) -> List[Dict]:
-        """Return realtime data_crypto on freq for a list of symbols.
+        """Return realtime data on freq for a list of symbols.
         Parameters
         ----------
         exchange: str (default: 'kucoin')
@@ -115,7 +115,7 @@ class Trading(Abstract_Trading):
                         time.sleep(0.1)
                         bars.append(get_ohlcv_last(symbol, timeframe))
             return bars
-        else: # historical data_crypto
+        else: # historical data
             bars = {s: [] for s in symbols}
             for symbol in symbols:
                 _to_date = self.client.parse8601(str(end_date))  # milliseconds
@@ -241,7 +241,7 @@ class Trading(Abstract_Trading):
 
     def _cancel_order(self, order: dataclasses.dataclass) -> None:
         info_order = self.client.cancel_order(order.order_id_receiver)
-        if "cancelledOrderIds" in info_order['data_crypto']:
+        if "cancelledOrderIds" in info_order['data']:
             print(f"Order cancelled {order}")
             order.status = "cancelled"
 

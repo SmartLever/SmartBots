@@ -15,7 +15,7 @@ def main():
     """ Main function """
 
     def read_data(lib, symbol):
-        """Read data_crypto from MongoDB"""
+        """Read data from MongoDB"""
         data = lib.read(symbol).data
         if data.event_type == 'odds':
             try:
@@ -27,7 +27,7 @@ def main():
                 save_historical_data()
 
     def save_historical_data():
-        #  Save data_crypto in new library
+        #  Save data in new library
         for k in list(dict_per_event):
             df = pd.DataFrame(dict_per_event[k])
             datetime_df = pd.to_datetime(df['datetime'].values[0])
@@ -85,7 +85,7 @@ def main():
                     control_yesterday.add(sim[:-last_part])
                     list_filter_yesterday = [l for l in list_symbols_yesterday if sim[:-last_part] in l]
                     if len(list_filter_yesterday) > 0:
-                        # this event has data_crypto from yesterday
+                        # this event has data from yesterday
                         for sim_yes in list_filter_yesterday:
                             read_data(lib_keeper_yesterday, sim_yes)
 

@@ -10,7 +10,7 @@
     1) The configuration is read from the config_financial.yaml file.
     2) The configuration is validated.
     3) The configuration is used to create the portfolio.
-    4) The configuration is used to connect to the data_crypto source, run the simulation and run in real time
+    4) The configuration is used to connect to the data source, run the simulation and run in real time
     to produce orders that will send to trading.
     """
 import datetime as dt

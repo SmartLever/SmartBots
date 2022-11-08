@@ -24,7 +24,7 @@ class Basic_Strategy(Abstract_Strategy):
         self.saves_values = []  # list of bets
 
     def _fill_unique_data(self, unique: str):
-        """ Fill the unique data_crypto for event type"""
+        """ Fill the unique data for event type"""
         self.unique_control[unique] = True
         self.n_events[unique] = 0
 

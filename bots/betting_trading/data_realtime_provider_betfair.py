@@ -1,5 +1,5 @@
 """ Data provider for Betfair.
-    recieve data_crypto from Betfair websocket.
+    recieve data from Betfair websocket.
     Send Events to RabbitMQ for further processing.
 """
 import os
@@ -13,7 +13,7 @@ from smartbots.base_logger import logger
 def main():
 
     def save_odds(odds) -> None:
-        """ Populate Odds from data_crypto recieved from Betfair"""
+        """ Populate Odds from data recieved from Betfair"""
         # Start publishing events in MQ
         emit.publish_event('odds', odds)
         health_handler.check()
@@ -34,7 +34,7 @@ def main():
         'market_types': ['OVER_UNDER_25'],
         'betting_types': ['ODDS']}
 
-    logger.info('Getting real data_crypto from Betfair')
+    logger.info('Getting real data from Betfair')
     get_realtime_data(settings, callback=save_odds)
 
 

@@ -1,4 +1,4 @@
-""" Download historical data_crypto frrom Data Exchage and save it for use in the bot.
+""" Download historical data frrom Data Exchage and save it for use in the bot.
  Doc: https://github.com/man-group/arctic/wiki/Chunkstore
 
  """
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def save_test_data():
-    """ Save test data_crypto for testing purposes """
+    """ Save test data for testing purposes """
     path = os.path.join(conf.path_modulo, 'crypto', 'financial/data/data_crypto')
     # check files in folder if pkl
     files = [f for f in os.listdir(path) if f.endswith('.pkl')]
@@ -43,12 +43,12 @@ def historical_downloader(symbols: List[str] = ["EURUSD"], start_date: dt.dateti
     if len(clean_symbols_database) > 0:
         clean_symbol(clean_symbols_database, name_library)
 
-    # Get historical data_crypto
+    # Get historical data
     for symbol in symbols:
-        # Check if exist data_crypto in DB
+        # Check if exist data in DB
         data_last = read_historical(symbol, name_library, last_month=True)
-        # if exist data_crypto in DB, check if data_crypto is complete for the query period
-        if len(data_last) > 0:  # if exist data_crypto in DB, do smart update
+        # if exist data in DB, check if data is complete for the query period
+        if len(data_last) > 0:  # if exist data in DB, do smart update
             start_date = data_last.index.max() + dt.timedelta(minutes=1)
             start_date = start_date.to_pydatetime()
         # load from provider
@@ -61,13 +61,13 @@ def historical_downloader(symbols: List[str] = ["EURUSD"], start_date: dt.dateti
                 data[c] = data[c].astype(float)
 
         if len(data) > 0 and len(data_last) > 0:  #
-            # update data_crypto
+            # update data
             data = data[data.index > data_last.index.max()]
             data = pd.concat([data_last, data])
 
-        if len(data) > 0:  # save data_crypto
+        if len(data) > 0:  # save data
             save_historical(symbol, data, name_library=name_library)
-        print(f'* Historical data_crypto for {symbol} saved')
+        print(f'* Historical data for {symbol} saved')
 
 
 if __name__ == '__main__':
@@ -75,9 +75,9 @@ if __name__ == '__main__':
     provider = 'darwinex'
     interval = '1m'
     symbols = ['AUDNZD', 'GBPUSD']  # List of symbols to download from provider
-    start_date = dt.datetime(2022, 9, 1)  # Start date of data_crypto to download
-    end_date = dt.datetime.utcnow()  # End date of data_crypto to download
-    # Interval of data_crypto to download,
+    start_date = dt.datetime(2022, 9, 1)  # Start date of data to download
+    end_date = dt.datetime.utcnow()  # End date of data to download
+    # Interval of data to download,
     historical_downloader(symbols=symbols, start_date=start_date, end_date=dt.datetime.utcnow(),
                           provider=provider, clean_symbols_database=symbols, interval=interval)
 

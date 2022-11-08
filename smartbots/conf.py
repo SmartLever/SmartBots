@@ -101,7 +101,7 @@ PULL_PORT_PROVIDER = os.getenv("PULL_PORT_PROVIDER") or "REPLACE_ME"
 PULL_PORT_BROKER = os.getenv("PULL_PORT_BROKER") or "REPLACE_ME"
 SUB_PORT_PROVIDER = os.getenv("SUB_PORT_PROVIDER") or "REPLACE_ME"
 SUB_PORT_BROKER = os.getenv("SUB_PORT_BROKER") or "REPLACE_ME"
-FINANCIAL_SYMBOLS = os.getenv("FINANCIAL_SYMBOLS") or "REPLACE_ME"  # Symbols to get real data_crypto
+FINANCIAL_SYMBOLS = os.getenv("FINANCIAL_SYMBOLS") or "REPLACE_ME"  # Symbols to get real data
 # is a list
 if '[' in FINANCIAL_SYMBOLS:
     FINANCIAL_SYMBOLS = ast.literal_eval(FINANCIAL_SYMBOLS)
@@ -119,7 +119,7 @@ LIST_OF_ADMINS_FINANCIAL = os.getenv("LIST_OF_ADMINS_FINANCIAL") or "REPLACE_ME"
 if '[' in LIST_OF_ADMINS_FINANCIAL:
     LIST_OF_ADMINS_FINANCIAL = ast.literal_eval(LIST_OF_ADMINS_FINANCIAL)
     
-# Credential ftp to download data_crypto historical from Darwinex
+# Credential ftp to download data historical from Darwinex
 DWT_FTP_USER = os.getenv("DWT_FTP_USER") or "REPLACE_ME"
 DWT_FTP_PASS = os.getenv("DWT_FTP_PASS") or "REPLACE_ME"
 DWT_FTP_HOSTNAME = os.getenv("DWT_FTP_HOSTNAME") or "REPLACE_ME"
@@ -151,7 +151,7 @@ LIST_OF_ADMINS_CRYPTO = os.getenv("LIST_OF_ADMINS_CRYPTO") or "REPLACE_ME"
 if '[' in LIST_OF_ADMINS_CRYPTO:
     LIST_OF_ADMINS_CRYPTO = ast.literal_eval(LIST_OF_ADMINS_CRYPTO)
 
-CRYPTO_SYMBOLS = os.getenv("CRYPTO_SYMBOLS") or "REPLACE_ME"  # Symbols to get real data_crypto
+CRYPTO_SYMBOLS = os.getenv("CRYPTO_SYMBOLS") or "REPLACE_ME"  # Symbols to get real data
 # is a list
 if '[' in CRYPTO_SYMBOLS:
     CRYPTO_SYMBOLS = ast.literal_eval(CRYPTO_SYMBOLS)

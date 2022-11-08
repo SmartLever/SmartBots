@@ -1,5 +1,5 @@
 """ Classe Handler for database
-The database is MongoDB and use Arctic management for storing data_crypto.
+The database is MongoDB and use Arctic management for storing data.
 More info hear: https://arctic.readthedocs.io/en/latest/index.html
 
 """

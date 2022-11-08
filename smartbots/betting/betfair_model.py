@@ -39,12 +39,12 @@ def _chunkit(seq: int, num: float):
 
 # default Callable
 async def _callable(data: dataclasses) -> None:
-    """Callback function for realtime data_crypto. [Source: Betfair]
+    """Callback function for realtime data. [Source: Betfair]
 
     Parameters
     ----------
     data: Dict
-        Realtime data_crypto.
+        Realtime data.
     """
     print(data)
 
@@ -459,7 +459,7 @@ class Trading(object):
         return market_books
 
     def _check_new_data_books(self, ticker_id, selection_id, latest_taken):
-        """check if the data_crypto is new"""
+        """check if the data is new"""
 
         try:
             dtime = latest_taken
@@ -482,7 +482,7 @@ class Trading(object):
     def _is_valid(odds_back: list, odds_lay: list, volume_matched: float, last_row: int):
         """Check is the row is valid"""
 
-        # if odds_back, odds_lay and volume_matched have info is valid the data_crypto row
+        # if odds_back, odds_lay and volume_matched have info is valid the data row
         if len(odds_back) > 0 and len(odds_lay) > 0 and volume_matched is not None:
             return True
         if last_row == 1:
@@ -520,7 +520,7 @@ class Trading(object):
         return self.data_actual_off['datetime_real_off'][key]
 
     def processing_data(self, books: list):
-        """Processing data_crypto and create events odds with the info"""
+        """Processing data and create events odds with the info"""
 
         books = {i['marketId']: i for i in books}
         matchs = self.next_events  # markets
@@ -532,7 +532,7 @@ class Trading(object):
                 book_event_id = books[ticker_id]  # check book by ticker_id
                 match_event_id = matchs[ticker_id]
 
-                # do data_crypto for selection inside event data_crypto
+                # do data for selection inside event data
                 for i, runner in enumerate(matchs[ticker_id][u'runners']):
                     # check selection_id
                     selection_id = runner[u'selectionId']
@@ -552,7 +552,7 @@ class Trading(object):
                     # check if this ticker is in play
                     if in_play is False and book_event_id['inplay']:
                         in_play = True
-                    # check if data_crypto is new
+                    # check if data is new
                     if self._check_new_data_books(ticker_id, selection_id, latest_taken):
                         # fill in the dataclass odds
                         odd.datatime_latest_taken = latest_taken
@@ -627,37 +627,37 @@ class Trading(object):
                         size_back = []
                         odds_lay = []
                         size_lay = []
-                        # one or more back data_crypto available
+                        # one or more back data available
                         if len(runner_info['ex']['availableToBack']) >= 1:
                             odds_back.append(runner_info['ex']['availableToBack'][0]['price'])
                             size_back.append(runner_info['ex']['availableToBack'][0]['size'])
-                        # two or more back data_crypto available
+                        # two or more back data available
                         if len(runner_info['ex']['availableToBack']) >= 2:
                             odds_back.append(runner_info['ex']['availableToBack'][1]['price'])
                             size_back.append(runner_info['ex']['availableToBack'][1]['size'])
-                        # three or more back data_crypto available
+                        # three or more back data available
                         if len(runner_info['ex']['availableToBack']) >= 3:
                             odds_back.append(runner_info['ex']['availableToBack'][2]['price'])
                             size_back.append(runner_info['ex']['availableToBack'][2]['size'])
 
                         odd.odds_back = odds_back
                         odd.size_back = size_back
-                        # one or more lay data_crypto available
+                        # one or more lay data available
                         if len(runner_info['ex']['availableToLay']) >= 1:
                             odds_lay.append(runner_info['ex']['availableToLay'][0]['price'])
                             size_lay.append(runner_info['ex']['availableToLay'][0]['size'])
-                        # two or more lay data_crypto available
+                        # two or more lay data available
                         if len(runner_info['ex']['availableToLay']) >= 2:
                             odds_lay.append(runner_info['ex']['availableToLay'][1]['price'])
                             size_lay.append(runner_info['ex']['availableToLay'][1]['size'])
-                        # three or more lay data_crypto available
+                        # three or more lay data available
                         if len(runner_info['ex']['availableToLay']) >= 3:
                             odds_lay.append(runner_info['ex']['availableToLay'][2]['price'])
                             size_lay.append(runner_info['ex']['availableToLay'][2]['size'])
 
                         odd.odds_lay = odds_lay
                         odd.size_lay = size_lay
-                        # check if the data_crypto row is valid
+                        # check if the data row is valid
                         if self._is_valid(odds_back, odds_lay, odd.volume_matched, odd.last_row):
                             # Find local team and away team
                             try:
@@ -686,13 +686,13 @@ class Trading(object):
 
 
 def get_realtime_data(settings: dict, callback: callable = _callable) -> None:
-    """Return realtime data_crypto for a list of tickers (Events). [Source: Betfair]
+    """Return realtime data for a list of tickers (Events). [Source: Betfair]
 
     Parameters
     ----------
     settings: dict
         Parameters to get info
-    callback: callable (data_crypto: Dict) -> None
+    callback: callable (data: Dict) -> None
 
     """
 
@@ -715,7 +715,7 @@ def get_realtime_data(settings: dict, callback: callable = _callable) -> None:
         if len(ticker_ids) > 0:
             # get books from markets ids
             market_books = trading.get_market_books(ticker_ids)
-            # get the next data_crypto
+            # get the next data
             if len(market_books) > 0:
                 process_data = trading.processing_data(market_books)
                 if process_data:
