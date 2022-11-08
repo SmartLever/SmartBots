@@ -1,7 +1,7 @@
 """ Basic strategic for testing purposes, Back and Lay at entry time """
-from smartbots.abstractions.abstract_strategy import AbstractStrategy, dataclass
+from smartbots.abstractions.abstract_strategy import Abstract_Strategy, dataclass
 
-class Basic_Strategy(AbstractStrategy):
+class Basic_Strategy(Abstract_Strategy):
     def __init__(self, params, id_strategy=None, callback=None, set_basic=False):
         super().__init__(params, id_strategy, callback, set_basic)
         parameters = params
@@ -24,7 +24,7 @@ class Basic_Strategy(AbstractStrategy):
         self.saves_values = []  # list of bets
 
     def _fill_unique_data(self, unique: str):
-        """ Fill the unique data for event type"""
+        """ Fill the unique data_crypto for event type"""
         self.unique_control[unique] = True
         self.n_events[unique] = 0
 

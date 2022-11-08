@@ -1,8 +1,8 @@
 """ Data provider for MT4.
-    recieve data from mt4 in ticks and create Bar for frequency.
+    recieve data_crypto from mt4 in ticks and create Bar for frequency.
     Send Events to RabbitMQ for further processing.
 """
-from smartbots.financial.mt4_model import get_realtime_data
+from smartbots.financial.mt4.mt4_model import get_realtime_data
 import datetime as dt
 import pandas as pd
 from smartbots.events import Bar, Tick, Timer
@@ -17,7 +17,7 @@ from smartbots import conf
 
 
 def save_tick_data(msg=dict) -> None:
-    """ Save tick data in dictionary """
+    """ Save tick data_crypto in dictionary """
     save_data[msg['Symbol']].append(msg)
 
 
@@ -39,9 +39,9 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
                 data['price'] = (data['Bid'] + data['Ask']) / 2
             except Exception as e:
                 data = []
-                logger.error(f'* Error converting data to Dataframe: {e}')
+                logger.error(f'* Error converting data_crypto to Dataframe: {e}')
             finally:
-                save_data[symbol] = []  # clear data
+                save_data[symbol] = []  # clear data_crypto
             if len(data) > 0:
                 data.index = pd.to_datetime(data['Time'], format='%Y-%m-%d %H:%M:%S.%f')
                 ohlc = data['price'].astype(float).resample(interval).ohlc()

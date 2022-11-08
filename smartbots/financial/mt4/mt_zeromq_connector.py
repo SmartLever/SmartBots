@@ -16,10 +16,10 @@ class MTZeroMQConnector():
                  pull_port=32769,  # Port for Receiving responses
                  sub_port=32770,  # Port for Subscribing for prices
                  delimiter=';',
-                 market_data_callback=None,  # Callback for Market data
+                 market_data_callback=None,  # Callback for Market data_crypto
                  verbose=False):  # String delimiter
 
-        # Strategy Status (if this is False, ZeroMQ will not listen for data)
+        # Strategy Status (if this is False, ZeroMQ will not listen for data_crypto)
         self._ACTIVE = True
 
         # Client ID
@@ -31,7 +31,7 @@ class MTZeroMQConnector():
         # Connection Protocol
         self._protocol = protocol
 
-        # Market data callback
+        # Market data_crypto callback
         self._market_data_callback = market_data_callback
 
         # ZeroMQ Context
@@ -62,7 +62,7 @@ class MTZeroMQConnector():
         self._PULL_SOCKET.connect(self._URL + str(self._PULL_PORT))
         print("[INIT] Listening for responses from METATRADER (PULL): " + str(self._PULL_PORT))
 
-        # Connect SUB Socket to receive market data from MetaTrader
+        # Connect SUB Socket to receive market data_crypto from MetaTrader
         self._SUB_SOCKET.connect(self._URL + str(self._SUB_PORT))
 
         # Initialize POLL set and register PULL and SUB sockets
@@ -70,20 +70,20 @@ class MTZeroMQConnector():
         self._poller.register(self._PULL_SOCKET, zmq.POLLIN)
         self._poller.register(self._SUB_SOCKET, zmq.POLLIN)
 
-        # Start listening for responses to commands and new market data
+        # Start listening for responses to commands and new market data_crypto
         self._string_delimiter = delimiter
 
         # BID/ASK Market Data Subscription Threads ({SYMBOL: Thread})
         self._MarketData_Thread = None
 
-        # Begin polling for PULL / SUB data
+        # Begin polling for PULL / SUB data_crypto
 
         self._MarketData_Thread = Thread(target=self._MT_ZMQ_Poll_Data,
                                          args=(self._string_delimiter,
                                                self._market_data_callback))
         self._MarketData_Thread.start()
 
-        # Market Data Dictionary by Symbol (holds tick data)
+        # Market Data Dictionary by Symbol (holds tick data_crypto)
         self._Market_Data_DB = {}  # {SYMBOL: {TIMESTAMP: (BID, ASK)}}
 
         # Temporary Order STRUCT for convenience wrappers later.
@@ -134,7 +134,7 @@ class MTZeroMQConnector():
 
     def _valid_response_(self, _input='zmq'):
 
-        # Valid data types
+        # Valid data_crypto types
         _types = (dict)
 
         # If _input = 'zmq', assume self._zmq._thread_data_output
@@ -149,7 +149,7 @@ class MTZeroMQConnector():
     ##########################################################################
 
     """
-    Function to retrieve data from MetaTrader (PULL or SUB)
+    Function to retrieve data_crypto from MetaTrader (PULL or SUB)
     """
 
     def remote_recv(self, _socket):
@@ -371,7 +371,7 @@ class MTZeroMQConnector():
     ##########################################################################
 
     """
-    Function to check Poller for new reponses (PULL) and market data (SUB)
+    Function to check Poller for new reponses (PULL) and market data_crypto (SUB)
     """
 
     def _MT_ZMQ_Poll_Data(self,
@@ -391,7 +391,7 @@ class MTZeroMQConnector():
 
                     msg = self._PULL_SOCKET.recv_string(zmq.DONTWAIT)
 
-                    # If data is returned, store as pandas Series
+                    # If data_crypto is returned, store as pandas Series
                     if msg != '' and msg != None:
 
                         try:
@@ -409,11 +409,11 @@ class MTZeroMQConnector():
                 except zmq.error.Again:
                     pass  # resource temporarily unavailable, nothing to print
                 except ValueError:
-                    pass  # No data returned, passing iteration.
+                    pass  # No data_crypto returned, passing iteration.
                 except UnboundLocalError:
                     pass  # _symbol may sometimes get referenced before being assigned.
 
-            # Receive new market data from MetaTrader
+            # Receive new market data_crypto from MetaTrader
             if self._SUB_SOCKET in sockets and sockets[
                 self._SUB_SOCKET] == zmq.POLLIN:
 
@@ -447,7 +447,7 @@ class MTZeroMQConnector():
                 except zmq.error.Again:
                     pass  # resource temporarily unavailable, nothing to print
                 except ValueError:
-                    pass  # No data returned, passing iteration.
+                    pass  # No data_crypto returned, passing iteration.
                 except UnboundLocalError:
                     pass  # _symbol may sometimes get referenced before being assigned.
 

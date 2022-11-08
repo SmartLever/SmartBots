@@ -6,12 +6,11 @@ import ast
 path = os.path.abspath(__file__)
 path_modulo = os.path.dirname(path)  # path to the module
 path_to_principal = path_modulo.replace('smartbots','')
-path_to_crypto = os.path.join(path_modulo, 'crypto')
 path_to_betting = os.path.join(path_modulo, 'betting')
 path_to_financial = os.path.join(path_modulo, 'financial')
 
 # create folders for code your strategies
-path_to_my_strategies = os.path.join(path_to_crypto, 'strategies')
+path_to_my_strategies = os.path.join(path_to_financial, 'strategies')
 path_to_my_strategies_betting = os.path.join(path_to_betting, 'strategies')
 if not os.path.exists(path_to_my_strategies):
     os.makedirs(path_to_my_strategies)
@@ -26,7 +25,6 @@ if not os.path.exists(path_to_temp):
 # Create folders for my strategies
 patha_to_my_smartbots = os.path.join(path_to_principal, 'my_smartbots')
 path_to_my_strategies = {}
-path_to_my_strategies['crypto'] = os.path.join(patha_to_my_smartbots, 'my_crypto_strategies')
 path_to_my_strategies['financial']  = os.path.join(patha_to_my_smartbots, 'my_financial_strategies')
 path_to_my_strategies['betting']= os.path.join(patha_to_my_smartbots, 'my_betting_strategies')
 
@@ -103,7 +101,7 @@ PULL_PORT_PROVIDER = os.getenv("PULL_PORT_PROVIDER") or "REPLACE_ME"
 PULL_PORT_BROKER = os.getenv("PULL_PORT_BROKER") or "REPLACE_ME"
 SUB_PORT_PROVIDER = os.getenv("SUB_PORT_PROVIDER") or "REPLACE_ME"
 SUB_PORT_BROKER = os.getenv("SUB_PORT_BROKER") or "REPLACE_ME"
-FINANCIAL_SYMBOLS = os.getenv("FINANCIAL_SYMBOLS") or "REPLACE_ME"  # Symbols to get real data
+FINANCIAL_SYMBOLS = os.getenv("FINANCIAL_SYMBOLS") or "REPLACE_ME"  # Symbols to get real data_crypto
 # is a list
 if '[' in FINANCIAL_SYMBOLS:
     FINANCIAL_SYMBOLS = ast.literal_eval(FINANCIAL_SYMBOLS)
@@ -121,7 +119,7 @@ LIST_OF_ADMINS_FINANCIAL = os.getenv("LIST_OF_ADMINS_FINANCIAL") or "REPLACE_ME"
 if '[' in LIST_OF_ADMINS_FINANCIAL:
     LIST_OF_ADMINS_FINANCIAL = ast.literal_eval(LIST_OF_ADMINS_FINANCIAL)
     
-# Credential ftp to download data historical from Darwinex
+# Credential ftp to download data_crypto historical from Darwinex
 DWT_FTP_USER = os.getenv("DWT_FTP_USER") or "REPLACE_ME"
 DWT_FTP_PASS = os.getenv("DWT_FTP_PASS") or "REPLACE_ME"
 DWT_FTP_HOSTNAME = os.getenv("DWT_FTP_HOSTNAME") or "REPLACE_ME"
@@ -153,7 +151,7 @@ LIST_OF_ADMINS_CRYPTO = os.getenv("LIST_OF_ADMINS_CRYPTO") or "REPLACE_ME"
 if '[' in LIST_OF_ADMINS_CRYPTO:
     LIST_OF_ADMINS_CRYPTO = ast.literal_eval(LIST_OF_ADMINS_CRYPTO)
 
-CRYPTO_SYMBOLS = os.getenv("CRYPTO_SYMBOLS") or "REPLACE_ME"  # Symbols to get real data
+CRYPTO_SYMBOLS = os.getenv("CRYPTO_SYMBOLS") or "REPLACE_ME"  # Symbols to get real data_crypto
 # is a list
 if '[' in CRYPTO_SYMBOLS:
     CRYPTO_SYMBOLS = ast.literal_eval(CRYPTO_SYMBOLS)

@@ -10,7 +10,7 @@ from telegram import ParseMode, ReplyKeyboardMarkup
 from telegram.error import NetworkError, TelegramError
 import schedule
 from smartbots.database_handler import Universe
-from smartbots.crypto.exchange_model import Trading
+from smartbots.financial.crypto.exchange_model import Trading
 from smartbots.brokerMQ import Emit_Events
 from smartbots import events
 import math
@@ -285,7 +285,7 @@ def callback_control():
                 name_to_saving = f'positions_{dt.datetime.now().strftime("%Y%m%d%H%M%S")}'
                 # first create the petition
                 create_petition(name_to_saving)
-                # Get data Petition
+                # Get data_crypto Petition
                 data_petition = get_data_petition(name_to_saving)
                 ## Agregate data_petition by ticker base
                 agregate = {}
@@ -358,7 +358,7 @@ def main():
     list_currency_strategy = conf.CRYPTO_SYMBOLS
 
     # Create trading object to get info from broker
-    trading = Trading(exchange=conf.BROKER_CRYPTO)
+    trading = Trading(exchange_or_broker=conf.BROKER_CRYPTO)
     # Launch thread
     x = threading.Thread(target=schedule_callback_control)
     x.start()

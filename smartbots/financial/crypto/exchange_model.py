@@ -1,6 +1,6 @@
 """ DOCS: https://github.com/ccxt/ccxt/wiki/Manual#markets """
 
-
+from smartbots.abstractions.abstract_trading import Abstract_Trading
 import dataclasses
 from typing import Dict, List
 import time
@@ -16,12 +16,12 @@ print('CCXT Version:', ccxt.__version__)
 
 # default Callable
 async def _callable(data: Dict) -> None:
-    """Callback function for realtime data. [Source: Crypto Exchange]
+    """Callback function for realtime data_crypto. [Source: Crypto Exchange]
 
     Parameters
     ----------
     data: Dict
-        Realtime data.
+        Realtime data_crypto.
     """
     print(data)
 
@@ -54,7 +54,7 @@ def get_client(exchange: str = 'kucoin'):
                                     'enableRateLimit': True})
 
 
-class Trading(object):
+class Trading(Abstract_Trading):
     """Class for trading on Kucoin.
 
     Attributes
@@ -63,24 +63,24 @@ class Trading(object):
         Exchange client.
     """
 
-    def __init__(self, send_orders_status: bool = True, exchange='kucoin') -> None:
+    def __init__(self, send_orders_status: bool = True, exchange_or_broker='kucoin') -> None:
         """Initialize class."""
-        self.exchange = exchange
-        self.client = get_client(exchange=exchange)
-        # variables of status orders
-        self.dict_open_orders = {}  # key is the order_id_sender, open order in the broker
-        self.dict_cancel_and_close_orders = {}  # key is the order_id_sender, closed or cancelled order in the broker
-        self.dict_from_strategies = {}  # key is order_id_sender from strategies, before send to broker or with error
-        self.send_orders_status = send_orders_status
+        super().__init__(send_orders_status=send_orders_status, exchange_or_broker=exchange_or_broker)
+        self.exchange_or_broker = exchange_or_broker
+        self.client = self.get_client()
+
         if self.send_orders_status:
             self.emit_orders = Emit_Events()
         else:
             self.emit_orders = None
 
+    def get_client(self):
+        return get_client(exchange = self.exchange_or_broker)
+
     def get_historical_data(self, timeframe :str ='1m', limit: int =2, start_date : dt.datetime =None,
                             end_date: dt.datetime= dt.datetime.utcnow(),
                             symbols: List[str] = ['BCT-USDC']) -> List[Dict]:
-        """Return realtime data on freq for a list of symbols.
+        """Return realtime data_crypto on freq for a list of symbols.
         Parameters
         ----------
         exchange: str (default: 'kucoin')
@@ -115,7 +115,7 @@ class Trading(object):
                         time.sleep(0.1)
                         bars.append(get_ohlcv_last(symbol, timeframe))
             return bars
-        else: # historical data
+        else: # historical data_crypto
             bars = {s: [] for s in symbols}
             for symbol in symbols:
                 _to_date = self.client.parse8601(str(end_date))  # milliseconds
@@ -128,7 +128,7 @@ class Trading(object):
                             df = pd.DataFrame(_df, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
                             df.index = pd.to_datetime(df['datetime'], unit='ms')
                             df['symbol'] = symbol
-                            df['exchange'] = self.exchange
+                            df['exchange'] = self.exchange_or_broker
                             bars[symbol].append(df)
                             _since = _df[-1][0] + 60000 # 1 min
                             print(f'{symbol} Since: {self.client.iso8601(_since)}')
@@ -169,7 +169,7 @@ class Trading(object):
         ----------
         order: event order
         """
-        logger.info(f'Sending Order to {self.exchange} in ticker: {order.ticker} quantity: {order.quantity}')
+        logger.info(f'Sending Order to {self.exchange_or_broker} in ticker: {order.ticker} quantity: {order.quantity}')
         self.dict_from_strategies[order.order_id_sender] = order  # save order in dict_from_strategies
         try:
             self._send_order(order)
@@ -241,7 +241,7 @@ class Trading(object):
 
     def _cancel_order(self, order: dataclasses.dataclass) -> None:
         info_order = self.client.cancel_order(order.order_id_receiver)
-        if "cancelledOrderIds" in info_order['data']:
+        if "cancelledOrderIds" in info_order['data_crypto']:
             print(f"Order cancelled {order}")
             order.status = "cancelled"
 
@@ -299,7 +299,25 @@ class Trading(object):
             self.dict_open_orders.pop(order_id)
             self.dict_cancel_and_close_orders[order_id] = order
 
-    def get_total_balance_usd(self):
+    def get_total_balance(self, currency: str = 'USDT') -> float:
+        """Get total balance.
+
+        Parameters
+        ----------
+        currency: str
+            Currency to get balance
+
+        Returns
+        -------
+        float
+            Total balance
+        """
+        if currency == 'USDT':
+            return self._get_total_balance_usd()
+        else:
+            raise NotImplementedError
+
+    def _get_total_balance_usd(self):
         """ Get total balance in the Exchange
             :param fiat: optional Fiat code
         """
@@ -329,7 +347,7 @@ if __name__ == '__main__':
     import datetime as dt
     n = 1
     quantity = 0.05
-    trading = Trading(exchange =exchange)
+    trading = Trading(exchange_or_broker=exchange)
 
     t = 'ETH-USDC'
     action = 'buy'
@@ -343,5 +361,5 @@ if __name__ == '__main__':
     order.order_id_receiver = '633eb1b9c0c6bc00019611a2'
     #trading.send_order(order)
     #fills = trading.get_info_order(order)
-    trading.get_total_balance_usd()
+    print(trading.get_total_balance())
 

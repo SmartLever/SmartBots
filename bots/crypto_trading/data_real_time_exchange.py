@@ -1,7 +1,7 @@
 """ Data provider all crypto exchange.
     Follow https://github.com/ccxt/ccxt
 """
-from smartbots.crypto.exchange_model import Trading
+from smartbots.financial.crypto.exchange_model import Trading
 import datetime as dt
 import pandas as pd
 from smartbots.events import Bar, Tick

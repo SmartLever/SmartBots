@@ -9,7 +9,9 @@ def _callback_default(event_order: dataclass):
     print(event_order)
 
 
-class AbstractStrategy(ABC):
+class Abstract_Strategy(ABC):
+    """ Abstract class for Strategy
+    All strategies must inherit from this class"""
     def __init__(self, parameters: dict = None, id_strategy: int = None,
                  callback: callable = None, set_basic: bool = True):
         if callback is None:

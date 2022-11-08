@@ -25,7 +25,7 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - /home/ubuntu/db/mongo-data:/data/db
+      - /home/ubuntu/db/mongo-data_crypto:/data_crypto/db
 
   portainer:
     image: portainer/portainer-ce:latest
@@ -36,7 +36,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./portainer-data:/data
+      - ./portainer-data_crypto:/data_crypto
     ports:
       - 9000:9000
 

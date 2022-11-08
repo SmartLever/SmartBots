@@ -35,7 +35,7 @@ class Timer:
 @dataclass_json
 @dataclass
 class Tick(Base):
-    """ Tick event, generic case for data events """
+    """ Tick event, generic case for data_crypto events """
     event_type: str = 'tick'
     tick_type: str = None  # closed_day, ask, bid, etc.
     price: float = None
@@ -54,13 +54,13 @@ class WebHook(Base):
 @dataclass_json
 @dataclass
 class Petition(Base):
-    """ Petition for getting data from a data source from running processes """
+    """ Petition for getting data_crypto from a data_crypto source from running processes """
     event_type: str = 'petition'
     ticker: str = 'petition'
     function_to_run: str = None  # petition of function to run for the petition
     parameters: Dict[str, Any] = None  # parameters for the function to run
-    path_to_saving: str = 'petitions'  # path to saving the data
-    name_to_saving: str = 'default'  # name of the key to save the data
+    path_to_saving: str = 'petitions'  # path to saving the data_crypto
+    name_to_saving: str = 'default'  # name of the key to save the data_crypto
     name_portfolio: str = None
 
 @dataclass_json
@@ -164,7 +164,7 @@ class Odds(Base):
     away_team: str = None  # away team
     full_description: str = None  # full description
     competition_id: int = None  # id of the competition
-    last_row: int = None  # last row of data
+    last_row: int = None  # last row of data_crypto
     local_team_id: int = None  # id of the local team
     away_team_id: int = None  # id of the away team
     match_id: int = None  # id of the match

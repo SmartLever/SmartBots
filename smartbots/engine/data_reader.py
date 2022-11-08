@@ -1,4 +1,4 @@
-""" Load data from DB and create Events for consumption by portfolio engine
+""" Load data_crypto from DB and create Events for consumption by portfolio engine
   Doc: https://github.com/man-group/arctic/wiki/Chunkstore
  """
 import pandas as pd
@@ -12,7 +12,7 @@ def read_data_to_dataframe(symbol:str, provider:str, interval:str = '1m',
                            start_date: dt.datetime = dt.datetime(2022, 1, 1),
                            end_date: dt.datetime = dt.datetime.utcnow()):
 
-    """ Read data from DB and create DataFrame"""
+    """ Read data_crypto from DB and create DataFrame"""
     store = Universe()  # database handler
     name_library = f'{provider}_historical_{interval}'
     lib = store.get_library(name_library)
@@ -24,8 +24,8 @@ def read_data_to_dataframe(symbol:str, provider:str, interval:str = '1m',
 
 def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.datetime = dt.datetime(2022, 1, 1),
                                    end_date: dt.datetime = dt.datetime.utcnow()):
-    """ Load data from DB and create Events for consumption by portfolio engine
-        symbols_lib_name: list of symbols to load with info about the source of the data
+    """ Load data_crypto from DB and create Events for consumption by portfolio engine
+        symbols_lib_name: list of symbols to load with info about the source of the data_crypto
         start_date: start date of the query period
         end_date: end date of the query period """
 
@@ -103,11 +103,11 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
             df = pd.concat(datas)
             df.sort_index(inplace=True)
             for tuple in df.itertuples():
-                # create bar event  for the frecuency of the data
+                # create bar event  for the frecuency of the data_crypto
                 event_type = tuple.event_type
                 if event_type == 'bar':
                     bar = Bar(ticker=tuple.symbol, datetime=tuple[0], open=tuple.open, high=tuple.close, low=tuple.low,
-                              close=tuple.close, volume=tuple.volume, exchange=tuple.exchange, multiplier=tuple.multiplier,
+                              close=tuple.close, volume=tuple.volume, exchange=tuple.exchange_or_broker, multiplier=tuple.multiplier,
                               ask=tuple.ask, bid=tuple.bid)
 
 
@@ -126,8 +126,8 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
 
 def load_tickers_and_create_events_betting(tickers_lib_name: list, start_date: dt.datetime = dt.datetime(2022, 1, 1),
                                            end_date: dt.datetime = dt.datetime.utcnow()):
-    """ Load data from DB and create Events for consumption by portfolio engine for betting markets
-        tickers_lib_name: list of tickers to load with info about the source of the data
+    """ Load data_crypto from DB and create Events for consumption by portfolio engine for betting markets
+        tickers_lib_name: list of tickers to load with info about the source of the data_crypto
          """
     store = Universe()
     yyyymmdd_start = start_date.year * 10000 + start_date.month * 100 + start_date.day

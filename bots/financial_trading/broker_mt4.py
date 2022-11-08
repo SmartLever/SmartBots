@@ -8,7 +8,7 @@ from smartbots.base_logger import logger
 def main(send_orders_status=True):
     from smartbots.brokerMQ import receive_events
     import datetime as dt
-    from smartbots.financial.mt4_model import Trading
+    from smartbots.financial.mt4.mt4_model import Trading
     import schedule
     from smartbots import conf
     from smartbots.health_handler import Health_Handler
@@ -102,7 +102,7 @@ def main(send_orders_status=True):
         order: event order
         """
         if event.event_type == 'order' and conf.SEND_ORDERS_BROKER_MT4 == 1:
-            event.exchange = f'mt4_{conf.BROKER_MT4_NAME}'
+            event.exchange_or_broker = f'mt4_{conf.BROKER_MT4_NAME}'
             qtypes = {'buy': 1, 'sell': 0}  # the opposite position to the order
             symbol = event.ticker
             quantity = event.quantity
@@ -141,7 +141,7 @@ def main(send_orders_status=True):
                     trading.send_order(event)
 
         elif event.event_type == 'order' and conf.SEND_ORDERS_BROKER_MT4 == 0:
-            event.exchange = f'mt4_{conf.BROKER_MT4_NAME}'
+            event.exchange_or_broker = f'mt4_{conf.BROKER_MT4_NAME}'
             print(f'Order for {event.ticker} recieved but not send.')
 
     # Log event health of the service

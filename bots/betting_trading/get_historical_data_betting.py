@@ -1,4 +1,4 @@
-""" Historical data from Kucoin"""
+""" Historical data_crypto from Kucoin"""
 import os
 from smartbots import conf
 from typing import Dict
@@ -6,9 +6,9 @@ import pandas as pd
 from smartbots.database_handler import Universe
 
 def _get_historical_data_test_files_betfair():
-    """ Read historical data save in file, normalise it and return it as events"""
+    """ Read historical data_crypto save in file, normalise it and return it as events"""
     from smartbots.events import Odds
-    location = os.path.join(conf.path_modulo, 'betting', 'data', 'test_data')
+    location = os.path.join(conf.path_modulo, 'betting', 'data_crypto', 'test_data')
     files = os.listdir(location)
     data = {}
 
@@ -75,14 +75,14 @@ def _get_historical_data_test_files_betfair():
 
 
 def save_historical(symbol_data: Dict = {}, name_library: str = 'provider_historical') -> None:
-    """ Save historical data in Data Base as VersionStore.
+    """ Save historical data_crypto in Data Base as VersionStore.
         Here the docs: https://github.com/man-group/arctic"""
 
     store = Universe()
     lib = store.get_library(name_library, library_chunk_store=False)
 
     for symbol, data in symbol_data.items():
-        data.index.exchange = 'date'
+        data.index.exchange_or_broker = 'date'
         ticker = str(data['odds'].iloc[0].ticker)
         dtime = data['odds'].iloc[0].datetime_scheduled_off  # to_pydatetime()
         selection = str(data['odds'].iloc[0].selection)
@@ -101,7 +101,7 @@ def main(provider='betfair_files'):
 
     data = get_historical_data()
     save_historical(data, name_library=f'{provider}_historical')
-    print(f'* Historical data for {provider} saved')
+    print(f'* Historical data_crypto for {provider} saved')
 
 
 if __name__ == '__main__':

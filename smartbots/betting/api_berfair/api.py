@@ -335,8 +335,8 @@ class Api(object):
             'SP_AVAILABLE', 'SP_TRADED', 'EX_BEST_OFFERS', 'EX_ALL_OFFERS', 'EX_TRADED'
         @req_id: type = integer. OPTIONAL request id number (for customer use only)
         NOTES:
-        1. betfair data request limit = 5 markets per second
-        2. you can call this function AFTER market closes to check results! data
+        1. betfair data_crypto request limit = 5 markets per second
+        2. you can call this function AFTER market closes to check results! data_crypto
         is available for 90 days after market closure.
         """
         url = 'https://api.betfair.com/exchange/betting/json-rpc/v1'

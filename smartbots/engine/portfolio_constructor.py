@@ -143,7 +143,7 @@ class Portfolio_Constructor(object):
             raise ValueError(f'Asset type {self.asset_type} not supported')
 
     def process_petitions(self, event: dataclass):
-        """ Recieve a event peticion and get the data from the data source and save it in the DataBase"""
+        """ Recieve a event peticion and get the data_crypto from the data_crypto source and save it in the DataBase"""
         if event.event_type == 'petition':
             if event.name_portfolio == self.name:
                 data_to_save = None
@@ -177,7 +177,7 @@ class Portfolio_Constructor(object):
         """ Order event from strategies"""
         order_or_bet.portfolio_name = self.name
         order_or_bet.status = 'from_strategy'
-        if self.asset_type == 'crypto':
+        if self.asset_type == 'crypto' or self.asset_type == 'financial':
             self.orders.append(order_or_bet) # append the order to the list of orders
             if self.in_real_time and self.send_orders_to_broker:
                 print(order_or_bet)
@@ -187,16 +187,11 @@ class Portfolio_Constructor(object):
             if self.in_real_time and self.send_orders_to_broker:
                 print(order_or_bet)
                 self.emit_orders.publish_event('bet', order_or_bet)
-        elif self.asset_type == 'financial':
-            self.orders.append(order_or_bet) # append the order to the list of orders
-            if self.in_real_time and self.send_orders_to_broker:
-                print(order_or_bet)
-                self.emit_orders.publish_event('financial_order', order_or_bet)
         elif self.send_orders_to_broker:
             raise ValueError(f'Asset type {self.asset_type} not supported')
 
     def _callback_datafeed_betting(self, event: dataclass):
-        """ Feed portfolio with data from events for asset type Betting,
+        """ Feed portfolio with data_crypto from events for asset type Betting,
          recieve dict with key as topic and value as event"""
         if self.in_real_time:
             self.health_handler.check()
@@ -217,7 +212,7 @@ class Portfolio_Constructor(object):
                     strategy.add_event(event)
 
     def _callback_datafeed(self, event: dataclass):
-        """ Feed portfolio with data from events for asset Crypto and Finance,
+        """ Feed portfolio with data_crypto from events for asset Crypto and Finance,
         recieve  events"""
         if self.in_real_time:
             self.health_handler.check()
@@ -236,7 +231,7 @@ class Portfolio_Constructor(object):
             for strategy in self.total_strategies_with_timer:
                 strategy.add_timer(event)
 
-        elif event.event_type == 'petition': # petition to get data from the portfolio
+        elif event.event_type == 'petition': # petition to get data_crypto from the portfolio
             """ If the petition do not work it keeps working"""
             try:
                 self.process_petitions(event)

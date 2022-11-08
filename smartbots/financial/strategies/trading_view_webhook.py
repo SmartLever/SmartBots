@@ -1,7 +1,7 @@
-from smartbots.abstractions.abstract_strategy import AbstractStrategy, dataclass
+from smartbots.abstractions.abstract_strategy import Abstract_Strategy, dataclass
 import datetime as dt
 
-class Trading_View_Webhook(AbstractStrategy):
+class Trading_View_Webhook(Abstract_Strategy):
     """ Read signals from Trading View and send orders
 
         Format of the message in tradingview for strategies :

@@ -6,7 +6,7 @@ import time
 import datetime as dt
 from smartbots.brokerMQ import Emit_Events
 from smartbots.decorators import check_api_key
-from smartbots.financial.mt4_connector.mt_zeromq_connector import MTZeroMQConnector
+from smartbots.financial.mt4.mt_zeromq_connector import MTZeroMQConnector
 from time import sleep
 from smartbots.base_logger import logger
 import darwinex_ticks
@@ -14,12 +14,12 @@ import darwinex_ticks
 
 # default Callable
 async def _callable(data: Dict) -> None:
-    """Callback function for realtime data. [Source: MT4]
+    """Callback function for realtime data_crypto. [Source: MT4]
 
     Parameters
     ----------
     data: Dict
-        Realtime data.
+        Realtime data_crypto.
     """
     print(data)
 
@@ -95,7 +95,7 @@ class Trading(object):
     def _get_historical_data_darwinex(self, timeframe: str = '1min', limit: int = 1500, start_date: dt.datetime = None,
                             end_date: dt.datetime = dt.datetime.utcnow(),
                             symbols: List[str] = ['EURUSD']) -> List[Dict]:
-        """Return realtime data on freq for a list of symbols.
+        """Return realtime data_crypto on freq for a list of symbols.
         Parameters
         ----------
         exchange: str (default: 'darwinex')
@@ -120,7 +120,7 @@ class Trading(object):
         bars = {}
         for ticker in symbols:
             print(dt.datetime.utcnow())
-            # Read historical data from darwinex
+            # Read historical data_crypto from darwinex
 
             data = self.dwt.ticks_from_darwinex(ticker, start=_start_date,
                                                 end=_end_date)
@@ -297,7 +297,7 @@ class Trading(object):
         """
         Returns active positions, balance
         """
-        # Reset data output
+        # Reset data_crypto output
         self.client._set_response_(None)
 
         # Get open trades from MetaTrader
@@ -311,14 +311,14 @@ class Trading(object):
         # While loop start time reference
         _ws = dt.datetime.utcnow()
 
-        # While data not received, sleep until timeout
+        # While data_crypto not received, sleep until timeout
         while not self.client._valid_response_('zmq'):
             sleep(_delay)
             if (dt.datetime.utcnow() - _ws).total_seconds() > (
                     _delay * _wbreak):
                 break
 
-        # If data received, return DataFrame
+        # If data_crypto received, return DataFrame
         if self.client._valid_response_('zmq'):
             _response = self.client._get_response_()
             # print('respuesta :', _response)
@@ -335,7 +335,7 @@ class Trading(object):
         # While loop start time reference
         _ws = dt.datetime.utcnow()
 
-        # While data not received, sleep until timeout
+        # While data_crypto not received, sleep until timeout
         while not self.client._valid_response_('zmq'):
             sleep(_delay)
 
@@ -343,7 +343,7 @@ class Trading(object):
                     _delay * _wbreak):
                 break
 
-        # If data received, return response
+        # If data_crypto received, return response
         if self.client._valid_response_('zmq'):
             msg = self.client._get_response_()
             if _check in msg.keys():
@@ -441,7 +441,7 @@ class Trading(object):
                      '_magic': 123456,
                      '_type': actions[order.action]}
 
-        # Reset thread data output
+        # Reset thread data_crypto output
         self.client._set_response_(None)
 
         if order.type in ['market']:
@@ -511,14 +511,14 @@ class Trading(object):
 
    
 def get_realtime_data(settings: dict = {'symbols': List[str]}, callback: callable = _callable) -> None:
-    """Return realtime data for a list of symbols. [Source: MT4]
+    """Return realtime data_crypto for a list of symbols. [Source: MT4]
 
     Parameters
     ----------
     settings
     symbols: List[str]
         Symbols of the assets. Example: AUDNZD, EURUSD
-    callback: callable (data: Dict) -> None
+    callback: callable (data_crypto: Dict) -> None
 
     """
 

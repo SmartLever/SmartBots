@@ -135,7 +135,7 @@ def positions(update, context):
         name_to_saving = f'positions_{dt.datetime.now().strftime("%Y%m%d%H%M%S")}'
         # first create the petition
         create_petition(name_to_saving)
-        # Get data Petition
+        # Get data_crypto Petition
         data_petition = get_data_petition(name_to_saving)
         ## Agregate data_petition by ticker base
         agregate = {}
@@ -259,7 +259,7 @@ def prices(update, context):
     except Exception as e:
         print(e)
         logger.error(f'Error getting Price: {e}')
-        msg = 'Failed to get price, please try again or no new data'
+        msg = 'Failed to get price, please try again or no new data_crypto'
         _send_msg(msg=msg, chat_id=update.message.chat_id)
 
 
@@ -309,7 +309,7 @@ def callback_control():
                 name_to_saving = f'positions_{dt.datetime.now().strftime("%Y%m%d%H%M%S")}'
                 # first create the petition
                 create_petition(name_to_saving)
-                # Get data Petition
+                # Get data_crypto Petition
                 data_petition = get_data_petition(name_to_saving)
                 ## Agregate data_petition by ticker base
                 agregate = {}

@@ -12,14 +12,14 @@ from smartbots.events import Bar
 def read_historical(symbol: str, name_library: str = 'provider_historical_1min',
                     start_date: dt.datetime = dt.datetime(2022, 7, 1),
                     end_date: dt.datetime = dt.datetime.utcnow(),last_month: bool=False) -> pd.DataFrame:
-    """ Read historical data from initial month and end month.
-        Symbols as save as :symbol_monthYear as a way to identify the data.
+    """ Read historical data_crypto from initial month and end month.
+        Symbols as save as :symbol_monthYear as a way to identify the data_crypto.
         """
     store = Universe()
     lib = store.get_library(name_library)
     if lib.has_symbol(symbol) is False:
         return pd.DataFrame()
-    if last_month: # read last month of data
+    if last_month: # read last month of data_crypto
         last_month_range = list(lib.get_chunk_ranges(symbol))[-1]
         end_date = pd.to_datetime(last_month_range[1].decode("utf-8") ) + dt.timedelta(days=1)
         start_date = pd.to_datetime(last_month_range[0].decode("utf-8") )
@@ -31,7 +31,7 @@ def save_historical(symbol: str, data: pd.DataFrame, name_library: str = 'provid
     """ Save historical in database in the library."""
     store = Universe()
     lib = store.get_library(name_library)
-    # save in chunks of 1 month of data, index have to be a datetime object with name date
+    # save in chunks of 1 month of data_crypto, index have to be a datetime object with name date
     data.index.name = 'date'
     if lib.has_symbol(symbol):
         lib.update(symbol, data, chunk_size='M')

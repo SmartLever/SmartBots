@@ -5,7 +5,7 @@ from smartbots import conf
 def main(send_orders_status=True, exchange='kucoin'):
     from smartbots.brokerMQ import receive_events
     import datetime as dt
-    from smartbots.crypto.exchange_model import Trading
+    from smartbots.financial.crypto.exchange_model import Trading
     import schedule
     from smartbots.health_handler import Health_Handler
     import time
@@ -37,18 +37,18 @@ def main(send_orders_status=True, exchange='kucoin'):
         order: event order
         """
         if event.event_type == 'order' and conf.SEND_ORDERS_BROKER == 1:
-            event.exchange = exchange
+            event.exchange_or_broker = exchange
             logger.info(f'Sending Order to broker {exchange} in ticker {event.ticker} quantity {event.quantity}')
             trading.send_order(event)
         elif event.event_type == 'order' and conf.SEND_ORDERS_BROKER == 0:
-            event.exchange = exchange
+            event.exchange_or_broker = exchange
             print(f'Order for {event.ticker} recieved but not send.')
 
     # Log event health of the service
     health_handler = Health_Handler(n_check=6,
                                     name_service=f'broker_{exchange}')
     # Create trading object
-    trading = Trading(send_orders_status=send_orders_status, exchange=exchange)
+    trading = Trading(send_orders_status=send_orders_status, exchange_or_broker=exchange)
     check_balance()
     # Launch thread to saving balance
     x = threading.Thread(target=schedule_balance)
