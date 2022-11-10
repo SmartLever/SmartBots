@@ -6,7 +6,6 @@ import schedule
 import time
 from smartbots.historical_utils import read_historical, save_historical
 from smartbots import conf
-from smartbots.base_logger import logger
 
 """Script to update historical with mongodb data"""
 

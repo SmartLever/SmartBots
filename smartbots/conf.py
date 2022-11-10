@@ -58,6 +58,10 @@ RABBITMQ_PORT = os.getenv("RABBITMQ_PORT") or "REPLACE_ME"
 WEBHOOKS = {}
 WEBHOOKS['TRADINGVIEW_KEY'] = os.getenv("WEBHOOKS_TRADINGVIEW_KEY") or "REPLACE_ME"
 
+
+# type of trading in telegram
+TRADING_TYPE_TELEGRAM = os.getenv("TRADING_TYPE_TELEGRAM") or "REPLACE_ME"
+
 ##################################################
 
 

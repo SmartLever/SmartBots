@@ -4,7 +4,7 @@ import threading
 from smartbots import conf
 import time
 import datetime as dt
-from smartbots.brokerMQ import Emit_Events
+from smartbots.abstractions.abstract_trading import Abstract_Trading
 from smartbots.decorators import check_api_key
 from smartbots.financial.mt4.mt_zeromq_connector import MTZeroMQConnector
 from time import sleep
@@ -48,7 +48,7 @@ def get_client(conf_port):
     return client
 
 
-class Trading(object):
+class Trading(Abstract_Trading):
     """Class for trading on MT4.
 
     Attributes
@@ -57,14 +57,14 @@ class Trading(object):
          MT4 client.
     """
 
-    def __init__(self, send_orders_status: bool = True, name='darwinex', type_service='broker') -> None:
+    def __init__(self, send_orders_status: bool = True, exchange_or_broker='darwinex_broker') -> None:
         """Initialize class."""
-        self.dwt = None  # darwinex_ticks with FTP connection
-        self.name = name
+
+        type_service = exchange_or_broker.split('_')[1]
         if type_service == 'broker':
             config_port = {'MT4_HOST': conf.MT4_HOST,
                            'CLIENT_IF': conf.CLIENT_IF,
-                           'PUSH_PORT':  conf.PUSH_PORT,
+                           'PUSH_PORT': conf.PUSH_PORT,
                            'PULL_PORT': conf.PULL_PORT_BROKER,
                            'SUB_PORT': conf.SUB_PORT_BROKER}
         elif type_service == 'provider':
@@ -73,24 +73,16 @@ class Trading(object):
                            'PUSH_PORT': conf.PUSH_PORT,
                            'PULL_PORT': conf.PULL_PORT_PROVIDER,
                            'SUB_PORT': conf.SUB_PORT_PROVIDER}
-        self.client = get_client(config_port)
+        self.config_port = config_port
+        super().__init__(send_orders_status=send_orders_status, exchange_or_broker=exchange_or_broker)
+        self.exchange_or_broker = exchange_or_broker.split('_')[0]
+        self.dwt = None  # darwinex_ticks with FTP connection
         self.sleep = None
-        # variables of status orders
-        self.dict_open_orders = {}  # key is the order_id_sender, open order in the broker
-        self.dict_cancel_and_close_orders = {}  # key is the order_id_sender, closed or cancelled order in the broker
-        self.dict_from_strategies = {}  # key is order_id_sender from strategies, before send to broker or with error
-        self.send_orders_status = send_orders_status
-        if self.send_orders_status:
-            self.emit_orders = Emit_Events()
-        else:
-            self.emit_orders = None
-        if self.name == 'darwinex':
+        if self.exchange_or_broker == 'darwinex':
             self.get_historical_data = self._get_historical_data_darwinex
 
-    def get_historical_data(self, timeframe: str = '1min', limit: int = 1500, start_date: dt.datetime = None,
-                            end_date: dt.datetime = dt.datetime.utcnow(),
-                            symbols: List[str] = ['EURUSD']) -> List[Dict]:
-         pass
+    def get_client(self):
+        return get_client(self.config_port)
 
     def _get_historical_data_darwinex(self, timeframe: str = '1min', limit: int = 1500, start_date: dt.datetime = None,
                             end_date: dt.datetime = dt.datetime.utcnow(),
@@ -285,13 +277,7 @@ class Trading(object):
             print(msg)
             return None
         else:
-            return response
-
-    def cancel_order(self):
-        pass
-
-    def get_info_order(self):
-        pass
+            return response['_equity']
 
     def _get_response(self, key, _delay=0.1, _wbreak=10):
         """
@@ -523,5 +509,5 @@ def get_realtime_data(settings: dict = {'symbols': List[str]}, callback: callabl
     """
 
     symbols = settings['symbols']
-    trading = Trading(type_service='provider')
+    trading = Trading(exchange_or_broker=f'{conf.BROKER_MT4_NAME}_provider')
     trading.get_stream_quotes_changes(symbols, callback)

@@ -1,5 +1,4 @@
 import dataclasses
-import logging
 from typing import Dict
 from smartbots import conf
 from time import sleep
@@ -16,6 +15,7 @@ from smartbots.events import Odds
 import json
 import threading
 from smartbots.base_logger import logger
+from smartbots.abstractions.abstract_trading_betting import Abstract_Trading
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -142,7 +142,7 @@ def get_client():
         logger.exception(f'Betfair connection failure, excepcion: {e}')
 
 
-class Trading(object):
+class Trading(Abstract_Trading):
     """Class for trading Betting on Betfair.
 
     Attributes
@@ -151,15 +151,13 @@ class Trading(object):
         Betfair client.
     """
 
-    def __init__(self, settings_real_time: dict = {}, callback_real_time: callable = _callable):
-        #
+    def __init__(self, settings_real_time: dict = {}, callback_real_time: callable = _callable,
+                 exchange_or_broker: str = 'betfair'):
         """Initialize class."""
+        super().__init__(settings_real_time=settings_real_time, callback_real_time=callback_real_time,
+                         exchange_or_broker=exchange_or_broker)
         self.client = get_client()
-        self.settings_real_time = settings_real_time
         self.data_actual_off = _load_actual_off()
-        self.next_events = {}  # dict to saving markets
-        self.last_datetime = {}  # dict to saving last datetime from ticker
-        self.callback_real_time = callback_real_time
 
     def send_order(self, bet: dataclasses.dataclass) -> None:
         """Send order.
@@ -206,7 +204,7 @@ class Trading(object):
                 logger.info(f'Bet Pending: {bet.match_name} with betiId: {bet.bet_id}')
                 print('BET NO COMPLETED :')
                 try:
-                    self.manage_pending_bet(bet)
+                    self._manage_pending_bet(bet)
 
                 except Exception as e:
                     logger.error(f'Error manage pending bet in {bet.match_name} with betiId: {bet.bet_id}')
@@ -221,7 +219,7 @@ class Trading(object):
 
         print(bet)
 
-    def manage_pending_bet(self, bet):
+    def _manage_pending_bet(self, bet):
         """
         launch a thread to manage the pending bet
         :param bet:
@@ -384,7 +382,7 @@ class Trading(object):
             logger.error(f'Error Cancel bet in {bet.match_name} with betiId {bet.bet_id}')
             print(resp)
 
-    def get_account_details(self):
+    def get_account_details(self) -> Dict:
         """ get details from account"""
         try:
             return self.client.get_account_details()
@@ -392,7 +390,7 @@ class Trading(object):
         except Exception as e:
             logger.error(f'Error get_account_details {e}')
 
-    def get_account_funds(self):
+    def get_account_funds(self) -> Dict:
         """ get balance from account"""
         try:
             return self.client.get_account_funds()

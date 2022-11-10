@@ -4,11 +4,10 @@ import datetime as dt
 from typing import Dict, List
 
 
-
 class Abstract_Trading(ABC):
     """ Abstract class for financial Broker or conectivity with crypto exchange
     All brokers must inherit from this class"""
-    def __init__(self,send_orders_status: bool = True, exchange_or_broker=''):
+    def __init__(self, send_orders_status: bool = True, exchange_or_broker=''):
         self.exchange_or_broker = exchange_or_broker
         self.client = self.get_client()
         # variables of orders status
@@ -17,10 +16,10 @@ class Abstract_Trading(ABC):
         self.dict_from_strategies = {}  # key is order_id_sender from strategies, before send to broker or with error
         self.send_orders_status = send_orders_status
 
-
     def get_client(self):
         # to be implemented in the child class
         pass
+
     def get_historical_data(self, timeframe: str = '1m', limit: int = 2, start_date: dt.datetime = None,
                             end_date: dt.datetime = dt.datetime.utcnow(),
                             symbols: List[str] = ['BCT-USDC']) -> List[Dict]:
@@ -81,22 +80,21 @@ class Abstract_Trading(ABC):
         # to be implemented in the child class
         pass
 
-
-    def get_account_positions(self):
+    def get_account_positions(self) -> Dict:
         """
            Account positions
         """
         # to be implemented in the child class
         pass
 
-    def close_all_positions(self):
+    def close_all_positions(self) -> None:
         """
         Close all positions.
         """
         # to be implemented in the child class
         pass
 
-    def get_stream_quotes_changes(self, tickers :list, callback=None):
+    def get_stream_quotes_changes(self, tickers: list, callback=None):
 
         """
         :param tickers, list of ticker
@@ -105,7 +103,6 @@ class Abstract_Trading(ABC):
         """
         # to be implemented in the child class
         pass
-
 
     def get_trades(self) -> Dict:
         """

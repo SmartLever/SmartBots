@@ -1,4 +1,4 @@
-""" Telegram bot for Financial"""
+""" Telegram bot"""
 
 from telegram.ext import Updater, CommandHandler
 from functools import wraps
@@ -14,6 +14,17 @@ from smartbots.brokerMQ import Emit_Events
 from smartbots import events
 from tabulate import tabulate
 from smartbots.base_logger import logger
+import os
+
+if 'TRADING_TYPE_DOCKER' in os.environ:
+    trading_type = os.environ['TRADING_TYPE_DOCKER']
+else:
+    trading_type = conf.TRADING_TYPE_TELEGRAM
+
+if trading_type == 'crypto':
+    from smartbots.financial.crypto.exchange_model import Trading
+elif trading_type == 'betting':
+    from smartbots.betting.betfair_model import Trading
 
 reply_keyboard = [['/start']]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
@@ -34,6 +45,7 @@ def restricted(func):
         return func(update, *args, **kwargs)
 
     return wrapped
+
 
 def _send_msg(chat_id: str, msg: str, parse_mode: str = None,
               disable_notification: bool = False) -> None:
@@ -77,18 +89,38 @@ def _send_msg(chat_id: str, msg: str, parse_mode: str = None,
         logger.error(f'TelegramError: {telegram_err.message}')
 
 @restricted
-def start(update, context):
+def start(update,context):
     name = update.message.from_user.first_name
     print(str(update.effective_user.id))
 
-    msg = 'Hello ' + name + ', this is Bot SmartLever' + '\n' + \
-          '  \n' + \
-          'Available commands are: \n' + \
-          '/start Start Bot.\n' + \
-          '/mi_id Get Telegram ID\n' + \
-          '/positions Current Positions. \n' + \
-          '/status State of the Services. \n' + \
-          '/prices Price of Symbols'
+    if trading_type == 'financial':
+        msg = 'Hello ' + name + ', this is Bot SmartLever' + '\n' + \
+              '  \n' + \
+              'Available commands are: \n' + \
+              '/start Start Bot.\n' + \
+              '/mi_id Get Telegram ID\n' + \
+              '/positions Current Positions. \n' + \
+              '/status State of the Services. \n' + \
+              '/prices Price of Symbols'
+
+    elif trading_type == 'crypto':
+        msg = 'Hello ' + name + ', this is Bot SmartLever' + '\n' + \
+              '  \n' + \
+              'Available commands are: \n' + \
+              '/start Start Bot.\n' + \
+              '/mi_id Get Telegram ID\n' + \
+              '/positions Current Positions. \n' + \
+              '/status State of the Services. \n' + \
+              '/balance Get Wallet Balance'
+
+    elif trading_type == 'betting':
+        msg = 'Hello ' + name + ', this is Bot SmartLever' + '\n' + \
+              '  \n' + \
+              'Available commands are: \n' + \
+              '/start Start Bot.\n' + \
+              '/mi_id Get Telegram ID\n' + \
+              '/status State of the Services. \n' + \
+              '/balance Get Wallet Balance'
 
     _send_msg(msg=msg, chat_id=update.message.chat_id)
 
@@ -125,44 +157,75 @@ def create_petition(name_to_saving):
 
 
 @restricted
+def balance(update, context):
+    """
+       Get balance from broker and get several statistics
+    """
+    try:
+        if trading_type == 'crypto':
+            current_balance = round(trading.get_total_balance('usd'), 2)
+        elif trading_type == 'betting':
+            current_balance = trading.get_account_funds()['availableToBetBalance']
+        msg = '*Current Balance:*  ' + str(current_balance) + '\n'
+        return_total = round(((current_balance - initial_balance) / initial_balance) * 100, 2)
+        msg += '*Total Return:*  ' + str(return_total)
+        _send_msg(msg=msg, chat_id=update.message.chat_id, parse_mode=ParseMode.MARKDOWN_V2)
+
+    except Exception as e:
+        print(e)
+        logger.error(f'Error getting balance: {e}')
+        msg = 'Failed to get balance, please try again'
+        _send_msg(msg=msg, chat_id=update.message.chat_id)
+
+
+@restricted
 def positions(update, context):
     """
     Return Positions
     """
 
     try:
-        # Get simultad positions
-        name_to_saving = f'positions_{dt.datetime.now().strftime("%Y%m%d%H%M%S")}'
-        # first create the petition
-        create_petition(name_to_saving)
-        # Get data Petition
-        data_petition = get_data_petition(name_to_saving)
-        ## Agregate data_petition by ticker base
-        agregate = {}
-        tickers = []
-        for _id in data_petition.keys():
-            p = data_petition[_id]
-            t = data_petition[_id]['ticker']
-            if t not in tickers:
-                tickers.append(t)
-            agregate.setdefault(t, 0)
-            agregate[t] += p['position'] * p['quantity']
-            agregate[t] = round(agregate[t], 2)
+        if trading_type == 'financial':
+            # Get simulated positions
+            name_to_saving = f'positions_{dt.datetime.now().strftime("%Y%m%d%H%M%S")}'
+            # first create the petition
+            create_petition(name_to_saving)
+            # Get data Petition
+            data_petition = get_data_petition(name_to_saving)
+            # Agregate data_petition by ticker base
+            agregate = {}
+            tickers = []
+            for _id in data_petition.keys():
+                p = data_petition[_id]
+                t = data_petition[_id]['ticker']
+                if t not in tickers:
+                    tickers.append(t)
+                agregate.setdefault(t, 0)
+                agregate[t] += p['position'] * p['quantity']
+                agregate[t] = round(agregate[t], 2)
 
-        # Get real positions
-        lib_keeper = store.get_library(name_library)
-        data = lib_keeper.read(symbol_positions).data
-        broker_pos = data.positions
-        trades = []
-        for trade in agregate:
-            real = 0
-            if trade in broker_pos:
-                real = broker_pos[trade]
-            trades.append([trade, real, agregate[trade]])
-        msg = tabulate(trades,
-                       headers=['Symbol', 'Real', 'Simulated'],
-                       tablefmt='simple')
-        _send_msg(msg=f"<pre>{msg}</pre>", chat_id=update.message.chat_id, parse_mode=ParseMode.HTML)
+            # Get real positions
+            lib_keeper = store.get_library(name_library)
+            data = lib_keeper.read(symbol_positions).data
+            broker_pos = data.positions
+            trades = []
+            for trade in agregate:
+                real = 0
+                if trade in broker_pos:
+                    real = broker_pos[trade]
+                trades.append([trade, real, agregate[trade]])
+            msg = tabulate(trades,
+                           headers=['Symbol', 'Real', 'Simulated'],
+                           tablefmt='simple')
+            _send_msg(msg=f"<pre>{msg}</pre>", chat_id=update.message.chat_id, parse_mode=ParseMode.HTML)
+
+        elif trading_type == 'crypto':
+            _broker_pos = trading.get_accounts()
+            broker_pos = {c['currency']: float(c['balance']) for c in _broker_pos if
+                          c['currency'] in symbols}
+            msg = '*Current Positions:*' + '\n' + \
+                  '' + str(broker_pos)
+            _send_msg(msg=msg, chat_id=update.message.chat_id, parse_mode=ParseMode.MARKDOWN_V2)
 
     except Exception as e:
         logger.error(f'Error getting Positions: {e}')
@@ -191,6 +254,7 @@ def status(update, context):
         logger.error(f'Error getting service status: {e}')
         msg = 'Failed to get Status, please try again'
         _send_msg(msg=msg, chat_id=update.message.chat_id)
+
 
 def _get_status(seconds=300):
     """
@@ -301,7 +365,7 @@ def callback_control():
                 print(ex)
                 logger.error(f'Error in callback_control health: {ex}')
 
-        if counters_callback['positions'] >= 10:  # each 10 minutes
+        if counters_callback['positions'] >= 10 and trading_type in ['financial', 'crypto']:  # each 10 minutes
             """check every 10 minutes that simulation and real positions match"""
             try:
                 print('Check positions ' + str(_time))
@@ -323,9 +387,15 @@ def callback_control():
                     agregate[t] += p['position'] * p['quantity']
                     agregate[t] = round(agregate[t], 2)
 
-                lib_keeper = store.get_library(name_library)
-                data = lib_keeper.read(symbol_positions).data
-                broker_pos = data.positions
+                if trading_type == 'financial':
+                    lib_keeper = store.get_library(name_library)
+                    data = lib_keeper.read(symbol_positions).data
+                    broker_pos = data.positions
+                elif trading_type == 'crypto':
+                    list_currency = [c.split('-')[0] for c in agregate.keys()]
+                    _broker_pos = trading.get_accounts()
+                    broker_pos = {c['currency']: float(c['balance']) for c in _broker_pos if
+                                  c['currency'] in list_currency}
                 # check if positions is saving
                 if _time > data.datetime:
                     diff_minutes = abs((_time - data.datetime).seconds / 60)
@@ -333,7 +403,8 @@ def callback_control():
                         for user in LIST_OF_ADMINS:
                             msg = 'ALERT, Positions from mt4 is not saving'
                             _send_msg(msg=msg, chat_id=user)
-                # Compute diference between broker and portfolio
+
+                # Compute deference between broker and portfolio
                 diference = {}
                 for c in agregate.keys():
                     if c not in broker_pos:
@@ -360,11 +431,13 @@ def callback_control():
                 print(ex)
                 logger.error(f'Error in callback_control positions: {ex}')
 
+
 def error(update, error):
     """Log Errors caused by Updates."""
     today = dt.datetime.utcnow()
     event_telegram = {'date_time': today, 'comand': 'error', 'error': error}
     _send_msg(msg=event_telegram, chat_id=update.message.chat_id)
+
 
 def schedule_callback_control():
     # create scheduler
@@ -376,24 +449,49 @@ def schedule_callback_control():
 
 def main():
     global LIST_OF_ADMINS, updater, counters_callback, name_library, _name_library, lib_keeper, store, list_services
-    global lib_petitions, emiter, name_portfolio, symbol_positions, symbols
+    global lib_petitions, emiter, name_portfolio, symbol_positions, symbols, initial_balance, trading
 
-    # token from telegram
-    token = conf.TOKEN_TELEGRAM_FINANCIAL
-    #  Parameters
-    LIST_OF_ADMINS = conf.LIST_OF_ADMINS_FINANCIAL
-    list_services = conf.LIST_SERVICES_FINANCIAL
-    # name of portfolio which we want to know simulated positions
-    name_portfolio = conf.NAME_FINANCIAL_PORTOFOLIO
-    # symbol to read real positions from mongo
-    symbol_positions = f'{conf.BROKER_MT4_NAME}_mt4_positions'
-    # symbols to get price
-    symbols = conf.FINANCIAL_SYMBOLS
+    # initialize these variables to none
+    name_portfolio = None
+    symbol_positions = None
+    symbols = None
+    trading = None
+    initial_balance = 0
+    counters_callback = {'health': 0, 'positions': 0}
+    if trading_type == 'financial':
+        # token from telegram
+        token = conf.TOKEN_TELEGRAM_FINANCIAL
+        #  Parameters
+        LIST_OF_ADMINS = conf.LIST_OF_ADMINS_FINANCIAL
+        list_services = conf.LIST_SERVICES_FINANCIAL
+        # name of portfolio which we want to know simulated positions
+        name_portfolio = conf.NAME_FINANCIAL_PORTOFOLIO
+        # symbol to read real positions from mongo
+        symbol_positions = f'{conf.BROKER_MT4_NAME}_mt4_positions'
+        # symbols to get price
+        symbols = conf.FINANCIAL_SYMBOLS
+
+    elif trading_type == 'crypto':
+        # Create trading object to get info from broker
+        trading = Trading(exchange=conf.BROKER_CRYPTO)
+        # Parameters
+        LIST_OF_ADMINS = conf.LIST_OF_ADMINS_CRYPTO
+        list_services = conf.LIST_SERVICES_CRYPTO
+        initial_balance = conf.INITIAL_BALANCE_CRYPTO
+        symbols = conf.CRYPTO_SYMBOLS
+
+    elif trading_type == 'betting':
+        # Parameters
+        token = conf.TOKEN_TELEGRAM_BETTING
+        LIST_OF_ADMINS = conf.LIST_OF_ADMINS_BETTING
+        list_services = conf.LIST_SERVICES_BETTING
+        initial_balance = conf.INITIAL_BALANCE_BETTING
+        # Create trading object to get info from broker
+        trading = Trading()
 
     # Launch thread
     x = threading.Thread(target=schedule_callback_control)
     x.start()
-    counters_callback = {'health': 0, 'positions': 0}
     # Config DataBase
     _name_library = 'events_keeper'
     name_library = f'{_name_library}_{dt.datetime.utcnow().strftime("%Y%m%d")}'
@@ -401,20 +499,28 @@ def main():
     lib_keeper = store.get_library(name_library)
     lib_petitions = store.get_library('petitions')
 
-    # Conection to broker mq
+    # Connection to broker mq
     emiter = Emit_Events()
-
     updater = Updater(token, use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('status',
                                                   status))
-    updater.dispatcher.add_handler(CommandHandler('positions',
-                                                  positions))
-    updater.dispatcher.add_handler(CommandHandler('prices',
-                                                  prices))
     updater.dispatcher.add_handler(CommandHandler('mi_id',
                                                   mi_id))
+    if trading_type == 'financial':
+        updater.dispatcher.add_handler(CommandHandler('positions',
+                                                      positions))
+        updater.dispatcher.add_handler(CommandHandler('prices',
+                                                      prices))
+    elif trading_type == 'crypto':
+        updater.dispatcher.add_handler(CommandHandler('balance',
+                                                      balance))
+        updater.dispatcher.add_handler(CommandHandler('positions',
+                                                      positions))
+    elif trading_type == 'betting':
+        updater.dispatcher.add_handler(CommandHandler('balance',
+                                                      balance))
 
     updater.dispatcher.add_error_handler(error)
 
@@ -423,7 +529,7 @@ def main():
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT
-    print('Running Telegram Bot Financial')
+    print(f'Running Telegram Bot {trading_type}')
     updater.idle()
 
 

@@ -21,7 +21,6 @@ def main(send_orders_status=True):
         try:
             balance = trading.get_total_balance()
             if balance is not None:
-                balance = balance['_equity']
                 now = dt.datetime.utcnow()
                 print(f'Balance {balance} {dt.datetime.utcnow()}')
                 # Control Balance
@@ -150,7 +149,7 @@ def main(send_orders_status=True):
                                     name_service='broker_mt4')
 
     # Create trading object
-    trading = Trading(send_orders_status=send_orders_status, type_service=type_service)
+    trading = Trading(send_orders_status=send_orders_status, exchange_or_broker=f'{conf.BROKER_MT4_NAME}_broker')
     # Create connection  to DataBase
     store = Universe()
     # Create library for saving balances

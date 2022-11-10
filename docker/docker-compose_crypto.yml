@@ -61,7 +61,8 @@ services:
       - smartbots_networks
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
-    command: python -u ./bots/crypto_trading/telegram_bot_crypto.py
+      TRADING_TYPE_DOCKER: crypto
+    command: python -u ./bots/telegram_bot.py
 
 networks:
   smartbots_networks:

@@ -37,7 +37,6 @@ services:
     hostname: broker_betting
     volumes:
       - ..:/app
-
     networks:
       - smartbots_networks
     environment:
@@ -51,12 +50,12 @@ services:
     hostname:   telegram_betting
     volumes:
       - ..:/app
-
     networks:
       - smartbots_networks
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
-    command: python -u ./bots/betting_trading/telegram_bot_betting.py
+      TRADING_TYPE_DOCKER: betting
+    command: python -u ./bots/telegram_bot.py
 
 
 
