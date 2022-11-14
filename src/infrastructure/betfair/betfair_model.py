@@ -17,6 +17,7 @@ from src.domain.abstractions.abstract_trading_betting import Abstract_Trading
 
 BASE_DIR = Path(__file__).resolve().parent
 
+
 #######################################################
 file_real_actual_off = join(BASE_DIR, 'data_actual_off.json')
 # pool for Threads to ask books
