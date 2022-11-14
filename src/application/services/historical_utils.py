@@ -1,7 +1,8 @@
-from src.infraestructure.database_handler import Universe
+from src.infrastructure.database_handler import Universe
 import pandas as pd
 import datetime as dt
 from src.domain.events import Bar
+from src.application import conf
 
 """Historical related methods
 
@@ -9,13 +10,14 @@ from src.domain.events import Bar
 
 """
 
+
 def read_historical(symbol: str, name_library: str = 'provider_historical_1min',
                     start_date: dt.datetime = dt.datetime(2022, 7, 1),
                     end_date: dt.datetime = dt.datetime.utcnow(),last_month: bool=False) -> pd.DataFrame:
     """ Read historical data from initial month and end month.
         Symbols as save as :symbol_monthYear as a way to identify the data.
         """
-    store = Universe()
+    store = Universe(host=conf.MONGO_HOST, port=conf.MONGO_PORT)
     lib = store.get_library(name_library)
     if lib.has_symbol(symbol) is False:
         return pd.DataFrame()
@@ -27,9 +29,10 @@ def read_historical(symbol: str, name_library: str = 'provider_historical_1min',
         end_date = end_date + dt.timedelta(days=1)
     return lib.read(symbol, chunk_range=pd.date_range(start_date, end_date))
 
+
 def save_historical(symbol: str, data: pd.DataFrame, name_library: str = 'provider_historical_1min') -> None:
     """ Save historical in database in the library."""
-    store = Universe()
+    store = Universe(host=conf.MONGO_HOST, port=conf.MONGO_PORT)
     lib = store.get_library(name_library)
     # save in chunks of 1 month of data, index have to be a datetime object with name date
     data.index.name = 'date'
@@ -38,6 +41,7 @@ def save_historical(symbol: str, data: pd.DataFrame, name_library: str = 'provid
     else:
         lib.write(symbol, data, chunk_size='M')
     print(f'Symbol {symbol} saved.')
+
 
 def get_day_per_month(month, year):
     # Get Max value for a day in given month
@@ -54,13 +58,14 @@ def get_day_per_month(month, year):
 
 
 def clean_symbol(symbols, name_library):
-    store = Universe()
+    store = Universe(host=conf.MONGO_HOST, port=conf.MONGO_PORT)
     lib = store.get_library(name_library)
     for symbol in symbols:
         for _s in lib.list_symbols():
             if symbol in _s:
                 lib.delete(_s)
                 print(f'Symbol {_s} deleted.')
+
 
 def dataframe_to_bars(symbol: str, frame: pd.DataFrame):
     events = []

@@ -3,7 +3,8 @@ import os
 from src.application import conf
 from typing import Dict
 import pandas as pd
-from src.infraestructure.database_handler import Universe
+from src.infrastructure.database_handler import Universe
+
 
 def _get_historical_data_test_files_betfair():
     """ Read historical data save in file, normalise it and return it as events"""
@@ -78,7 +79,7 @@ def save_historical(symbol_data: Dict = {}, name_library: str = 'provider_histor
     """ Save historical data in Data Base as VersionStore.
         Here the docs: https://github.com/man-group/arctic"""
 
-    store = Universe()
+    store = Universe(host=conf.MONGO_HOST, port=conf.MONGO_PORT)
     lib = store.get_library(name_library, library_chunk_store=False)
 
     for symbol, data in symbol_data.items():

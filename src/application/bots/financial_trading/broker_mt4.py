@@ -1,20 +1,20 @@
 """ Recieved events orders from Portfolio and send it to the broker or exchange for execution"""
-from src.infraestructure.brokerMQ import Emit_Events
+from src.infrastructure.brokerMQ import Emit_Events
 from src.domain.events import Positions
 import pytz
 from src.domain.base_logger import logger
 
 
 def main(send_orders_status=True):
-    from src.infraestructure.brokerMQ import receive_events
+    from src.infrastructure.brokerMQ import receive_events
     import datetime as dt
-    from src.infraestructure.mt4.mt4_model import Trading
+    from src.infrastructure.mt4.mt4_model import Trading
     import schedule
     from src.application import conf
-    from src.infraestructure.health_handler import Health_Handler
+    from src.infrastructure.health_handler import Health_Handler
     import time
     import threading
-    from src.infraestructure.database_handler import Universe
+    from src.infrastructure.database_handler import Universe
     from src.domain import events
 
     def check_balance() -> None:
@@ -144,14 +144,20 @@ def main(send_orders_status=True):
             print(f'Order for {event.ticker} recieved but not send.')
 
     # Log event health of the service
-    type_service = 'broker'
+    config_brokermq = {'host': conf.RABBITMQ_HOST, 'port': conf.RABBITMQ_PORT, 'user': conf.RABBITMQ_USER,
+                       'password': conf.RABBITMQ_PASSWORD}
     health_handler = Health_Handler(n_check=4,
-                                    name_service='broker_mt4')
+                                    name_service='broker_mt4',
+                                    config=config_brokermq)
 
     # Create trading object
-    trading = Trading(send_orders_status=send_orders_status, exchange_or_broker=f'{conf.BROKER_MT4_NAME}_broker')
+    config_broker = {'MT4_HOST': conf.MT4_HOST, 'CLIENT_IF': conf.CLIENT_IF, 'PUSH_PORT': conf.PUSH_PORT,
+                     'PULL_PORT_BROKER': conf.PULL_PORT_BROKER, 'SUB_PORT_BROKER': conf.SUB_PORT_BROKER}
+
+    trading = Trading(send_orders_status=send_orders_status, exchange_or_broker=f'{conf.BROKER_MT4_NAME}_broker',
+                      config_broker=config_broker, config_brokermq=config_brokermq)
     # Create connection  to DataBase
-    store = Universe()
+    store = Universe(host=conf.MONGO_HOST, port=conf.MONGO_PORT)
     # Create library for saving balances
     name = 'balance'
     lib_balance = store.get_library(name, library_chunk_store=False)
@@ -161,8 +167,8 @@ def main(send_orders_status=True):
     x.start()
     # Launch thead for update orders status
     trading.start_update_orders_status()
-    emit = Emit_Events()
-    receive_events(routing_key='financial_order', callback=send_broker)
+    emit = Emit_Events(config=config_brokermq)
+    receive_events(routing_key='financial_order', callback=send_broker, config=config_brokermq)
 
 
 if __name__ == '__main__':

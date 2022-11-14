@@ -11,6 +11,7 @@ from src.domain.decorators import log_start_end, check_api_key
 
 logger = logging.getLogger(__name__)
 
+
 # Decorator for checking API key
 @log_start_end(log=logger)
 def get_client(host=None, port=None):

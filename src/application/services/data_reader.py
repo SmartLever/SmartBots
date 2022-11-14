@@ -4,7 +4,8 @@
 import pandas as pd
 import datetime as dt
 from src.domain.events import Bar, Tick, Timer
-from src.infraestructure.database_handler import Universe
+from src.infrastructure.database_handler import Universe
+from src.application import conf
 
 
 def read_data_to_dataframe(symbol:str, provider:str, interval:str = '1m',
@@ -12,7 +13,7 @@ def read_data_to_dataframe(symbol:str, provider:str, interval:str = '1m',
                            end_date: dt.datetime = dt.datetime.utcnow()):
 
     """ Read data from DB and create DataFrame"""
-    store = Universe()  # database handler
+    store = Universe(host=conf.MONGO_HOST, port=conf.MONGO_PORT)  # database handler
     name_library = f'{provider}_historical_{interval}'
     lib = store.get_library(name_library)
     end_date = end_date + dt.timedelta(days=1)
@@ -39,7 +40,7 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
         else:
             raise ValueError('No tickers or ticker in info')
 
-    store = Universe() # database handler
+    store = Universe(host=conf.MONGO_HOST, port=conf.MONGO_PORT)  # database handler
     # get_chunk_ranges save
     _ranges_save = []
     for info in symbols_to_read:
@@ -123,12 +124,13 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
                     timer = Timer(datetime=tuple[0])
                     yield timer  # send timer event
 
+
 def load_tickers_and_create_events_betting(tickers_lib_name: list, start_date: dt.datetime = dt.datetime(2022, 1, 1),
                                            end_date: dt.datetime = dt.datetime.utcnow()):
     """ Load data from DB and create Events for consumption by portfolio engine for betting markets
         tickers_lib_name: list of tickers to load with info about the source of the data
          """
-    store = Universe()
+    store = Universe(host=conf.MONGO_HOST, port=conf.MONGO_PORT)
     yyyymmdd_start = start_date.year * 10000 + start_date.month * 100 + start_date.day
     yyyymmdd_end = end_date.year * 10000 + end_date.month * 100 + end_date.day
     for info in tickers_lib_name:

@@ -18,9 +18,10 @@ class Abstract_Trading(ABC):
     """ Abstract class for Betting Broker
     All brokers must inherit from this class"""
     def __init__(self, settings_real_time: dict = {}, callback_real_time: callable = _callable,
-                 exchange_or_broker: str = 'betfair'):
+                 exchange_or_broker: str = 'betfair', config_broker: Dict = {}):
 
         self.exchange_or_broker = exchange_or_broker
+        self.config_broker = config_broker
         self.client = self.get_client()
         self.settings_real_time = settings_real_time
         self.next_events = {}  # dict to saving markets

@@ -1,27 +1,16 @@
 import dataclasses
 from typing import Dict, List
 import threading
-from src.application import conf
 import time
 import datetime as dt
 from src.domain.abstractions.abstract_trading import Abstract_Trading
 from src.domain.decorators import check_api_key
-from src.infraestructure.mt4.mt_zeromq_connector import MTZeroMQConnector
+from src.infrastructure.mt4.mt_zeromq_connector import MTZeroMQConnector
 from time import sleep
 from src.domain.base_logger import logger
 import darwinex_ticks
+from src.infrastructure.brokerMQ import Emit_Events
 
-
-# default Callable
-async def _callable(data: Dict) -> None:
-    """Callback function for realtime data. [Source: MT4]
-
-    Parameters
-    ----------
-    data: Dict
-        Realtime data.
-    """
-    print(data)
 
 @check_api_key(
     [
@@ -57,22 +46,24 @@ class Trading(Abstract_Trading):
          MT4 client.
     """
 
-    def __init__(self, send_orders_status: bool = True, exchange_or_broker='darwinex_broker') -> None:
+    def __init__(self, send_orders_status: bool = True, exchange_or_broker='darwinex_broker', config_broker: Dict = {},
+                 config_brokermq: Dict = {}) -> None:
         """Initialize class."""
 
         type_service = exchange_or_broker.split('_')[1]
+        self.config_broker = config_broker
         if type_service == 'broker':
-            config_port = {'MT4_HOST': conf.MT4_HOST,
-                           'CLIENT_IF': conf.CLIENT_IF,
-                           'PUSH_PORT': conf.PUSH_PORT,
-                           'PULL_PORT': conf.PULL_PORT_BROKER,
-                           'SUB_PORT': conf.SUB_PORT_BROKER}
+            config_port = {'MT4_HOST': self.config_broker['MT4_HOST'],
+                           'CLIENT_IF': self.config_broker['CLIENT_IF'],
+                           'PUSH_PORT': self.config_broker['PUSH_PORT'],
+                           'PULL_PORT': self.config_broker['PULL_PORT_BROKER'],
+                           'SUB_PORT': self.config_broker['SUB_PORT_BROKER']}
         elif type_service == 'provider':
-            config_port = {'MT4_HOST': conf.MT4_HOST,
-                           'CLIENT_IF': conf.CLIENT_IF,
-                           'PUSH_PORT': conf.PUSH_PORT,
-                           'PULL_PORT': conf.PULL_PORT_PROVIDER,
-                           'SUB_PORT': conf.SUB_PORT_PROVIDER}
+            config_port = {'MT4_HOST': self.config_broker['MT4_HOST'],
+                           'CLIENT_IF': self.config_broker['CLIENT_IF'],
+                           'PUSH_PORT': self.config_broker['PUSH_PORT'],
+                           'PULL_PORT': self.config_broker['PULL_PORT_PROVIDER'],
+                           'SUB_PORT': self.config_broker['SUB_PORT_PROVIDER']}
         self.config_port = config_port
         super().__init__(send_orders_status=send_orders_status, exchange_or_broker=exchange_or_broker)
         self.exchange_or_broker = exchange_or_broker.split('_')[0]
@@ -80,6 +71,11 @@ class Trading(Abstract_Trading):
         self.sleep = None
         if self.exchange_or_broker == 'darwinex':
             self.get_historical_data = self._get_historical_data_darwinex
+
+        if self.send_orders_status:
+            self.emit_orders = Emit_Events(config=config_brokermq)
+        else:
+            self.emit_orders = None
 
     def get_client(self):
         return get_client(self.config_port)
@@ -103,10 +99,10 @@ class Trading(Abstract_Trading):
             timeframe = '5min'
 
         if self.dwt is None:  # connection already exists
-            self.dwt = darwinex_ticks.DarwinexTicksConnection(dwx_ftp_user=conf.DWT_FTP_USER,
-                                                              dwx_ftp_pass=conf.DWT_FTP_PASS,
-                                                              dwx_ftp_hostname=conf.DWT_FTP_HOSTNAME,
-                                                              dwx_ftp_port=conf.DWT_FTP_PORT)
+            self.dwt = darwinex_ticks.DarwinexTicksConnection(dwx_ftp_user=self.config_broker['DWT_FTP_USER'],
+                                                              dwx_ftp_pass=self.config_broker['DWT_FTP_PASS'],
+                                                              dwx_ftp_hostname=self.config_broker['DWT_FTP_HOSTNAME'],
+                                                              dwx_ftp_port=self.config_broker['DWT_FTP_PORT'])
         _start_date = start_date.strftime("%Y-%m-%d")
         _end_date = end_date.strftime("%Y-%m-%d")
         bars = {}
@@ -494,20 +490,3 @@ class Trading(Abstract_Trading):
             # eliminate from dict_open_orders and create in dict_cancel_and_close_orders
             self.dict_open_orders.pop(order_id)
             self.dict_cancel_and_close_orders[order_id] = order
-
-   
-def get_realtime_data(settings: dict = {'symbols': List[str]}, callback: callable = _callable) -> None:
-    """Return realtime data for a list of symbols. [Source: MT4]
-
-    Parameters
-    ----------
-    settings
-    symbols: List[str]
-        Symbols of the assets. Example: AUDNZD, EURUSD
-    callback: callable (data: Dict) -> None
-
-    """
-
-    symbols = settings['symbols']
-    trading = Trading(exchange_or_broker=f'{conf.BROKER_MT4_NAME}_provider')
-    trading.get_stream_quotes_changes(symbols, callback)

@@ -3,11 +3,12 @@
     Send Events to RabbitMQ for further processing.
 """
 import os
-from src.infraestructure.api_berfair.betfair_model import get_realtime_data
+from src.infrastructure.betfair.betfair_model import get_realtime_data
 import datetime as dt
-from src.infraestructure.brokerMQ import Emit_Events
-from src.infraestructure.health_handler import Health_Handler
+from src.infrastructure.brokerMQ import Emit_Events
+from src.infrastructure.health_handler import Health_Handler
 from src.domain.base_logger import logger
+from src.application import conf
 
 
 def main():
@@ -19,10 +20,13 @@ def main():
         health_handler.check()
 
     print(f'* Starting betfair provider at {dt.datetime.utcnow()}')
+    config = {'host': conf.RABBITMQ_HOST, 'port': conf.RABBITMQ_PORT, 'user': conf.RABBITMQ_USER,
+              'password': conf.RABBITMQ_PASSWORD}
     health_handler = Health_Handler(n_check=1000,
-                                    name_service=os.path.basename(__file__).split('.')[0])
+                                    name_service=os.path.basename(__file__).split('.')[0],
+                                    config=config)
 
-    emit = Emit_Events()
+    emit = Emit_Events(config=config)
     settings = {
         'time_books_play': 5,
         'time_books_not_play': 10,
@@ -35,7 +39,9 @@ def main():
         'betting_types': ['ODDS']}
 
     logger.info('Getting real data from Betfair')
-    get_realtime_data(settings, callback=save_odds)
+    config_broker = {'USERNAME_BETFAIR': conf.USERNAME_BETFAIR, 'PASSWORD_BETFAIR': conf.PASSWORD_BETFAIR,
+                     'APP_KEYS_BETFAIR': conf.APP_KEYS_BETFAIR}
+    get_realtime_data(settings, callback=save_odds, config_broker=config_broker)
 
 
 if __name__ == '__main__':

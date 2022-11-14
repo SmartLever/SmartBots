@@ -14,7 +14,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./bots/financial_trading/data_realtime_provider_mt4.py
+    command: python -u ./src/application/bots/financial_trading/data_realtime_provider_mt4.py
 
   bot_financial_trading:
     build:
@@ -27,7 +27,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./bots/financial_trading/portfolio_production_financial.py
+    command: python -u ./src/application/bots/financial_trading/portfolio_production_financial.py
 
   broker_mt4:
     build:
@@ -40,7 +40,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./bots/financial_trading/broker_mt4.py
+    command: python -u ./src/application/bots/financial_trading/broker_mt4.py
 
   telegram_financial:
     build:
@@ -54,7 +54,7 @@ services:
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
       TRADING_TYPE_DOCKER: financial
-    command: python -u ./bots/telegram_bot.py
+    command: python -u ./src/application/bots/telegram_bot.py
 
   update_mongodb_financial:
     build:
@@ -67,7 +67,7 @@ services:
       - smartbots_networks
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
-    command: python -u ./bots/financial_trading/update_mongodb_financial.py
+    command: python -u ./src/application/bots/financial_trading/update_mongodb_financial.py
 
 networks:
   smartbots_networks:

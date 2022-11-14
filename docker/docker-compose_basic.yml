@@ -71,7 +71,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./bots/event_keeper.py
+    command: python -u ./src/application/event_keeper.py
 
   webhook:
     build:
@@ -88,7 +88,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./bots/webhook.py
+    command: python -u ./src/application/webhook.py
 
 networks:
   smartbots_networks:

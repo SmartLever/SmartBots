@@ -7,7 +7,7 @@ from flask import Flask, request
 from src.application import conf
 import datetime as dt
 from src.domain.events import WebHook as WebHookEvent
-from src.infraestructure.brokerMQ import Emit_Events
+from src.infrastructure.brokerMQ import Emit_Events
 
 # Flask app should start in global layout
 app = Flask(__name__)
@@ -16,7 +16,10 @@ app = Flask(__name__)
 keys = [conf.WEBHOOKS[k] for k in conf.WEBHOOKS.keys() if len(conf.WEBHOOKS[k]) > 0]
 
 # Start publishing events in MQ
-emit = Emit_Events()
+config_brokermq = {'host': conf.RABBITMQ_HOST, 'port': conf.RABBITMQ_PORT, 'user': conf.RABBITMQ_USER,
+                   'password': conf.RABBITMQ_PASSWORD}
+emit = Emit_Events(config=config_brokermq)
+
 
 def get_datetime():
     timestamp = dt.datetime.utcnow()

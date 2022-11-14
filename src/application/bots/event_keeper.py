@@ -2,12 +2,14 @@
     """
 import dataclasses
 
+
 def main(_name_library='events_keeper') -> None:
     import time
     time.sleep(10) # wait until MQ and Database are running
-    from src.infraestructure.brokerMQ import receive_events
-    from src.infraestructure.database_handler import Universe
+    from src.infrastructure.brokerMQ import receive_events
+    from src.infrastructure.database_handler import Universe
     import datetime as dt
+    from src.application import conf
 
     def get_unique(event: dataclasses.dataclass) -> str:
         """ Get unique key for event """
@@ -52,14 +54,16 @@ def main(_name_library='events_keeper') -> None:
     # variable
     saved_variable = {'events': 0}
     # Create connection  to DataBase
-    store = Universe()
+    store = Universe(host=conf.MONGO_HOST, port=conf.MONGO_PORT)
     # Create library for saving events
     name = f'{_name_library}_{dt.datetime.utcnow().strftime("%Y%m%d")}'
     saved_variable['lib'] = store.get_library(name, library_chunk_store=False)
     saved_variable['name'] = name
 
     # Connect to brokerMQ for receiving events
-    receive_events(routing_key='#', callback=callback)
+    config_brokermq = {'host': conf.RABBITMQ_HOST, 'port': conf.RABBITMQ_PORT, 'user': conf.RABBITMQ_USER,
+                       'password': conf.RABBITMQ_PASSWORD}
+    receive_events(routing_key='#', callback=callback, config=config_brokermq)
 
 
 if __name__ == '__main__':

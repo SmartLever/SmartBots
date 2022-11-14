@@ -4,6 +4,7 @@ from src.domain.events import Order, Bet
 import datetime as dt
 from src.application.services.equity_handler import Equity
 
+
 def _callback_default(event_order: dataclass):
     """ callback for Order by defalt """
     print(event_order)

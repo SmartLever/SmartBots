@@ -6,7 +6,7 @@ from typing import Dict, List
 import time
 import pandas as pd
 import datetime as dt
-from src.infraestructure.brokerMQ import Emit_Events
+from src.infrastructure.brokerMQ import Emit_Events
 import os
 import ccxt
 import threading
@@ -50,8 +50,8 @@ def get_client(exchange: str = 'kucoin'):
     if uid is not None:
         uid = ''
     return getattr(ccxt,exchange)({'apiKey': api_key,'password': password,
-                                    'secret': secret,'uid': uid,
-                                    'enableRateLimit': True})
+                                   'secret': secret,'uid': uid,
+                                   'enableRateLimit': True})
 
 
 class Trading(Abstract_Trading):
@@ -63,22 +63,23 @@ class Trading(Abstract_Trading):
         Exchange client.
     """
 
-    def __init__(self, send_orders_status: bool = True, exchange_or_broker='kucoin') -> None:
+    def __init__(self, send_orders_status: bool = True, exchange_or_broker='kucoin', config_brokermq: Dict = {}) -> None:
         """Initialize class."""
-        super().__init__(send_orders_status=send_orders_status, exchange_or_broker=exchange_or_broker)
+        super().__init__(send_orders_status=send_orders_status, exchange_or_broker=exchange_or_broker,
+                         config_brokermq=config_brokermq)
         self.exchange_or_broker = exchange_or_broker
         self.client = self.get_client()
 
         if self.send_orders_status:
-            self.emit_orders = Emit_Events()
+            self.emit_orders = Emit_Events(config=config_brokermq)
         else:
             self.emit_orders = None
 
     def get_client(self):
-        return get_client(exchange = self.exchange_or_broker)
+        return get_client(exchange=self.exchange_or_broker)
 
-    def get_historical_data(self, timeframe :str ='1m', limit: int =2, start_date : dt.datetime =None,
-                            end_date: dt.datetime= dt.datetime.utcnow(),
+    def get_historical_data(self, timeframe:str ='1m', limit: int = 2, start_date: dt.datetime = None,
+                            end_date: dt.datetime = dt.datetime.utcnow(),
                             symbols: List[str] = ['BCT-USDC']) -> List[Dict]:
         """Return realtime data on freq for a list of symbols.
         Parameters

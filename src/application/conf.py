@@ -1,35 +1,26 @@
 import os
 from dotenv import load_dotenv
 import ast
+from pathlib import Path
 
 
-path = os.path.abspath(__file__)
-path_modulo = os.path.dirname(path)  # path to the module
-path_to_principal = path_modulo.replace('smartbots','')
-path_to_betting = os.path.join(path_modulo, '../../smartbots/betting')
-path_to_financial = os.path.join(path_modulo, '../../smartbots/financial')
+path = Path(__file__).resolve()
+path_modulo = path.parent.parent  # path to the module
+path_to_principal = path_modulo.parent
 
-# create folders for code your strategies
-path_to_my_strategies = os.path.join(path_to_financial, 'strategies')
-path_to_my_strategies_betting = os.path.join(path_to_betting, 'strategies')
-if not os.path.exists(path_to_my_strategies):
-    os.makedirs(path_to_my_strategies)
-if not os.path.exists(path_to_my_strategies_betting):
-    os.makedirs(path_to_my_strategies_betting)
-
-path_to_temp = os.path.join(path_modulo, 'temp')
+path_to_temp = os.path.join(path_modulo, 'application', 'temp')
 # Check is exist temp folder
 if not os.path.exists(path_to_temp):
     os.makedirs(path_to_temp)
 
 # Create folders for my strategies
-patha_to_my_smartbots = os.path.join(path_to_principal, 'my_smartbots')
+path_to_my_smartbots = os.path.join(path_to_principal, 'my_smartbots')
 path_to_my_strategies = {}
-path_to_my_strategies['financial']  = os.path.join(patha_to_my_smartbots, 'my_financial_strategies')
-path_to_my_strategies['betting']= os.path.join(patha_to_my_smartbots, 'my_betting_strategies')
+path_to_my_strategies['financial'] = os.path.join(path_to_my_smartbots, 'my_financial_strategies')
+path_to_my_strategies['betting' ]= os.path.join(path_to_my_smartbots, 'my_betting_strategies')
 
-if not os.path.exists(patha_to_my_smartbots):
-    os.makedirs(patha_to_my_smartbots)
+if not os.path.exists(path_to_my_smartbots):
+    os.makedirs(path_to_my_smartbots)
 
 for key in path_to_my_strategies:
     if not os.path.exists(path_to_my_strategies[key]):

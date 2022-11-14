@@ -10,8 +10,8 @@ import pandas as pd
 from src.domain.decorators import log_start_end
 from src.application.services.historical_utils import save_historical, read_historical, clean_symbol
 from src.application import conf
-from src.infraestructure.crypto.exchange_model import Trading as Trading_Crypto
-from src.infraestructure.mt4.mt4_model import Trading as Trading_Darwinex
+from src.infrastructure.crypto.exchange_model import Trading as Trading_Crypto
+from src.infrastructure.mt4.mt4_model import Trading as Trading_Darwinex
 
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,9 @@ def historical_downloader(symbols: List[str] = ["EURUSD"], start_date: dt.dateti
     name_library = f'{provider}_historical_{interval}'
     # Connect to the exchange or broker
     if provider == 'darwinex':
-        trading = Trading_Darwinex()
+        config_broker = {'DWT_FTP_USER': conf.DWT_FTP_USER, 'DWT_FTP_PASS': conf.DWT_FTP_PASS,
+                         'DWT_FTP_HOSTNAME': conf.DWT_FTP_HOSTNAME, 'DWT_FTP_PORT': conf.DWT_FTP_PORT}
+        trading = Trading_Darwinex(config_broker=config_broker)
     else:
         trading = Trading_Crypto(exchange_or_broker=provider)
 
@@ -53,7 +55,7 @@ def historical_downloader(symbols: List[str] = ["EURUSD"], start_date: dt.dateti
             start_date = start_date.to_pydatetime()
         # load from provider
         data = trading.get_historical_data(timeframe=interval, limit=1500, start_date=start_date,
-                                            end_date=end_date, symbols=[symbol])[symbol]
+                                           end_date=end_date, symbols=[symbol])[symbol]
 
         # change types to float for columns with numeric values (in this case all columns)
         for c in data.columns:

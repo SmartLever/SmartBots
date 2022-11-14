@@ -1,6 +1,7 @@
 """ Basic strategic for testing purposes, Back and Lay at entry time """
 from src.domain.abstractions.abstract_strategy import Abstract_Strategy, dataclass
 
+
 class Basic_Strategy(Abstract_Strategy):
     def __init__(self, params, id_strategy=None, callback=None, set_basic=False):
         super().__init__(params, id_strategy, callback, set_basic)

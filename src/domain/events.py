@@ -15,6 +15,7 @@ dataclass_json_config = config(
             decoder=datetime.utcfromtimestamp,
         )
 
+
 @dataclass_json
 @dataclass
 class Base:
@@ -24,6 +25,7 @@ class Base:
     dtime_zone: str = 'UTC'
     ticker: str = None
 
+
 @dataclass_json
 @dataclass
 class Timer:
@@ -31,7 +33,8 @@ class Timer:
     event_type: str = 'timer'
     datetime: dt.datetime = field(default=None, metadata=dataclass_json_config)
     dtime_zone: str = 'UTC'
-    
+
+
 @dataclass_json
 @dataclass
 class Tick(Base):
@@ -41,6 +44,7 @@ class Tick(Base):
     price: float = None
     msg:  Dict[str, Any] = None
     description: str = None
+
 
 @dataclass_json
 @dataclass
@@ -63,6 +67,7 @@ class Petition(Base):
     name_to_saving: str = 'default'  # name of the key to save the data
     name_portfolio: str = None
 
+
 @dataclass_json
 @dataclass
 class Health(Base):
@@ -71,6 +76,7 @@ class Health(Base):
     ticker: str = 'Health_Process' # process for controling
     state: int = 1  # 0 not_working and 1 working
     description: str = ''  # description in case is not working, could be a exception
+
 
 @dataclass_json
 @dataclass
@@ -117,6 +123,7 @@ class Order(Base):
     error_description: str = None  # error description if error
     action_mt4: str = None  # close_trade, close_partial, normal
 
+
 @dataclass_json
 @dataclass
 class Bar(Base):
@@ -139,6 +146,7 @@ class Bar(Base):
     currency: str = None  # currency of the bar
     provider: str = None  # provider of the bar, example: "binance", "bitmex", "oanda", "fxcm", "interactivebrokers", "dukascopy"
     type_bar: str = None  # type of the bar, example: "FUT", "FX", "CRYPTO", "STOCK", "INDEX"
+
 
 ######################### Betting events ##############################################################
 @dataclass_json

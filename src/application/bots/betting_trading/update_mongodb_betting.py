@@ -1,4 +1,4 @@
-from src.infraestructure.database_handler import Universe
+from src.infrastructure.database_handler import Universe
 import pandas as pd
 import datetime as dt
 from datetime import timedelta
@@ -6,6 +6,7 @@ import warnings
 import numpy as np
 import schedule
 import time
+from src.application import conf
 warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
 """Script to update historical betfair"""
@@ -97,10 +98,11 @@ def main():
         store.client.delete_library(name_delete)
 
     dict_per_event = {}
-    store = Universe()
+    store = Universe(host=conf.MONGO_HOST, port=conf.MONGO_PORT)
     name_library = 'events_keeper'
     lib_historical_betfair = store.get_library('betfair_files_historical', library_chunk_store=False)
     # create scheduler for update db
+    update_mongodb()
     schedule.every().hour.at(":58").do(update_mongodb)
     while True:
         schedule.run_pending()

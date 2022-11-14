@@ -1,15 +1,15 @@
 """ Data provider all crypto exchange.
     Follow https://github.com/ccxt/ccxt
 """
-from src.infraestructure.crypto.exchange_model import Trading
+from src.infrastructure.crypto.exchange_model import Trading
 import datetime as dt
 import pandas as pd
 from src.domain.events import Bar, Tick
 import schedule
 import time
 import threading
-from src.infraestructure.brokerMQ import Emit_Events
-from src.infraestructure.health_handler import Health_Handler
+from src.infrastructure.brokerMQ import Emit_Events
+from src.infrastructure.health_handler import Health_Handler
 import os
 import pytz
 from src.domain.base_logger import logger
@@ -46,10 +46,11 @@ def get_thread_for_create_bar(interval: str = '1m', verbose: bool = True) -> thr
             health_handler.check()
 
     # Start publishing events in MQ
-    emit = Emit_Events()
+    emit = Emit_Events(config=config_brokermq)
     #
     health_handler = Health_Handler(n_check=10,
-                                    name_service=os.path.basename(__file__).split('.')[0])
+                                    name_service=os.path.basename(__file__).split('.')[0],
+                                    config=config_brokermq)
     create_bar()
     # create scheduler for bar event
     schedule.every().minute.at(":00").do(create_bar)
@@ -64,11 +65,13 @@ def get_thread_for_create_bar(interval: str = '1m', verbose: bool = True) -> thr
 
 
 if __name__ == '__main__':
-    global trading, setting, last_bar
+    global trading, setting, last_bar, config_brokermq
     exchange = conf.BROKER_CRYPTO
+    config_brokermq = {'host': conf.RABBITMQ_HOST, 'port': conf.RABBITMQ_PORT, 'user': conf.RABBITMQ_USER,
+                       'password': conf.RABBITMQ_PASSWORD}
     print(f'* Starting {exchange} provider at {dt.datetime.utcnow()}')
     logger.info(f'* Starting {exchange} provider at {dt.datetime.utcnow()}')
-    trading = Trading(name= exchange)
+    trading = Trading(exchange_or_broker=exchange, config_brokermq=config_brokermq)
     symbols = ['BTC-USDT', 'ETH-USDT']
     setting = {'symbols': symbols}
     last_bar = {s: None for s in symbols}

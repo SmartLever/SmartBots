@@ -1,6 +1,8 @@
 """  Calculate  and traking portfolio of stocks, futures, crypto from orders and prices"""
 import pandas as pd
 import datetime as dt
+
+
 class Equity():
     def __init__(self, ticker: str, asset_type: str, fees: float = 0,
                  slippage: float = 0, point_value: float = 1, is_cost_percentage: bool = True, id_strategy=-1,

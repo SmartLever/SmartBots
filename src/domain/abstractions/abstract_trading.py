@@ -7,9 +7,12 @@ from typing import Dict, List
 class Abstract_Trading(ABC):
     """ Abstract class for financial Broker or conectivity with crypto exchange
     All brokers must inherit from this class"""
-    def __init__(self, send_orders_status: bool = True, exchange_or_broker=''):
+    def __init__(self, send_orders_status: bool = True, exchange_or_broker='', config_broker: Dict = {},
+                 config_brokermq: Dict = {}):
         self.exchange_or_broker = exchange_or_broker
         self.client = self.get_client()
+        self.config_broker = config_broker
+        self.config_brokermq = config_brokermq
         # variables of orders status
         self.dict_open_orders = {}  # key is the order_id_sender, open order in the broker
         self.dict_cancel_and_close_orders = {}  # key is the order_id_sender, closed or cancelled order in the broker

@@ -2,18 +2,18 @@
     recieve data from mt4 in ticks and create Bar for frequency.
     Send Events to RabbitMQ for further processing.
 """
-from src.infraestructure.mt4.mt4_model import get_realtime_data
 import datetime as dt
 import pandas as pd
 from src.domain.events import Bar, Tick, Timer
 import schedule
 import time
 import threading
-from src.infraestructure.brokerMQ import Emit_Events
-from src.infraestructure.health_handler import Health_Handler
+from src.infrastructure.brokerMQ import Emit_Events
+from src.infrastructure.health_handler import Health_Handler
 import pytz
 from src.domain.base_logger import logger
 from src.application import conf
+from src.infrastructure.mt4.mt4_model import Trading
 
 
 def save_tick_data(msg=dict) -> None:
@@ -74,10 +74,13 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
     schedule.every().day.at("00:00").do(create_tick_closed_day)
     schedule.every().minute.at(":00").do(create_timer)
     # Start publishing events in MQ
-    emit = Emit_Events()
+    config_brokermq = {'host': conf.RABBITMQ_HOST, 'port': conf.RABBITMQ_PORT, 'user': conf.RABBITMQ_USER,
+                       'password': conf.RABBITMQ_PASSWORD}
+    emit = Emit_Events(config=config_brokermq)
     #
     health_handler = Health_Handler(n_check=10,
-                                    name_service='data_realtime_provider_mt4')
+                                    name_service='data_realtime_provider_mt4',
+                                    config=config_brokermq)
 
     while True:
         schedule.run_pending()
@@ -87,11 +90,15 @@ def get_thread_for_create_bar(interval: str = '1min', verbose: bool = True) -> t
 if __name__ == '__main__':
     print(f'* Starting MT4 provider at {dt.datetime.utcnow()}')
     logger.info(f'Starting MT4 provider at {dt.datetime.utcnow()}')
-    global save_data, last_bar
+    global save_data, last_bar, config_brokermq
     symbols = conf.FINANCIAL_SYMBOLS
     last_bar = {s: None for s in symbols}
     save_data = {symbol: [] for symbol in symbols}
     x = threading.Thread(target=get_thread_for_create_bar)
     x.start()
     setting = {'symbols': symbols}
-    get_realtime_data(setting, save_tick_data)
+    symbols = setting['symbols']
+    config_broker = {'MT4_HOST': conf.MT4_HOST, 'CLIENT_IF': conf.CLIENT_IF, 'PUSH_PORT': conf.PUSH_PORT,
+                     'PULL_PORT_PROVIDER': conf.PULL_PORT_PROVIDER, 'SUB_PORT_PROVIDER': conf.SUB_PORT_PROVIDER}
+    trading = Trading(exchange_or_broker=f'{conf.BROKER_MT4_NAME}_provider', config_broker=config_broker)
+    trading.get_stream_quotes_changes(symbols, save_tick_data)

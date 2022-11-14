@@ -21,6 +21,7 @@ events_type = {'bar': Bar, 'order': Order, 'petition': Petition,
 
 logger = logging.getLogger(__name__)
 
+
 def _callback(ch, method, properties, body):
     print(" [x] %r:%r" % (method.routing_key, json.loads(body)))
 
@@ -52,7 +53,7 @@ class CallBack_Handler(object):
         self.callback(event)
 
 
-def get_client(host :str = None, port: int = None, user: str = None, password: str = None):
+def get_client(host:str = None, port: int = None, user: str = None, password: str = None):
     """Get RabbitMQ client.
 
     Returns
@@ -69,8 +70,8 @@ def get_client(host :str = None, port: int = None, user: str = None, password: s
 class Emit_Events():
     """ Publish MQ for publishing events by topic"""
     def __init__(self, config: dict = None):
-        self._connect_client()
         self.config = config
+        self._connect_client()
 
     @log_start_end(log=logger)
     def _connect_client(self):
@@ -79,7 +80,6 @@ class Emit_Events():
         self.properties = pika.BasicProperties(content_type='application/json')
         self.channel = self.connection.channel()
         self.channel.exchange_declare(exchange='events', exchange_type='topic')
-
 
     def publish_event(self, topic: str, msg:dataclass):
         """ Publish message Event to MQ by topic, all events are dataclass objects define in events.py """

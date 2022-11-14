@@ -9,8 +9,8 @@ from src.application import conf
 from telegram import ReplyKeyboardMarkup, ParseMode
 from telegram.error import NetworkError, TelegramError
 import schedule
-from src.infraestructure.database_handler import Universe
-from src.infraestructure.brokerMQ import Emit_Events
+from src.infrastructure.database_handler import Universe
+from src.infrastructure.brokerMQ import Emit_Events
 from src.domain import events
 from tabulate import tabulate
 from src.domain.base_logger import logger
@@ -495,12 +495,14 @@ def main():
     # Config DataBase
     _name_library = 'events_keeper'
     name_library = f'{_name_library}_{dt.datetime.utcnow().strftime("%Y%m%d")}'
-    store = Universe()
+    store = Universe(host=conf.MONGO_HOST, port=conf.MONGO_PORT)
     lib_keeper = store.get_library(name_library)
     lib_petitions = store.get_library('petitions')
 
     # Connection to broker mq
-    emiter = Emit_Events()
+    config_brokermq = {'host': conf.RABBITMQ_HOST, 'port': conf.RABBITMQ_PORT, 'user': conf.RABBITMQ_USER,
+                       'password': conf.RABBITMQ_PASSWORD}
+    emiter = Emit_Events(config=config_brokermq)
     updater = Updater(token, use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler('start', start))

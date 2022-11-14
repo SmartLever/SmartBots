@@ -1,4 +1,4 @@
-from src.infraestructure.database_handler import Universe
+from src.infrastructure.database_handler import Universe
 import pandas as pd
 import datetime as dt
 from datetime import timedelta
@@ -34,7 +34,6 @@ def main():
         name = f'{name_library}_{today.strftime("%Y%m%d")}'
         yesterday = today - timedelta(days=1)
         name_yesterday = f'{name_library}_{yesterday.strftime("%Y%m%d")}'
-        store = Universe()
         # libraries
         lib_keeper = store.get_library(name, library_chunk_store=False)
         lib_keeper_yesterday = store.get_library(name_yesterday, library_chunk_store=False)
@@ -90,7 +89,7 @@ def main():
     name_library = 'events_keeper'
     name_libray_historical = 'darwinex_historical_1min'
     tickers = conf.FINANCIAL_SYMBOLS
-
+    store = Universe(host=conf.MONGO_HOST, port=conf.MONGO_PORT)
     # create scheduler for update db
     schedule.every().hour.at(":41").do(update_mongodb)
     while True:

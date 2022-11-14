@@ -1,14 +1,15 @@
 import importlib
 from dataclasses import dataclass
-from src.infraestructure.brokerMQ import Emit_Events, receive_events
+from src.infrastructure.brokerMQ import Emit_Events, receive_events
 from src.application.services import data_reader
 import datetime as dt
 import os
 from src.application import conf
 import pandas as pd
 from src.application.services.equity_handler import Equity_Handler
-from src.infraestructure.database_handler import Universe
-from src.infraestructure.health_handler import Health_Handler
+from src.infrastructure.database_handler import Universe
+from src.infrastructure.health_handler import Health_Handler
+
 
 class Portfolio_Constructor(object):
     def __init__(self, conf_portfolio: dict, run_real: bool = False, asset_type: str = None,
@@ -36,10 +37,14 @@ class Portfolio_Constructor(object):
         self.bets = []
         self.bets_result = {}  # keys: match unique and values: result
         # health log
+        self.config_brokermq = {'host': conf.RABBITMQ_HOST, 'port': conf.RABBITMQ_PORT, 'user': conf.RABBITMQ_USER,
+                                'password': conf.RABBITMQ_PASSWORD}
         self.health_handler = Health_Handler(n_check=10,
-                                             name_service=self.name)
+                                             name_service=self.name,
+                                             config=self.config_brokermq)
+
         if self.send_orders_to_broker: # if send orders to broker, send orders to brokerMQ
-            self.emit_orders = Emit_Events()
+            self.emit_orders = Emit_Events(config=self.config_brokermq)
         # equity handler
         self.equity_handler = Equity_Handler(ticker_to_strategies=self.ticker_to_strategies,
                                              inicial_cash=inicial_cash)
@@ -157,7 +162,7 @@ class Portfolio_Constructor(object):
                 if data_to_save is not None:
                     name_library = event.path_to_saving
                     name = event.name_to_saving
-                    store = Universe()
+                    store = Universe(host=conf.MONGO_HOST, port=conf.MONGO_PORT)
                     lib = store.get_library(name_library, library_chunk_store=False)
                     lib.write(name, data_to_save)
                     print(f'Save {name} in {name_library}.')
@@ -167,9 +172,9 @@ class Portfolio_Constructor(object):
         self.in_real_time = True
         print('running real  of the Portfolio, waitig Events')
         if self.asset_type in ['crypto', 'financial']:
-            receive_events(routing_key='bar,petition,timer', callback=self._callback_datafeed)
+            receive_events(routing_key='bar,petition,timer', callback=self._callback_datafeed, config=self.config_brokermq)
         elif self.asset_type == 'betting':
-            receive_events(routing_key='odds,petition', callback=self._callback_datafeed_betting)
+            receive_events(routing_key='odds,petition', callback=self._callback_datafeed_betting, config=self.config_brokermq)
         else:
             raise ValueError(f'Asset type {self.asset_type} not supported')
 
