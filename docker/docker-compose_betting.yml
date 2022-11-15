@@ -1,5 +1,6 @@
 # docker compose -f docker-compose_betting.yml --env-file ./compose.env up -d  or
 # docker-compose -f docker-compose_betting.yml --env-file ./compose.env up -d
+# docker compose -f docker-compose_betting.yml --env-file ./compose.env up -d update_mongodb_betting
 
 version: '3.9'
 
@@ -56,6 +57,19 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
       TRADING_TYPE_DOCKER: betting
     command: python -u ./src/application/bots/telegram_bot.py
+
+  update_mongodb_betting:
+    build:
+      context: .
+      dockerfile: smartbot-python.dockerfile
+    hostname: update_mongodb_betting
+    volumes:
+      - ..:/app
+    networks:
+      - smartbots_networks
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    command: python -u ./src/application/bots/betting_trading/update_mongodb_betting.py
 
 
 

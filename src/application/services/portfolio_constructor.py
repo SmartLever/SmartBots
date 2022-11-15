@@ -78,8 +78,12 @@ class Portfolio_Constructor(object):
         """ Load the strategy dinamically"""
         try:
             # check if exist file with the strategy
-            path_to_strategy = os.path.join(conf.path_modulo, asset_type, 'strategies', strategy_name.lower() + '.py')
-            name = f'smartbots.{asset_type}.strategies.{strategy_name.lower()}'
+            path_to_strategy = os.path.join(conf.path_modulo, 'domain', 'strategies', strategy_name.lower() + '.py')
+            if asset_type == 'betting':
+                strategy_file = 'strategies_betting'
+            else:
+                strategy_file = 'strategies'
+            name = f'src.domain.{strategy_file}.{strategy_name.lower()}'
             if not os.path.exists(path_to_strategy):
                 path_to_strategy = os.path.join(conf.path_to_my_strategies[asset_type], strategy_name.lower() + '.py')
                 name = f'my_smartbots.my_{asset_type}_strategies.{strategy_name.lower()}'

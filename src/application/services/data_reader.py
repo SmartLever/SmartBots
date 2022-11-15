@@ -107,7 +107,7 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
                 event_type = tuple.event_type
                 if event_type == 'bar':
                     bar = Bar(ticker=tuple.symbol, datetime=tuple[0], open=tuple.open, high=tuple.close, low=tuple.low,
-                              close=tuple.close, volume=tuple.volume, exchange=tuple.exchange_or_broker, multiplier=tuple.multiplier,
+                              close=tuple.close, volume=tuple.volume, exchange=tuple.exchange, multiplier=tuple.multiplier,
                               ask=tuple.ask, bid=tuple.bid)
 
 
