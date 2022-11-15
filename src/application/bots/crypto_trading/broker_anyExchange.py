@@ -60,7 +60,7 @@ def main(send_orders_status=True, exchange='kucoin'):
     # Launch thead for update orders status
     trading.start_update_orders_status()
 
-    receive_events(routing_key='order', callback=send_broker, config=config_brokermq)
+    receive_events(routing_key='crypto_order', callback=send_broker, config=config_brokermq)
 
 
 if __name__ == '__main__':

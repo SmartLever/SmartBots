@@ -190,7 +190,7 @@ class Portfolio_Constructor(object):
             self.orders.append(order_or_bet) # append the order to the list of orders
             if self.in_real_time and self.send_orders_to_broker:
                 print(order_or_bet)
-                self.emit_orders.publish_event('order', order_or_bet)
+                self.emit_orders.publish_event(f'{self.asset_type}_order', order_or_bet)
         elif self.asset_type == 'betting':
             self.bets.append(order_or_bet)
             if self.in_real_time and self.send_orders_to_broker:
