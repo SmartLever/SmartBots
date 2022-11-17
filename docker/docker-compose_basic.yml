@@ -79,7 +79,7 @@ services:
       dockerfile: smartbot-python.dockerfile
     hostname: webhook
     ports:
-      - 80:8080
+      - 80:80
     volumes:
       - ..:/app
     depends_on:

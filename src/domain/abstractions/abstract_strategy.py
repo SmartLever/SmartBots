@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 from src.domain.events import Order, Bet
 import datetime as dt
-from src.application.services.equity_handler import Equity
+from src.domain.equity_handler import Equity
 
 
 def _callback_default(event_order: dataclass):
@@ -28,6 +28,7 @@ class Abstract_Strategy(ABC):
         self.quantity = parameters['quantity']
         self.contracts = 0  # number of contract in the position
         self.id_strategy = id_strategy
+        self.type_trading = 'financial' # by default
         self.n_events = 0  # number of events received
         self.n_orders = 0  # number of orders sent
         self.position = 0  # position in the strategy, 1 Long, -1 Short, 0 None
@@ -41,6 +42,10 @@ class Abstract_Strategy(ABC):
         self.bar_to_equity = False
         if 'bar' in self.save_equity_vector_for:
             self.bar_to_equity = True
+        if 'name' not in self.parameters:
+            self.name = 'strategy'
+        else:
+            self.name = self.parameters['name']
 
         fees = 0
         if 'fees' in self.parameters:

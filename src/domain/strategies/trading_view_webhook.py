@@ -30,31 +30,39 @@ class Trading_View_Webhook(Abstract_Strategy):
 
     def __init__(self, params, id_strategy=None, callback=None, set_basic=False):
         super().__init__(params, id_strategy, callback, set_basic)
-        self.saves_values = {'datetime':[], 'position':[], 'close':[],'contracts':[]}
-        self.type_trading = 'crypto'
+        self.saves_values = {'datetime': [], 'position':[], 'close':[],'contracts':[]}
+        self.quantity_from_hook = 0
+        if 'quantity_from_hook' in params: # if quantity is not set, use the quantity from the hook
+            self.quantity_from_hook = params['quantity_from_hook']
+        self.name = params['name'] # unique name of the strategy that connect with the webhook message
     def add_event(self,  event: dataclass):
         """ Logic of the Strategy goes here """
-        if event.event_type == 'webhook': # logic with OHLC bars
+        name = event.msg["name"]
+        if event.event_type == 'webhook' and name == self.name: # logic for webhook messages
             market_position = event.msg["market_position"]
-            price = event.msg["price"]
-            if market_position == 'long':
-                action = 'buy'
-                quantity = self.quantity - self.contracts
-            elif market_position == 'short':
-                action = 'sell'
-                quantity = self.quantity + self.contracts
-            elif market_position == 'flat':
-                if self.position == 1:
-                    action = 'sell'
-                    quantity = self.contracts
-                elif self.position == -1:
+            if self.quantity_from_hook > 0: # tradingview webhook message has the quantity
+                quantity = abs(event.msg["contracts"])
+                action = event.msg["action"]
+                price = event.msg["price"]
+            else: # quantity manage by the strategy
+                quantity = self.quantity
+                price = event.msg["price"]
+                if market_position == 'long':
                     action = 'buy'
-                    quantity = -self.contracts
-
+                    quantity = quantity - self.contracts
+                elif market_position == 'short':
+                    action = 'sell'
+                    quantity = quantity + self.contracts
+                elif market_position == 'flat':
+                    if self.position == 1:
+                        action = 'sell'
+                        quantity = self.contracts
+                    elif self.position == -1:
+                        action = 'buy'
+                        quantity = -self.contracts
             # send order
             self.send_order(ticker=self.ticker, price=price, quantity=quantity,
-                            action=action, type='market',datetime=dt.datetime.utcnow())
-
+                            action=action, type='market', datetime=dt.datetime.utcnow())
 
             # Save list of values
             self.saves_values['datetime'].append(event.datetime)

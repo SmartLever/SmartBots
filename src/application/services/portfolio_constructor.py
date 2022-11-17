@@ -6,7 +6,7 @@ import datetime as dt
 import os
 from src.application import conf
 import pandas as pd
-from src.application.services.equity_handler import Equity_Handler
+from src.domain.equity_handler import Equity_Handler
 from src.infrastructure.database_handler import Universe
 from src.infrastructure.health_handler import Health_Handler
 
@@ -39,9 +39,12 @@ class Portfolio_Constructor(object):
         # health log
         self.config_brokermq = {'host': conf.RABBITMQ_HOST, 'port': conf.RABBITMQ_PORT, 'user': conf.RABBITMQ_USER,
                                 'password': conf.RABBITMQ_PASSWORD}
-        self.health_handler = Health_Handler(n_check=10,
-                                             name_service=self.name,
-                                             config=self.config_brokermq)
+        if self.run_real:
+            self.health_handler = Health_Handler(n_check=10,
+                                                 name_service=self.name,
+                                                 config=self.config_brokermq)
+        else:
+            self.health_handler = None
 
         if self.send_orders_to_broker: # if send orders to broker, send orders to brokerMQ
             self.emit_orders = Emit_Events(config=self.config_brokermq)
@@ -138,18 +141,21 @@ class Portfolio_Constructor(object):
     def run_simulation(self):
         """ Run Backtest portfolio"""
         self.in_real_time = False
-        if self.asset_type in ['crypto', 'financial']:
-            for event in data_reader.load_tickers_and_create_events(self.data_sources,
-                                                                    start_date=self.start_date, end_date=self.end_date):
-                self._callback_datafeed(event)
-        elif self.asset_type == 'betting':
-            for event in data_reader.load_tickers_and_create_events_betting(self.data_sources,
-                                                                            start_date=self.start_date,
-                                                                            end_date=self.end_date
-                                                                            ):
-                self._callback_datafeed_betting(event)
+        if self.data_sources is not None:
+            if self.asset_type in ['crypto', 'financial']:
+                for event in data_reader.load_tickers_and_create_events(self.data_sources,
+                                                                        start_date=self.start_date, end_date=self.end_date):
+                    self._callback_datafeed(event)
+            elif self.asset_type == 'betting':
+                for event in data_reader.load_tickers_and_create_events_betting(self.data_sources,
+                                                                                start_date=self.start_date,
+                                                                                end_date=self.end_date
+                                                                                ):
+                    self._callback_datafeed_betting(event)
+            else:
+                raise ValueError(f'Asset type {self.asset_type} not supported')
         else:
-            raise ValueError(f'Asset type {self.asset_type} not supported')
+            print('No data sources for backtest')
 
     def process_petitions(self, event: dataclass):
         """ Recieve a event peticion and get the data from the data source and save it in the DataBase"""
@@ -176,7 +182,7 @@ class Portfolio_Constructor(object):
         self.in_real_time = True
         print('running real  of the Portfolio, waitig Events')
         if self.asset_type in ['crypto', 'financial']:
-            receive_events(routing_key='bar,petition,timer', callback=self._callback_datafeed, config=self.config_brokermq)
+            receive_events(routing_key='bar,petition,timer,webhook', callback=self._callback_datafeed, config=self.config_brokermq)
         elif self.asset_type == 'betting':
             receive_events(routing_key='odds,petition', callback=self._callback_datafeed_betting, config=self.config_brokermq)
         else:
@@ -246,6 +252,17 @@ class Portfolio_Constructor(object):
                 self.process_petitions(event)
             except Exception as e:
                 print(f'Error processing petitions {e}')
+
+        elif event.event_type == 'webhook':
+            """ webhook event"""
+            try:
+                for t in self.ticker_to_strategies.keys():
+                    strategies = self.ticker_to_strategies[t]
+                    for strategy in strategies:
+                        strategy.add_event(event)
+            except Exception as e:
+                print(f'Error processing webhook {e}')
+
         elif event.event_type == 'tick' and event.tick_type == 'close_day': # update equity with last price
             if self.print_events_realtime:
                 print(f'tick close_day {event.ticker} {event.datetime} {event.price}')

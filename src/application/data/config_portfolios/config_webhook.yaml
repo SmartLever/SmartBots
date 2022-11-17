@@ -1,0 +1,19 @@
+---
+Name: PortfolioWebhook
+Data_Sources:
+
+Strategies_Load_From:
+  from:
+
+Strategies:
+  - id: 1
+    strategy: Trading_View_Webhook
+    params:
+      ticker: BTCUSD
+      name: "MA2"
+      quantity: 0
+      quantity_from_hook: 1
+      limit_save_values: 1000
+      point_value: 100000
+      slippage: 0
+

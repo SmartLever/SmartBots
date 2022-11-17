@@ -9,6 +9,7 @@ path_modulo = path.parent.parent  # path to the module
 path_to_principal = path_modulo.parent
 
 path_to_temp = os.path.join(path_modulo, 'application', 'temp')
+path_to_data = os.path.join(path_modulo, 'application', 'data')
 # Check is exist temp folder
 if not os.path.exists(path_to_temp):
     os.makedirs(path_to_temp)

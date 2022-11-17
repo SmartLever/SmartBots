@@ -1,5 +1,5 @@
 """ Portfolio Production Bot.
-    This bot is used to produce a portfolio of crypto currencies.
+    This bot is used to produce a portfolio of crypto currencies or financial securities.
     It is used to:
     1) Test the perfomance of a combination of strategies.
     2) Test the stats of a strategy with a portfolio.
@@ -17,22 +17,26 @@ import datetime as dt
 
 
 def main(run_real: bool = False, send_orders_to_broker: bool = True,
-         start_date: dt.datetime = dt.datetime(2022, 7, 1)) -> None:
+         start_date: dt.datetime = dt.datetime(2022, 7, 1),conf_portfolio: str=None ,
+         asset_type: str=None) -> None:
     """ Run the portfolio engine. """
     from src.domain.config_helper import get_config
     import os
+    from src.application import conf
     from src.application.services.portfolio_constructor import Portfolio_Constructor
-    path = os.path.abspath(__file__)
-    path_bot = os.path.dirname(path)  # path to the module
-    path_to_config = os.path.join(path_bot, "../../data/config_portfolios/config_crypto.yaml")
+    path_to_config = os.path.join(conf.path_to_data,"config_portfolios", conf_portfolio+".yaml")
     conf_portfolio = get_config(path_to_config)  # get the configuration from the config file
     # run the portfolio engine, set run_real=True to run in real time
 
-    portfolio_production = Portfolio_Constructor(conf_portfolio, run_real=run_real, asset_type='crypto',
+    portfolio_production = Portfolio_Constructor(conf_portfolio, run_real=run_real, asset_type=asset_type,
                                                  send_orders_to_broker=send_orders_to_broker, start_date=start_date)
     portfolio_production.run()
 
 
 if __name__ == '__main__':
+    run_real = True
+    asset_type = 'financial'
+    conf_portfolio = 'config_webhook'
     start_date = dt.datetime(2018, 1, 1)
-    main(run_real=True, send_orders_to_broker=True, start_date=start_date)
+    main(run_real=run_real, send_orders_to_broker=True, start_date=start_date,
+         conf_portfolio=conf_portfolio,asset_type=asset_type)

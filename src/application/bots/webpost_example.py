@@ -11,8 +11,15 @@ def run():
         # Send post
 
         webhook_url = 'http://localhost/webhook'
-        data = {'name': 'This is an example for webhook', "key": "1234ase",
-                'type': 'indicator', 'ticker': 'indicator1'}
+        data = {"exchange":"exchange","price": 16522 ,"key":"1234ase",
+                "type":"strategy","ticker":"BTCUSD",
+                 "name":"MA2",
+                 "action":"buy" ,
+                "contracts":1,
+                "interval":"1",
+                "position_size":1,
+                "market_position":"long",
+                "prev_market_position":"short"}
 
         requests.post(webhook_url, data=json.dumps(data), headers={'Content-Type': 'application/json'})
 
@@ -27,7 +34,8 @@ x = threading.Thread(target=run)
 x.start()
 
 # receive events from MQ
-receive_events(routing_key='webhook')
+config = {'host': 'localhost', 'port': 5672, 'user': 'guest', 'password': 'guest'}
+receive_events(routing_key='webhook',config=config)
 
 
 
