@@ -39,7 +39,10 @@ def main():
                 df = df.sort_values(by=['datetime'])
                 df.index = df['datetime']
                 df.index.name = 'date'
-                lib_historical_betfair.write(df['unique_name'].values[0], df, metadata={'datetime': datetime_df,
+                unique = df['unique_name'].values[0]
+                if unique.isascii() is False:
+                    unique = unique.encode('ascii', 'ignore').decode('ascii')
+                lib_historical_betfair.write(unique, df, metadata={'datetime': datetime_df,
                                                                                         'ticker': df['ticker'].values[
                                                                                             0],
                                                                                         'selection':
@@ -102,7 +105,6 @@ def main():
     name_library = 'events_keeper'
     lib_historical_betfair = store.get_library('betfair_files_historical', library_chunk_store=False)
     # create scheduler for update db
-    update_mongodb()
     schedule.every().hour.at(":58").do(update_mongodb)
     while True:
         schedule.run_pending()

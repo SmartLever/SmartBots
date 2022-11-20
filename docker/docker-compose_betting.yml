@@ -16,7 +16,7 @@ services:
       - smartbots_networks
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
-    command: python -u ./src/application/bots/betting_trading/data_realtime_provider_betfair.py
+    command: python -u ./src/application/bots/betting_trading/data_realtime_betting.py
 
   bot_betting_trading:
     build:
@@ -42,7 +42,7 @@ services:
       - smartbots_networks
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
-    command: python -u ./src/application/bots/betting_trading/broker_betfair.py
+    command: python -u ./src/application/bots/betting_trading/broker_betting.py
 
   telegram_betting:
     build:

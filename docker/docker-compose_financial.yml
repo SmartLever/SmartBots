@@ -14,7 +14,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./src/application/bots/financial_trading/data_realtime_provider_mt4.py
+    command: python -u ./src/application/bots/financial_trading/data_realtime_financial.py
 
   bot_financial_trading:
     build:
@@ -27,7 +27,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./src/application/bots/financial_trading/portfolio_production_financial.py
+    command: python -u ./src/application/bots/portfolio_production.py
 
   broker_mt4:
     build:
@@ -40,7 +40,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./src/application/bots/financial_trading/broker_mt4.py
+    command: python -u ./src/application/bots/financial_trading/broker_financial.py
 
   telegram_financial:
     build:

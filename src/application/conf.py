@@ -63,7 +63,7 @@ TRADING_TYPE_TELEGRAM = os.getenv("TRADING_TYPE_TELEGRAM") or "REPLACE_ME"
 USERNAME_BETFAIR = os.getenv("USERNAME_BETFAIR") or "REPLACE_ME"
 PASSWORD_BETFAIR = os.getenv("PASSWORD_BETFAIR") or "REPLACE_ME"
 APP_KEYS_BETFAIR = os.getenv("APP_KEYS_BETFAIR") or "REPLACE_ME"
-
+BROKER_BETTING = os.getenv("BROKER_BETTING") or "betfair"
 # Telegram
 TOKEN_TELEGRAM_BETTING = os.getenv("TOKEN_TELEGRAM_BETTING") or "REPLACE_ME"
 LIST_OF_ADMINS_BETTING = os.getenv("LIST_OF_ADMINS_BETTING") or "REPLACE_ME"
@@ -104,7 +104,7 @@ if '[' in FINANCIAL_SYMBOLS:
 
 PERCENTAGE_CLOSE_POSITIONS_MT4 = os.getenv("PERCENTAGE_CLOSE_POSITIONS_MT4") or None
 NAME_FINANCIAL_PORTOFOLIO = os.getenv("NAME_FINANCIAL_PORTOFOLIO") or "REPLACE_ME"  # Name of the Portfolio which is running in production
-BROKER_MT4_NAME = os.getenv("BROKER_MT4_NAME") or "REPLACE_ME"  # Name of the broker-mt4, you are going to connect
+BROKER_FINANCIAL = os.getenv("BROKER_FINANCIAL") or "REPLACE_ME"  # Name of the broker-mt4, you are going to connect
 LIST_SERVICES_FINANCIAL = os.getenv("LIST_SERVICES_FINANCIAL") or "REPLACE_ME"
 # is a list
 if '[' in LIST_SERVICES_FINANCIAL:

@@ -16,7 +16,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./src/application/bots/crypto_trading/data_real_time_exchange.py
+    command: python -u ./src/application/bots/crypto_trading/provider_crypto.py
 
   bot_crypto_trading1:
     build:
@@ -32,7 +32,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./src/application/bots/crypto_trading/portfolio_production_crypto.py
+    command: python -u ./src/application/bots/portfolio_production.py
 
   broker_crypto1:
     build:
@@ -48,7 +48,7 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
       - smartbots_networks
-    command: python -u ./src/application/bots/crypto_trading/broker_anyExchange.py
+    command: python -u ./src/application/bots/crypto_trading/broker_crypto.py
 
   telegram_crypto1:
     build:
