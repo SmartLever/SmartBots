@@ -25,6 +25,7 @@ services:
       - ..:/app
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
+      ROUTING_KEY: financial_order
     networks:
       - smartbots_networks
     command: python -u ./src/application/bots/portfolio_production.py
@@ -38,6 +39,7 @@ services:
       - ..:/app
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
+      ROUTING_KEY: financial_order
     networks:
       - smartbots_networks
     command: python -u ./src/application/bots/financial_trading/broker_financial.py

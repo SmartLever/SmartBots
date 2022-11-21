@@ -30,6 +30,7 @@ services:
       - mongodb
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
+      ROUTING_KEY: crypto_order
     networks:
       - smartbots_networks
     command: python -u ./src/application/bots/portfolio_production.py
@@ -46,6 +47,7 @@ services:
       - mongodb
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
+      ROUTING_KEY: crypto_order
     networks:
       - smartbots_networks
     command: python -u ./src/application/bots/crypto_trading/broker_crypto.py

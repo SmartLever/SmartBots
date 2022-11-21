@@ -40,7 +40,7 @@ def main():
     # Launch thread to saving balance
     x = threading.Thread(target=_schedule)
     x.start()
-    receive_events(routing_key='financial_order', callback=send_broker, config=config_brokermq)
+    receive_events(routing_key=conf.ROUTING_KEY, callback=send_broker, config=config_brokermq)
 
 
 if __name__ == '__main__':

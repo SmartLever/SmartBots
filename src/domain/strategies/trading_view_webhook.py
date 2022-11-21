@@ -44,6 +44,7 @@ class Trading_View_Webhook(Abstract_Strategy):
                 quantity = abs(event.msg["contracts"])
                 action = event.msg["action"]
                 price = event.msg["price"]
+                self.contracts = quantity
             else: # quantity manage by the strategy
                 quantity = self.quantity
                 price = event.msg["price"]
@@ -56,9 +57,11 @@ class Trading_View_Webhook(Abstract_Strategy):
                 elif market_position == 'flat':
                     if self.position == 1:
                         action = 'sell'
+                        self.position = 1
                         quantity = self.contracts
                     elif self.position == -1:
                         action = 'buy'
+                        self.position = -1
                         quantity = -self.contracts
             # send order
             self.send_order(ticker=self.ticker, price=price, quantity=quantity,
