@@ -6,7 +6,7 @@ from typing import Dict, List
 import time
 import pandas as pd
 import datetime as dt
-from src.infrastructure.brokerMQ import Emit_Events
+from src.infraestructure.brokerMQ import Emit_Events
 import os
 import ccxt
 import threading

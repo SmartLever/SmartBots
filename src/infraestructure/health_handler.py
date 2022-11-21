@@ -1,5 +1,5 @@
 """ Manage if a services if running and working"""
-from src.infrastructure.brokerMQ import Emit_Events
+from src.infraestructure.brokerMQ import Emit_Events
 from src.domain.events import Health
 import datetime as dt
 import pytz

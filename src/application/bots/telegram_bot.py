@@ -9,8 +9,8 @@ from src.application import conf
 from telegram import ReplyKeyboardMarkup, ParseMode
 from telegram.error import NetworkError, TelegramError
 import schedule
-from src.infrastructure.database_handler import Universe
-from src.infrastructure.brokerMQ import Emit_Events
+from src.infraestructure.database_handler import Universe
+from src.infraestructure.brokerMQ import Emit_Events
 from src.domain import events
 from tabulate import tabulate
 from src.domain.base_logger import logger

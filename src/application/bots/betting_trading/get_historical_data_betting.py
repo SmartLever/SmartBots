@@ -3,7 +3,7 @@ import os
 from src.application import conf
 from typing import Dict
 import pandas as pd
-from src.infrastructure.database_handler import Universe
+from src.infraestructure.database_handler import Universe
 
 
 def _get_historical_data_test_files_betfair():

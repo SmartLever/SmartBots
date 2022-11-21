@@ -1,5 +1,5 @@
 from src.application import conf
-from src.infrastructure.brokerMQ import receive_events
+from src.infraestructure.brokerMQ import receive_events
 import schedule
 import time
 import threading

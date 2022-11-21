@@ -4,7 +4,7 @@
 import pandas as pd
 import datetime as dt
 from src.domain.events import Bar, Tick, Timer
-from src.infrastructure.database_handler import Universe
+from src.infraestructure.database_handler import Universe
 from src.application import conf
 
 

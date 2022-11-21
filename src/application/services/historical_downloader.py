@@ -10,8 +10,8 @@ import pandas as pd
 from src.domain.decorators import log_start_end
 from src.application.services.historical_utils import save_historical, read_historical, clean_symbol
 from src.application import conf
-from src.infrastructure.crypto.exchange_model import Trading as Trading_Crypto
-from src.infrastructure.mt4.mt4_model import Trading as Trading_Darwinex
+from src.infraestructure.crypto.exchange_model import Trading as Trading_Crypto
+from src.infraestructure.mt4.mt4_model import Trading as Trading_Darwinex
 
 
 logger = logging.getLogger(__name__)

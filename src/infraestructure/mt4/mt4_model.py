@@ -5,11 +5,11 @@ import time
 import datetime as dt
 from src.domain.abstractions.abstract_trading import Abstract_Trading
 from src.domain.decorators import check_api_key
-from src.infrastructure.mt4.mt_zeromq_connector import MTZeroMQConnector
+from src.infraestructure.mt4.mt_zeromq_connector import MTZeroMQConnector
 from time import sleep
 from src.domain.base_logger import logger
 import darwinex_ticks
-from src.infrastructure.brokerMQ import Emit_Events
+from src.infraestructure.brokerMQ import Emit_Events
 
 
 @check_api_key(

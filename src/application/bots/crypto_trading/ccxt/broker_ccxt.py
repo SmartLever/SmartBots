@@ -3,8 +3,8 @@ from src.domain.base_logger import logger
 from typing import Dict
 from src.application import conf
 import datetime as dt
-from src.infrastructure.crypto.exchange_model import Trading
-from src.infrastructure.health_handler import Health_Handler
+from src.infraestructure.crypto.exchange_model import Trading
+from src.infraestructure.health_handler import Health_Handler
 
 class BrokerCCXT(object):
     """

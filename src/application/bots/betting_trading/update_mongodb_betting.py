@@ -1,4 +1,4 @@
-from src.infrastructure.database_handler import Universe
+from src.infraestructure.database_handler import Universe
 import pandas as pd
 import datetime as dt
 from datetime import timedelta

@@ -1,11 +1,11 @@
 import datetime as dt
 import pandas as pd
 from src.domain.events import Bar, Tick
-from src.infrastructure.brokerMQ import Emit_Events
-from src.infrastructure.health_handler import Health_Handler
+from src.infraestructure.brokerMQ import Emit_Events
+from src.infraestructure.health_handler import Health_Handler
 import pytz
 from src.domain.base_logger import logger
-from src.infrastructure.crypto.exchange_model import Trading
+from src.infraestructure.crypto.exchange_model import Trading
 from typing import Dict
 
 
