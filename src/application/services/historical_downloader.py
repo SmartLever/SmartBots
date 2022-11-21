@@ -1,4 +1,4 @@
-""" Download historical data frrom Data Exchage and save it for use in the bot.
+""" Download historical data from Data Exchage and save it for use in the bot.
  Doc: https://github.com/man-group/arctic/wiki/Chunkstore
 
  """

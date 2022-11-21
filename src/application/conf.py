@@ -14,24 +14,23 @@ path_to_data = os.path.join(path_modulo, 'application', 'data')
 if not os.path.exists(path_to_temp):
     os.makedirs(path_to_temp)
 
-# Create folders for my strategies
-path_to_my_smartbots = os.path.join(path_to_principal, 'my_smartbots')
-path_to_my_strategies = {}
-path_to_my_strategies['financial'] = os.path.join(path_to_my_smartbots, 'my_financial_strategies')
-path_to_my_strategies['betting' ]= os.path.join(path_to_my_smartbots, 'my_betting_strategies')
+# Check is exist data folder for test_data
+path_to_test_data = os.path.join(path_to_data, 'test_data')
+if not os.path.exists(path_to_test_data):
+    os.makedirs(path_to_test_data)
 
-if not os.path.exists(path_to_my_smartbots):
-    os.makedirs(path_to_my_smartbots)
-
-for key in path_to_my_strategies:
-    if not os.path.exists(path_to_my_strategies[key]):
-        os.makedirs(path_to_my_strategies[key])
 
 if os.getenv('AM_I_IN_A_DOCKER_CONTAINER') == '1': # only with docker running
     # Path to docker folder
     load_dotenv(os.path.join(path_to_principal, 'docker', "compose.env"))
 else:
     load_dotenv(os.path.join(path_to_principal, "conf.env"))
+
+# folders for my strategies
+path_to_my_smartbots = os.getenv('MY_SMARTBOTS_PATH')
+path_to_my_strategies = {}
+path_to_my_strategies['financial'] = os.path.join(path_to_my_smartbots, 'my_financial_strategies')
+path_to_my_strategies['betting' ]= os.path.join(path_to_my_smartbots, 'my_betting_strategies')
 
 
 ######### COMMON PARAMETERS ######################

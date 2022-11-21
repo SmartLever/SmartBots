@@ -22,6 +22,17 @@ def read_data_to_dataframe(symbol:str, provider:str, interval:str = '1m',
     return df
 
 
+def frame_to_events(frame):
+    """ Convert DataFrame to Events
+        Dataframe must have columns: 'data', 'event_type' and index as datetime
+
+    """
+    for tuple in frame.itertuples():
+        yield tuple
+
+
+
+
 def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.datetime = dt.datetime(2022, 1, 1),
                                    end_date: dt.datetime = dt.datetime.utcnow()):
     """ Load data from DB and create Events for consumption by portfolio engine
@@ -145,3 +156,5 @@ def load_tickers_and_create_events_betting(tickers_lib_name: list, start_date: d
             data.sort_index(inplace=True)
             for tuple in data.itertuples():
                 yield tuple
+
+

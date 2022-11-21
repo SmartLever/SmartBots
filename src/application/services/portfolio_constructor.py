@@ -9,18 +9,20 @@ import pandas as pd
 from src.domain.equity_handler import Equity_Handler
 from src.infrastructure.database_handler import Universe
 from src.infrastructure.health_handler import Health_Handler
+from pathlib import Path
 
 
 class Portfolio_Constructor(object):
     def __init__(self, conf_portfolio: dict, run_real: bool = False, asset_type: str = None,
                  send_orders_to_broker: bool = False, start_date: dt.datetime = dt.datetime(2022, 1, 1)
-                 , end_date: dt.datetime = dt.datetime.utcnow(),inicial_cash: float= 0):
+                 , end_date: dt.datetime = dt.datetime.utcnow(),inicial_cash: float= 0,path_to_strategies: str = None):
         """ Run portfolio of strategies"""
         if asset_type is None:
             error_msg = 'asset_type is required'
             raise ValueError(error_msg)
         self.print_events_realtime = False
         self.in_real_time = False
+        self.path_to_strategies = path_to_strategies # path to strategies, default is None
         self.start_date = start_date
         self.end_date = end_date
         self.conf_portfolio = conf_portfolio
@@ -60,6 +62,8 @@ class Portfolio_Constructor(object):
             strategy_name = parameters['strategy']
             _id = parameters['id']
             ticker = parameters['params']['ticker']
+            tickers_feeder = parameters['params']['tickers_to_feeder'].split(',')
+            parameters['params']['tickers_feeder'] = tickers_feeder # set in list
             set_basic = False
             if strategy_name == 'Basic_Strategy':
                 set_basic = True
@@ -68,6 +72,10 @@ class Portfolio_Constructor(object):
             if ticker not in self.ticker_to_strategies:
                 self.ticker_to_strategies[ticker] = []
                 self.ticker_to_id_strategies[ticker] = []
+            for t in tickers_feeder:
+                self.ticker_to_strategies[t] = []
+                self.ticker_to_id_strategies[t] = []
+
             strategy_obj = list_stra[strategy_name](parameters['params'], id_strategy=_id,
                                                     callback=self._callback_orders, set_basic = set_basic)
 
@@ -76,6 +84,9 @@ class Portfolio_Constructor(object):
                 self.total_strategies_with_timer.append(strategy_obj)
             self.ticker_to_strategies[ticker].append(strategy_obj)
             self.ticker_to_id_strategies[ticker].append(_id)
+            for t in tickers_feeder: # set strategies to feed with tickers_feeder
+                self.ticker_to_strategies[t].append(strategy_obj)
+                self.ticker_to_id_strategies[t].append(_id)
 
     def _get_strategy(self, asset_type: str, strategy_name: str):
         """ Load the strategy dinamically"""
@@ -88,9 +99,13 @@ class Portfolio_Constructor(object):
                 strategy_file = 'strategies'
             name = f'src.domain.{strategy_file}.{strategy_name.lower()}'
             if not os.path.exists(path_to_strategy):
-                path_to_strategy = os.path.join(conf.path_to_my_strategies[asset_type], strategy_name.lower() + '.py')
-                name = f'my_smartbots.my_{asset_type}_strategies.{strategy_name.lower()}'
-            if not os.path.exists(path_to_strategy):
+                path_to_strategy = Path(os.path.join(self.path_to_strategies, strategy_name.lower() + '.py'))
+                parent = path_to_strategy.parent.parent.name
+                # get name last folder
+
+                name = f'my_smartbots.{parent}.strategies.{strategy_name.lower()}'
+
+            elif os.path.exists(path_to_strategy):
                 error_msg = f'Error, strategy {strategy_name} not found'
                 raise ValueError(error_msg)
 

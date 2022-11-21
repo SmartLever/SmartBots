@@ -25,6 +25,7 @@ class Abstract_Strategy(ABC):
         else:
             self.limit_save_values = 0
         self.ticker = parameters['ticker']
+        self.tickers_to_feeder = parameters['tickers_to_feeder'] # tickers for feed the strategy by events, default is ticker
         self.quantity = parameters['quantity']
         self.contracts = 0  # number of contract in the position
         self.id_strategy = id_strategy
