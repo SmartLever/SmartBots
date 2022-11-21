@@ -48,8 +48,12 @@ def main(run_real: bool = False, send_orders_to_broker: bool = True,
         conf_portfolio['Strategies'] = list_strategy
 
     # run the portfolio engine, set run_real=True to run in real time
+    routing_key = 'bar,petition,timer,webhook'
+    if conf_portfolio == 'config_webhook':
+        routing_key = 'petition,webhook'
     portfolio_production = Portfolio_Constructor(conf_portfolio, run_real=run_real, asset_type=asset_type,
-                                                 send_orders_to_broker=send_orders_to_broker, start_date=start_date)
+                                                 send_orders_to_broker=send_orders_to_broker, start_date=start_date,
+                                                 routing_key=routing_key)
     portfolio_production.run()
 
 

@@ -14,8 +14,9 @@ from pathlib import Path
 
 class Portfolio_Constructor(object):
     def __init__(self, conf_portfolio: dict, run_real: bool = False, asset_type: str = None,
-                 send_orders_to_broker: bool = False, start_date: dt.datetime = dt.datetime(2022, 1, 1)
-                 , end_date: dt.datetime = dt.datetime.utcnow(),inicial_cash: float= 0,path_to_strategies: str = None):
+                 send_orders_to_broker: bool = False, start_date: dt.datetime = dt.datetime(2022, 1, 1),
+                 end_date: dt.datetime = dt.datetime.utcnow(), inicial_cash: float = 0, path_to_strategies: str = None,
+                 routing_key: str = 'bar,petition,timer,webhook'):
         """ Run portfolio of strategies"""
         if asset_type is None:
             error_msg = 'asset_type is required'
@@ -38,6 +39,7 @@ class Portfolio_Constructor(object):
         self.orders = []
         self.bets = []
         self.bets_result = {}  # keys: match unique and values: result
+        self.routing_key = routing_key
         # health log
         self.config_brokermq = {'host': conf.RABBITMQ_HOST, 'port': conf.RABBITMQ_PORT, 'user': conf.RABBITMQ_USER,
                                 'password': conf.RABBITMQ_PASSWORD}
@@ -197,7 +199,7 @@ class Portfolio_Constructor(object):
         self.in_real_time = True
         print('running real  of the Portfolio, waitig Events')
         if self.asset_type in ['crypto', 'financial']:
-            receive_events(routing_key='bar,petition,timer,webhook', callback=self._callback_datafeed, config=self.config_brokermq)
+            receive_events(routing_key=self.routing_key, callback=self._callback_datafeed, config=self.config_brokermq)
         elif self.asset_type == 'betting':
             receive_events(routing_key='odds,petition', callback=self._callback_datafeed_betting, config=self.config_brokermq)
         else:
@@ -246,7 +248,7 @@ class Portfolio_Constructor(object):
         recieve  events"""
         if self.in_real_time:
             self.health_handler.check()
-        if event.event_type == 'bar' and event.ticker in self.ticker_to_strategies:  # bar event, most common.
+        if event.event_type == 'bar':  # bar event, most common.
             if self.print_events_realtime:
                 print(f'bar {event.ticker} {event.datetime} {event.close}')
             try:
