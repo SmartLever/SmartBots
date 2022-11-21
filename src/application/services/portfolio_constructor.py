@@ -64,8 +64,11 @@ class Portfolio_Constructor(object):
             strategy_name = parameters['strategy']
             _id = parameters['id']
             ticker = parameters['params']['ticker']
-            tickers_feeder = parameters['params']['tickers_to_feeder'].split(',')
-            parameters['params']['tickers_feeder'] = tickers_feeder # set in list
+            if 'tickers_to_feeder' in parameters['params']:
+                tickers_feeder = parameters['params']['tickers_to_feeder'].split(',')  # set in list
+            else:
+                tickers_feeder = ticker
+            parameters['params']['tickers_feeder'] = tickers_feeder
             set_basic = False
             if strategy_name == 'Basic_Strategy':
                 set_basic = True
@@ -107,7 +110,7 @@ class Portfolio_Constructor(object):
 
                 name = f'my_smartbots.{parent}.strategies.{strategy_name.lower()}'
 
-            elif os.path.exists(path_to_strategy):
+            elif os.path.exists(path_to_strategy) is False:
                 error_msg = f'Error, strategy {strategy_name} not found'
                 raise ValueError(error_msg)
 
