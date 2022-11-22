@@ -32,6 +32,23 @@ def frame_to_events(frame):
 
 
 
+def load_event_from_list(list_events: list):
+    """ Load events from list"""
+    for _event in list_events:
+        if _event['event_type'] == 'bar':
+            bar = Bar(ticker=_event['ticker'], datetime=_event['datetime'], open=_event['open'],
+                      high=_event['high'], low=_event['low'],
+                      close=_event['close'], volume=_event['volume'], multiplier=_event['multiplier'],
+                      ask=_event['ask'], bid=_event['bid'])
+            yield bar
+        elif _event['event_type'] == 'tick':
+
+            tick = Tick(event_type='tick', tick_type=_event['tick_type'], price=_event['price'],
+                        ticker=_event['ticker'], datetime=_event['datetime'], description=_event['description'])
+            yield tick
+
+
+
 
 def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.datetime = dt.datetime(2022, 1, 1),
                                    end_date: dt.datetime = dt.datetime.utcnow()):
