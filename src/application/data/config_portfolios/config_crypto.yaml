@@ -11,14 +11,10 @@ Data_Sources:
     historical_source: mongoDB
     historical_library: kucoin_historical_1m
 
+Strategies_Load_From:
+  from:
+
 Strategies:
-#  - id: 1
-#    strategy: Basic_Strategy
-#    params:
-#      ticker: ETH-USDT
-#      entry: 2
-#      inicial_action: buy
-#      quantity : 0.1
   - id: 1
     strategy: Simple_Avg_Cross
     params:
