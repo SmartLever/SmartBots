@@ -16,7 +16,7 @@ class Portfolio_Constructor(object):
     def __init__(self, conf_portfolio: dict, run_real: bool = False, asset_type: str = None,
                  send_orders_to_broker: bool = False, start_date: dt.datetime = dt.datetime(2022, 1, 1),
                  end_date: dt.datetime = dt.datetime.utcnow(), inicial_cash: float = 0, path_to_strategies: str = None,
-                 routing_key: str = 'bar,petition,timer,webhook'):
+                 routing_key: str = 'bar,petition,timer,webhook', list_events_backtest : list = None):
         """ Run portfolio of strategies"""
         if asset_type is None:
             error_msg = 'asset_type is required'
@@ -29,6 +29,7 @@ class Portfolio_Constructor(object):
         self.conf_portfolio = conf_portfolio
         self.name = conf_portfolio['Name']
         self.data_sources = conf_portfolio['Data_Sources']
+        self.list_events_backtest = list_events_backtest
         self.run_real = run_real
         self.asset_type = asset_type
         self.ticker_to_strategies = {}  # fill with function load_strategies_conf()
@@ -174,6 +175,9 @@ class Portfolio_Constructor(object):
                     self._callback_datafeed_betting(event)
             else:
                 raise ValueError(f'Asset type {self.asset_type} not supported')
+        elif self.list_events_backtest is not None and len(self.list_events_backtest) > 0:
+            for event in data_reader.load_event_from_list(self.list_events_backtest):
+                self._callback_datafeed(event)
         else:
             print('No data sources for backtest')
 
