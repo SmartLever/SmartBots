@@ -35,6 +35,7 @@ class Trading_View_Webhook(Abstract_Strategy):
         if 'quantity_from_hook' in params: # if quantity is not set, use the quantity from the hook
             self.quantity_from_hook = params['quantity_from_hook']
         self.name = params['name'] # unique name of the strategy that connect with the webhook message
+
     def add_event(self,  event: dataclass):
         """ Logic of the Strategy goes here """
         name = event.msg["name"]
@@ -64,7 +65,7 @@ class Trading_View_Webhook(Abstract_Strategy):
                         self.position = -1
                         quantity = -self.contracts
             # send order
-            self.send_order(ticker=self.ticker, price=price, quantity=quantity,
+            self.send_order(ticker=self.ticker_broker, price=price, quantity=quantity,
                             action=action, type='market', datetime=dt.datetime.utcnow())
 
             # Save list of values

@@ -10,6 +10,7 @@ Strategies:
     strategy: Trading_View_Webhook
     params:
       ticker: BTCUSD
+      ticker_broker: BTCUSD
       name: "MA2"
       quantity: 0
       quantity_from_hook: 1
