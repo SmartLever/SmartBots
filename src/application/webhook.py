@@ -6,7 +6,7 @@ msg = { "key": "",
 from flask import Flask, request
 from src.application import conf
 import datetime as dt
-from src.domain.events import WebHook as WebHookEvent
+from src.domain.models.trading.webhook import WebHook as WebHookEvent
 from src.infraestructure.brokerMQ import Emit_Events
 
 # Flask app should start in global layout

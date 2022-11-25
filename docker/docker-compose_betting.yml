@@ -69,7 +69,7 @@ services:
       - smartbots_networks
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
-    command: python -u ./src/application/bots/betting_trading/update_mongodb_betting.py
+    command: python -u ./src/infraestructure/update_mongodb_betting.py
 
 
 

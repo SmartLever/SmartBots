@@ -1,16 +1,16 @@
 """ Recieved events orders from Portfolio and send it to the broker or exchange for execution"""
 from src.infraestructure.brokerMQ import Emit_Events
-from src.domain.events import Positions
+from src.domain.models.positions import Positions
 import pytz
-from src.domain.base_logger import logger
+from src.application.base_logger import logger
 from typing import Dict
 from src.application import conf
 import datetime as dt
-from src.infraestructure.mt4.mt4_model import Trading
-from src.infraestructure.health_handler import Health_Handler
+from src.infraestructure.mt4.mt4_handler import Trading
+from src.application.services.health_handler import Health_Handler
 from src.infraestructure.database_handler import Universe
-from src.domain import events
-
+from src.domain.models.trading.petition import Petition
+from src.domain.models.balance import Balance
 
 class BrokerMT4(object):
     """
@@ -57,8 +57,8 @@ class BrokerMT4(object):
                     # check if the symbols is saving
                     if self.lib_balance.has_symbol(unique) is False:
                         # saving objective balance
-                        balance = events.Balance(datetime=now, balance=balance,
-                                                 account=self.name_portfolio)
+                        balance = Balance(datetime=now, balance=balance,
+                                          account=self.name_portfolio)
 
                         self.lib_balance.write(unique, balance, metadata={'datetime': now,
                                                                      'account': self.name_portfolio})
@@ -73,7 +73,7 @@ class BrokerMT4(object):
                         if diff_perce <= float(conf.PERCENTAGE_CLOSE_POSITIONS_MT4):
                             # send to close all positions
                             function_to_run = 'close_all_positions'  # get_saved_values_strategy
-                            petition_pos = events.Petition(datetime=now, function_to_run=function_to_run,
+                            petition_pos = Petition(datetime=now, function_to_run=function_to_run,
                                                            name_portfolio=self.name_portfolio)
 
                             print(f'Send close all positions: Percetage Diff {diff_perce}')

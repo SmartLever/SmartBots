@@ -1,10 +1,10 @@
 import datetime as dt
 from src.application import conf
-from src.domain.base_logger import logger
+from src.application.base_logger import logger
 import schedule
 import time
 import threading
-if conf.BROKER_FINANCIAL == 'darwinex':
+if conf.BROKER_FINANCIAL == 'ftmo':
     from src.application.bots.financial_trading.mt4.data_mt4 import ProviderMT4 as ProviderFinancial
 
 

@@ -7,7 +7,7 @@ from src.domain.abstractions.abstract_trading import Abstract_Trading
 from src.domain.decorators import check_api_key
 from src.infraestructure.mt4.mt_zeromq_connector import MTZeroMQConnector
 from time import sleep
-from src.domain.base_logger import logger
+from src.application.base_logger import logger
 import darwinex_ticks
 from src.infraestructure.brokerMQ import Emit_Events
 
@@ -484,6 +484,7 @@ class Trading(Abstract_Trading):
             if order.status == 'closed' or order.status == 'cancelled':
                 list_changing.append(order_id)
             if self.send_orders_status:  # publish order status
+                order.datetime = dt.datetime.utcnow()
                 self.emit_orders.publish_event('order_status', order)
 
         for order_id in list_changing:

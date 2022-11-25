@@ -10,7 +10,7 @@ from src.infraestructure.brokerMQ import Emit_Events
 import os
 import ccxt
 import threading
-from src.domain.base_logger import logger
+from src.application.base_logger import logger
 print('CCXT Version:', ccxt.__version__)
 
 

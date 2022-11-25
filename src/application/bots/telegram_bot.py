@@ -11,9 +11,9 @@ from telegram.error import NetworkError, TelegramError
 import schedule
 from src.infraestructure.database_handler import Universe
 from src.infraestructure.brokerMQ import Emit_Events
-from src.domain import events
+from src.domain.models.trading.petition import Petition
 from tabulate import tabulate
-from src.domain.base_logger import logger
+from src.application.base_logger import logger
 import os
 
 if 'TRADING_TYPE_DOCKER' in os.environ:
@@ -22,7 +22,7 @@ else:
     trading_type = conf.TRADING_TYPE_TELEGRAM
 
 if trading_type == 'crypto':
-    from src.infraestructure.crypto.exchange_model import Trading
+    from src.infraestructure.crypto.exchange_handler import Trading
 elif trading_type == 'betting':
     from src.infraestructure.api_berfair.betfair_model import Trading
 
@@ -150,7 +150,7 @@ def get_data_petition(name):
 
 def create_petition(name_to_saving):
     function_to_run = 'get_saved_values_strategies_last'  # get_saved_values_strategy
-    petition_pos = events.Petition(datetime=dt.datetime.now(), function_to_run=function_to_run,
+    petition_pos = Petition(datetime=dt.datetime.now(), function_to_run=function_to_run,
                                    name_to_saving=name_to_saving, name_portfolio=name_portfolio)
 
     emiter.publish_event('petition', petition_pos)

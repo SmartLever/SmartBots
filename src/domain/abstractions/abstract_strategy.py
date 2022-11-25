@@ -1,8 +1,9 @@
 from abc import ABC
 from dataclasses import dataclass
-from src.domain.events import Order, Bet
+from src.domain.models.trading.order import Order
+from src.domain.models.betting.bet import Bet
 import datetime as dt
-from src.domain.equity_handler import Equity
+from src.domain.services.equity_handler import Equity
 
 
 def _callback_default(event_order: dataclass):

@@ -1,9 +1,9 @@
 """ Recieved events bets from Portfolio and send it to the broker or exchange for execution"""
 from src.application import conf
-from src.domain.base_logger import logger
+from src.application.base_logger import logger
 from typing import Dict
-from src.infraestructure.betfair.betfair_model import Trading
-from src.infraestructure.health_handler import Health_Handler
+from src.infraestructure.betfair.betfair_handler import Trading
+from src.application.services.health_handler import Health_Handler
 import datetime as dt
 
 

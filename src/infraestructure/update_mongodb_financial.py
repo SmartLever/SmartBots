@@ -4,7 +4,7 @@ import datetime as dt
 from datetime import timedelta
 import schedule
 import time
-from src.application.services.historical_utils import read_historical, save_historical
+from src.application.services.historical_utils_handler import read_historical, save_historical
 from src.application import conf
 
 """Script to update historical with mongodb data"""

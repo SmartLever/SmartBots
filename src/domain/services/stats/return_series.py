@@ -4,10 +4,10 @@ from datetime import date
 import numpy as np
 import pandas as pd
 
-from src.domain.stats.drawdown import drawdown
-from src.domain.stats.month import monthlytable
-from src.domain.stats.periods import period_returns
-from src.domain.stats.var import VaR
+from src.domain.services.stats.drawdown import drawdown
+from src.domain.services.stats.month import monthlytable
+from src.domain.services.stats.periods import period_returns
+from src.domain.services.stats.var import VaR
 
 
 def from_nav(nav):
