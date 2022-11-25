@@ -78,7 +78,7 @@ class Portfolio_Constructor(object):
             if ticker not in self.ticker_to_strategies:
                 self.ticker_to_strategies[ticker] = []
                 self.ticker_to_id_strategies[ticker] = []
-            for t in tickers_feeder:
+            for t in tickers_feeder: # add strategy to all tickers feeder
                 self.ticker_to_strategies[t] = []
                 self.ticker_to_id_strategies[t] = []
 
@@ -128,7 +128,7 @@ class Portfolio_Constructor(object):
             for strategy in self.ticker_to_strategies[t]:
                 if id_strategy is None or strategy.id_strategy == id_strategy:
                     df = pd.DataFrame(strategy.get_saved_values())
-                    df['ticker'] = t
+                    df['ticker'] = strategy.ticker
                     df.set_index('datetime', inplace=True)
                     frames[strategy.id_strategy] = df
         return frames
@@ -264,7 +264,22 @@ class Portfolio_Constructor(object):
                 self.ticker_to_strategies[event.ticker] = []  # default empty list
                 strategies = self.ticker_to_strategies[event.ticker]
             for strategy in strategies:
-                strategy.add_event(event)    
+                strategy.add_event(event)
+
+        elif event.event_type == 'tick':
+            try:
+                strategies = self.ticker_to_strategies[event.ticker]
+            except:
+                self.ticker_to_strategies[event.ticker] = []  # default empty list
+                strategies = self.ticker_to_strategies[event.ticker]
+            for strategy in strategies:
+                strategy.add_event(event)
+
+            if event.tick_type == 'close_day':  # update equity with last price
+                if self.print_events_realtime:
+                    print(f'tick close_day {event.ticker} {event.datetime} {event.price}')
+                self.equity_handler.calculate_equity_day(event.datetime)  # update equity portfolio with close
+
                 
         elif event.event_type == 'timer':
             for strategy in self.total_strategies_with_timer:
@@ -286,16 +301,3 @@ class Portfolio_Constructor(object):
                         strategy.add_event(event)
             except Exception as e:
                 print(f'Error processing webhook {e}')
-
-        elif event.event_type == 'tick' and event.tick_type == 'close_day': # update equity with last price
-            if self.print_events_realtime:
-                print(f'tick close_day {event.ticker} {event.datetime} {event.price}')
-            try:
-                strategies = self.ticker_to_strategies[event.ticker]
-            except:
-                self.ticker_to_strategies[event.ticker] = []  # default empty list
-                strategies = self.ticker_to_strategies[event.ticker]
-            for strategy in strategies:
-                strategy.add_event(event)
-            self.equity_handler.calculate_equity_day(event.datetime) # update equity portfolio with close
-
