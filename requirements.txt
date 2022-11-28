@@ -190,4 +190,3 @@ zmq==0.0.0
 flask
 waitress
 Darwinex-ticks
-openpyxl

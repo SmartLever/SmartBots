@@ -12,7 +12,6 @@ from src.application.services.health_handler import Health_Handler
 from pathlib import Path
 
 
-
 class Portfolio_Constructor(object):
     def __init__(self, conf_portfolio: dict, run_real: bool = False, asset_type: str = None,
                  send_orders_to_broker: bool = False, start_date: dt.datetime = dt.datetime(2022, 1, 1),
@@ -80,9 +79,8 @@ class Portfolio_Constructor(object):
                 self.ticker_to_strategies[ticker] = []
                 self.ticker_to_id_strategies[ticker] = []
             for t in tickers_feeder: # add strategy to all tickers feeder
-                if t not in self.ticker_to_strategies:
-                    self.ticker_to_strategies[t] = []
-                    self.ticker_to_id_strategies[t] = []
+                self.ticker_to_strategies[t] = []
+                self.ticker_to_id_strategies[t] = []
 
             strategy_obj = list_stra[strategy_name](parameters['params'], id_strategy=_id,
                                                     callback=self._callback_orders, set_basic = set_basic)
@@ -158,7 +156,6 @@ class Portfolio_Constructor(object):
     def run(self):
         print(f'running Portfolio {self.name}')
         self.run_simulation()
-        self.equity_handler.get_equities()
         if self.run_real:
             self.run_realtime()
 
