@@ -103,18 +103,24 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
                 month_end = month.end_date + dt.timedelta(days=1)
                 data = lib.read(ticker_name, chunk_range=pd.date_range(month.start_date, month_end))
                 if len(data):
-                    data['event_type'] = 'bar'
-                    if 'multiplier' not in data.columns:
-                        data['multiplier'] = 1 # default value
-                    if 'ask' not in data.columns:
-                        data['ask'] = data['close']
-                    if 'bid' not in data.columns:
-                        data['bid'] = data['close']
-                    if len(data) > 0:
+                    if info['event_type'] == 'bar':
+                        data['event_type'] = 'bar'
+                        if 'multiplier' not in data.columns:
+                            data['multiplier'] = 1 # default value
+                        if 'ask' not in data.columns:
+                            data['ask'] = data['close']
+                        if 'bid' not in data.columns:
+                            data['bid'] = data['close']
+                        if len(data) > 0:
+                            datas.append(data)
+                            if ticker_name not in day:  # fill day with the first day of the month
+                                day[ticker_name] = data.index.min().day - 1
+                                ant_close[ticker_name] = {'close':data.iloc[0].close,'datetime': data.index.min()}
+                    elif info['event_type'] == 'tick':
+                        data['event_type'] = 'tick'
+                        if 'price' not in data.columns:
+                            data['price'] = data['close']
                         datas.append(data)
-                        if ticker_name not in day:  # fill day with the first day of the month
-                            day[ticker_name] = data.index.min().day - 1
-                            ant_close[ticker_name] = {'close':data.iloc[0].close,'datetime':data.index.min()}
 
         today = dt.datetime.utcnow()
         month_end_date = month.end_date
@@ -146,7 +152,10 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
                         yield tick # send close_day event
                     yield bar # send bar event
                     ant_close[bar.ticker] = {'close':bar.close,'datetime': bar.datetime}
-
+                elif event_type == 'tick':
+                    tick = Tick(event_type='tick', tick_type=tuple.tick_type, price=tuple.price,
+                                ticker=tuple.symbol, datetime=tuple.datetime)
+                    yield tick
                     
                 elif event_type == 'timer':
                     timer = Timer(datetime=tuple[0])
