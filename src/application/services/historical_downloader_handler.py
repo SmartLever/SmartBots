@@ -2,19 +2,16 @@
  Doc: https://github.com/man-group/arctic/wiki/Chunkstore
 
  """
-import logging
 import os
 import datetime as dt
 from typing import List
 import pandas as pd
 from src.domain.decorators import log_start_end
-from src.application.services.historical_utils import save_historical, read_historical, clean_symbol
+from src.application.services.historical_utils_handler import save_historical, read_historical, clean_symbol
 from src.application import conf
-from src.infraestructure.crypto.exchange_model import Trading as Trading_Crypto
-from src.infraestructure.mt4.mt4_model import Trading as Trading_Darwinex
+from src.infraestructure.crypto.exchange_handler import Trading as Trading_Crypto
+from src.infraestructure.mt4.mt4_handler import Trading as Trading_Darwinex
 
-
-logger = logging.getLogger(__name__)
 
 
 def save_test_data():
@@ -27,7 +24,6 @@ def save_test_data():
         save_historical(file.split('.')[0], df, name_library='test_historical_1min')
 
 
-@log_start_end(log=logger)
 def historical_downloader(symbols: List[str] = ["EURUSD"], start_date: dt.datetime = dt.datetime(2022, 7, 1),
                           end_date: dt.datetime = dt.datetime.utcnow(),
                           interval: str = '1m', provider: str = 'darwinex', clean_symbols_database: list = []):

@@ -1,6 +1,6 @@
 import datetime as dt
 from src.application import conf
-from src.domain.base_logger import logger
+from src.application.base_logger import logger
 import schedule
 import time
 import threading

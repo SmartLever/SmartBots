@@ -1,6 +1,6 @@
 """ Manage if a services if running and working"""
 from src.infraestructure.brokerMQ import Emit_Events
-from src.domain.events import Health
+from src.domain.models.health import Health
 import datetime as dt
 import pytz
 

@@ -1,10 +1,10 @@
 """ Recieved events orders from Portfolio and send it to the broker or exchange for execution"""
-from src.domain.base_logger import logger
+from src.application.base_logger import logger
 from typing import Dict
 from src.application import conf
 import datetime as dt
-from src.infraestructure.crypto.exchange_model import Trading
-from src.infraestructure.health_handler import Health_Handler
+from src.infraestructure.crypto.exchange_handler import Trading
+from src.application.services.health_handler import Health_Handler
 
 class BrokerCCXT(object):
     """

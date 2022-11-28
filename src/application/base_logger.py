@@ -1,6 +1,5 @@
 import logging
 from os.path import join
-from pathlib import Path
 from src.application import conf
 
 

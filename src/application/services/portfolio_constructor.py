@@ -1,14 +1,14 @@
 import importlib
 from dataclasses import dataclass
 from src.infraestructure.brokerMQ import Emit_Events, receive_events
-from src.application.services import data_reader
+from src.infraestructure import database_handler
 import datetime as dt
 import os
 from src.application import conf
 import pandas as pd
-from src.domain.equity_handler import Equity_Handler
+from src.domain.services.equity_handler import Equity_Handler
 from src.infraestructure.database_handler import Universe
-from src.infraestructure.health_handler import Health_Handler
+from src.application.services.health_handler import Health_Handler
 from pathlib import Path
 
 
@@ -167,19 +167,23 @@ class Portfolio_Constructor(object):
         self.in_real_time = False
         if self.data_sources is not None:
             if self.asset_type in ['crypto', 'financial']:
-                for event in data_reader.load_tickers_and_create_events(self.data_sources,
-                                                                        start_date=self.start_date, end_date=self.end_date):
+                for event in database_handler.load_tickers_and_create_events(self.data_sources,
+                                                                             start_date=self.start_date, end_date=self.end_date,
+                                                                             mongo_host=conf.MONGO_HOST,
+                                                                             mongo_port=conf.MONGO_PORT):
                     self._callback_datafeed(event)
             elif self.asset_type == 'betting':
-                for event in data_reader.load_tickers_and_create_events_betting(self.data_sources,
-                                                                                start_date=self.start_date,
-                                                                                end_date=self.end_date
-                                                                                ):
+                for event in database_handler.load_tickers_and_create_events_betting(self.data_sources,
+                                                                                     start_date=self.start_date,
+                                                                                     end_date=self.end_date,
+                                                                                     mongo_host=conf.MONGO_HOST,
+                                                                                     mongo_port=conf.MONGO_PORT
+                                                                                        ):
                     self._callback_datafeed_betting(event)
             else:
                 raise ValueError(f'Asset type {self.asset_type} not supported')
         elif self.list_events_backtest is not None and len(self.list_events_backtest) > 0:
-            for event in data_reader.load_event_from_list(self.list_events_backtest):
+            for event in database_handler.load_event_from_list(self.list_events_backtest):
                 self._callback_datafeed(event)
         else:
             print('No data sources for backtest')

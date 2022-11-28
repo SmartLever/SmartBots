@@ -6,17 +6,19 @@ import pika
 import json
 import logging
 from src.domain.decorators import log_start_end
-from src.domain.events import Bar, Order, Petition, Health, Tick, Odds, Bet, Positions, Timer, WebHook
+from src.domain.models.trading import bar, tick, timer, order, webhook, petition
+from src.domain.models.betting import odds, bet
+from src.domain.models import health, positions
 from dataclasses import dataclass
 import datetime as dt
 import pytz
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-events_type = {'bar': Bar, 'order': Order, 'petition': Petition,
-               'health': Health, 'tick': Tick, 'odds': Odds, 'bet': Bet,
-               'financial_order': Order, 'positions': Positions, 'order_status': Order,
-               'timer': Timer,'webhook': WebHook}  #define types of events
+events_type = {'bar': bar.Bar, 'order': order.Order, 'petition': petition.Petition,
+               'health': health.Health, 'tick': tick.Tick, 'odds': odds.Odds, 'bet': bet.Bet,
+               'financial_order': order.Order, 'positions': positions.Positions, 'order_status': order. Order,
+               'timer': timer.Timer, 'webhook': webhook.WebHook}  #define types of events
 
 
 logger = logging.getLogger(__name__)

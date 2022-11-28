@@ -9,10 +9,10 @@ from os.path import join
 from pathlib import Path
 from src.infraestructure.betfair.api import Api
 from concurrent.futures import ThreadPoolExecutor, wait
-from src.domain.events import Odds
+from src.domain.models.betting.odds import Odds
 import json
 import threading
-from src.domain.base_logger import logger
+from src.application.base_logger import logger
 from src.domain.abstractions.abstract_trading_betting import Abstract_Trading
 
 BASE_DIR = Path(__file__).resolve().parent

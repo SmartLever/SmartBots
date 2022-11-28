@@ -1,7 +1,7 @@
 from src.infraestructure.database_handler import Universe
 import pandas as pd
 import datetime as dt
-from src.domain.events import Bar
+from src.domain.models.trading.bar import Bar
 from src.application import conf
 
 """Historical related methods

@@ -1,5 +1,5 @@
 from src.domain.abstractions.abstract_strategy import Abstract_Strategy, dataclass
-from src.domain.indicators.simple_average import Simple_Average
+from src.domain.services.indicators.simple_average import Simple_Average
 
 class Simple_Avg_Cross(Abstract_Strategy):
     """ Strategy Simple_Avg_Cross  using  Basic_Strategy as base class

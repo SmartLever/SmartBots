@@ -3,7 +3,7 @@ from src.infraestructure.brokerMQ import receive_events
 import schedule
 import time
 import threading
-if conf.BROKER_FINANCIAL == 'darwinex':
+if conf.BROKER_FINANCIAL in ['ftmo', 'darwinex']:
     from src.application.bots.financial_trading.mt4.broker_mt4 import BrokerMT4 as BrokerFinancial
 
 

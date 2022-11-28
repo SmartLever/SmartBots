@@ -1,12 +1,14 @@
 import datetime as dt
 import pandas as pd
-from src.domain.events import Bar, Tick, Timer
+from src.domain.models.trading.bar import Bar
+from src.domain.models.trading.tick import Tick
+from src.domain.models.trading.timer import Timer
 from src.infraestructure.brokerMQ import Emit_Events
-from src.infraestructure.health_handler import Health_Handler
+from src.application.services.health_handler import Health_Handler
 import pytz
-from src.domain.base_logger import logger
+from src.application.base_logger import logger
 from src.application import conf
-from src.infraestructure.mt4.mt4_model import Trading
+from src.infraestructure.mt4.mt4_handler import Trading
 from typing import Dict
 
 

@@ -8,7 +8,7 @@ from src.infraestructure.database_handler import Universe
 
 def _get_historical_data_test_files_betfair():
     """ Read historical data save in file, normalise it and return it as events"""
-    from src.domain.events import Odds
+    from src.domain.models.betting.odds import Odds
     location = os.path.join(conf.path_modulo, 'betting', 'data', 'test_data')
     files = os.listdir(location)
     data = {}
