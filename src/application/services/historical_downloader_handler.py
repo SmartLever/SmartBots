@@ -32,8 +32,11 @@ def historical_downloader(symbols: List[str] = ["EURUSD"], start_date: dt.dateti
     # Connect to the exchange or broker
     if provider == 'darwinex':
         config_broker = {'DWT_FTP_USER': conf.DWT_FTP_USER, 'DWT_FTP_PASS': conf.DWT_FTP_PASS,
-                         'DWT_FTP_HOSTNAME': conf.DWT_FTP_HOSTNAME, 'DWT_FTP_PORT': conf.DWT_FTP_PORT}
-        trading = Trading_Darwinex(config_broker=config_broker)
+                         'DWT_FTP_HOSTNAME': conf.DWT_FTP_HOSTNAME, 'DWT_FTP_PORT': conf.DWT_FTP_PORT,
+                         'MT4_HOST': conf.MT4_HOST, 'CLIENT_IF': conf.CLIENT_IF, 'PUSH_PORT': conf.PUSH_PORT,
+                         'PULL_PORT_BROKER': conf.PULL_PORT_BROKER, 'SUB_PORT_BROKER': conf.SUB_PORT_BROKER
+                         }
+        trading = Trading_Darwinex(send_orders_status=False, config_broker=config_broker)
     else:
         trading = Trading_Crypto(exchange_or_broker=provider)
 
@@ -72,8 +75,8 @@ if __name__ == '__main__':
     # test
     provider = 'darwinex'
     interval = '1m'
-    symbols = ['AUDNZD', 'GBPUSD']  # List of symbols to download from provider
-    start_date = dt.datetime(2022, 9, 1)  # Start date of data to download
+    symbols = ['AUDNZD', 'GBPUSD', 'EURNOK', 'USDSEK', 'EURJPY']  # List of symbols to download from provider
+    start_date = dt.datetime(2022, 11, 1)  # Start date of data to download
     end_date = dt.datetime.utcnow()  # End date of data to download
     # Interval of data to download,
     historical_downloader(symbols=symbols, start_date=start_date, end_date=dt.datetime.utcnow(),

@@ -87,7 +87,7 @@ def main():
         store.client.delete_library(name_delete)
 
     name_library = 'events_keeper'
-    name_libray_historical = 'darwinex_historical_1min'
+    name_libray_historical = 'darwinex_historical_1m'
     tickers = conf.FINANCIAL_SYMBOLS
     store = Universe(host=conf.MONGO_HOST, port=conf.MONGO_PORT)
     # create scheduler for update db

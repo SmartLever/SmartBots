@@ -51,21 +51,21 @@ class Trading(Abstract_Trading):
         """Initialize class."""
 
         type_service = exchange_or_broker.split('_')[1]
-        self.config_broker = config_broker
         if type_service == 'broker':
-            config_port = {'MT4_HOST': self.config_broker['MT4_HOST'],
-                           'CLIENT_IF': self.config_broker['CLIENT_IF'],
-                           'PUSH_PORT': self.config_broker['PUSH_PORT'],
-                           'PULL_PORT': self.config_broker['PULL_PORT_BROKER'],
-                           'SUB_PORT': self.config_broker['SUB_PORT_BROKER']}
+            config_port = {'MT4_HOST': config_broker['MT4_HOST'],
+                           'CLIENT_IF': config_broker['CLIENT_IF'],
+                           'PUSH_PORT': config_broker['PUSH_PORT'],
+                           'PULL_PORT': config_broker['PULL_PORT_BROKER'],
+                           'SUB_PORT': config_broker['SUB_PORT_BROKER']}
         elif type_service == 'provider':
-            config_port = {'MT4_HOST': self.config_broker['MT4_HOST'],
-                           'CLIENT_IF': self.config_broker['CLIENT_IF'],
-                           'PUSH_PORT': self.config_broker['PUSH_PORT'],
-                           'PULL_PORT': self.config_broker['PULL_PORT_PROVIDER'],
-                           'SUB_PORT': self.config_broker['SUB_PORT_PROVIDER']}
+            config_port = {'MT4_HOST': config_broker['MT4_HOST'],
+                           'CLIENT_IF': config_broker['CLIENT_IF'],
+                           'PUSH_PORT': config_broker['PUSH_PORT'],
+                           'PULL_PORT': config_broker['PULL_PORT_PROVIDER'],
+                           'SUB_PORT': config_broker['SUB_PORT_PROVIDER']}
         self.config_port = config_port
-        super().__init__(send_orders_status=send_orders_status, exchange_or_broker=exchange_or_broker)
+        super().__init__(send_orders_status=send_orders_status, exchange_or_broker=exchange_or_broker,
+                         config_broker=config_broker)
         self.exchange_or_broker = exchange_or_broker.split('_')[0]
         self.dwt = None  # darwinex_ticks with FTP connection
         self.sleep = None

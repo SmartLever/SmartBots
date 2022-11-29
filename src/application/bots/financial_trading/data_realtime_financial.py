@@ -4,7 +4,7 @@ from src.application.base_logger import logger
 import schedule
 import time
 import threading
-if conf.BROKER_FINANCIAL == 'ftmo':
+if conf.BROKER_FINANCIAL == 'darwinex':
     from src.application.bots.financial_trading.mt4.data_mt4 import ProviderMT4 as ProviderFinancial
 
 
