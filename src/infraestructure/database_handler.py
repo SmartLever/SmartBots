@@ -71,7 +71,7 @@ def load_event_from_list(list_events: list):
 
 
 def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.datetime = dt.datetime(2022, 1, 1),
-                                   end_date: dt.datetime = dt.datetime.utcnow()):
+                                   end_date: dt.datetime = dt.datetime.utcnow(),mongo_host: str=None, mongo_port: str=None):
     """ Load data from DB and create Events for consumption by portfolio engine
         symbols_lib_name: list of symbols to load with info about the source of the data
         start_date: start date of the query period
@@ -88,7 +88,7 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
         else:
             raise ValueError('No tickers or ticker in info')
 
-    store = Universe(host=conf.MONGO_HOST, port=conf.MONGO_PORT)  # database handler
+    store = Universe(host=mongo_host, port=mongo_port)  # database handler
     # get_chunk_ranges save
     _ranges_save = []
     for info in symbols_to_read:
@@ -131,11 +131,14 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
                             data['ask'] = data['close']
                         if 'bid' not in data.columns:
                             data['bid'] = data['close']
+                        if 'contract' not in data.columns:
+                            data['contract'] = data['ticker']
                         if len(data) > 0:
                             datas.append(data)
                             if ticker_name not in day:  # fill day with the first day of the month
                                 day[ticker_name] = data.index.min().day - 1
-                                ant_close[ticker_name] = {'close': data.iloc[0].close, 'datetime': data.index.min()}
+                                ant_close[ticker_name] = {'close': data.iloc[0].close, 'datetime': data.index.min(),
+                                                          'contract': data.iloc[0].contract}
                     elif info['event_type'] == 'tick':
                         data['event_type'] = 'tick'
                         if 'price' not in data.columns:
@@ -163,15 +166,26 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
                     bar = Bar(ticker=tuple.symbol, datetime=tuple[0], open=tuple.open, high=tuple.close, low=tuple.low,
                               close=tuple.close, volume=tuple.volume, exchange=tuple.exchange,
                               multiplier=tuple.multiplier,
-                              ask=tuple.ask, bid=tuple.bid)
+                              ask=tuple.ask, bid=tuple.bid, contract=tuple.contract)
 
                     if day[bar.ticker] != bar.datetime.day:  # change of day
                         day[bar.ticker] = bar.datetime.day
                         tick = Tick(event_type='tick', tick_type='close_day', price=ant_close[bar.ticker]['close'],
                                     ticker=bar.ticker, datetime=ant_close[bar.ticker]['datetime'])
                         yield tick  # send close_day event
+                    # check rollover
+                    if bar.contract != ant_close[bar.ticker]['contract']:
+                        roll_old = Tick(event_type='tick', tick_type='rollover_close', price=ant_close[bar.ticker]['close'],
+                                    ticker=bar.ticker,description=ant_close[bar.ticker]['contract'],
+                                    datetime=ant_close[bar.ticker]['datetime'])
+                        yield roll_old
+                        roll_new = Tick(event_type='tick', tick_type='rollover_open', price=bar.close,
+                                        ticker=bar.ticker, description=bar.contract,
+                                        datetime=bar.datetime)
+                        yield roll_new
                     yield bar  # send bar event
-                    ant_close[bar.ticker] = {'close': bar.close, 'datetime': bar.datetime}
+                    ant_close[bar.ticker] = {'close': bar.close, 'datetime': bar.datetime,
+                                             'contract': bar.contract}
                 elif event_type == 'tick':
                     tick = Tick(event_type='tick', tick_type=tuple.tick_type, price=tuple.price,
                                 ticker=tuple.symbol, datetime=tuple.datetime)

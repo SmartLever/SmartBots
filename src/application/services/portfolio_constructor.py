@@ -283,8 +283,13 @@ class Portfolio_Constructor(object):
                 if self.print_events_realtime:
                     print(f'tick close_day {event.ticker} {event.datetime} {event.price}')
                 self.equity_handler.calculate_equity_day(event.datetime)  # update equity portfolio with close
+            elif event.tick_type == 'rollover_close': # close position on old contract
+                for strategy in strategies:
+                    strategy.send_roll(event, type_roll='close')
+            elif event.tick_type == 'rollover_open': # open position on new contract
+                for strategy in strategies:
+                    strategy.send_roll(event, type_roll='open')
 
-                
         elif event.event_type == 'timer':
             for strategy in self.total_strategies_with_timer:
                 strategy.add_timer(event)

@@ -32,6 +32,7 @@ class Simple_Avg_Cross(Abstract_Strategy):
     def add_event(self,  event: dataclass):
         """ Logic of the Strategy goes here """
         if event.event_type == 'bar' and self.inicial_values: # logic with OHLC bars
+            self.active_contract = event.contract
             # Calculate short average
             self.short_avg_value = self.short_period.add(event.close)
             # Calculate long average
@@ -42,7 +43,7 @@ class Simple_Avg_Cross(Abstract_Strategy):
                                 action='buy', type='market',datetime=event.datetime)
             elif self.short_avg_value < self.long_avg_value and self.position > 0:
                 self.send_order(ticker=event.ticker, price=event.close, quantity=self.parameters['quantity'],
-                                action='sell', type='market',datetime=event.datetime)
+                                action='sell', type='market', datetime=event.datetime)
             # Save list of values
             self.saves_values['datetime'].append(event.datetime)
             self.saves_values['short_avg_value'].append(self.short_avg_value)

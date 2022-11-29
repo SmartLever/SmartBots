@@ -26,12 +26,16 @@ class Abstract_Strategy(ABC):
         else:
             self.limit_save_values = 0
         self.ticker = parameters['ticker']
+        self.active_contract = self.ticker
         if 'tickers_to_feeder' not in self.parameters:
             self.tickers_to_feeder = self.ticker  # tickers for feed the strategy by events, default is ticker
-        if 'ticker_broker' in self.parameters:
+        if 'ticker_broker' in self.parameters: # ticker for send orders to broker
             self.ticker_broker = self.parameters['ticker_broker']
+            self.active_contract =  self.ticker_broker
         self.quantity = parameters['quantity']
-        self.contracts = 0  # number of contract in the position
+        self.number_of_contracts = 0  # number of contract in the position
+        self.active_role = False # True if the strategy is on Role mode
+        self.roll_contracts = 0 # number of contracts to roll
         self.id_strategy = id_strategy
         self.type_trading = 'financial' # by default
         self.n_events = 0  # number of events received
@@ -97,30 +101,57 @@ class Abstract_Strategy(ABC):
         """ Return order_id_sender """
         return f'{self.id_strategy}_{self.n_orders}_{dt.datetime.utcnow().strftime("%Y%m%d%H%M%S")}'
 
+
+    def send_roll(self, roll_event: dataclass, type_roll: str='close'):
+        """ Send roll event to the broker """
+        self.active_contract = roll_event.description
+        if type_roll == 'close' and self.active_role is False: # close position on the old contract
+            self.active_role = True
+            self.roll_contracts = self.number_of_contracts
+            quantity = abs(self.roll_contracts)
+            if quantity > 0:
+                action = 'buy'
+                if self.roll_contracts > 0:
+                    action = 'sell'
+        elif type_roll == 'open' and self.active_role: # open position on the new contract
+            self.active_role = False
+            quantity = abs(self.roll_contracts)
+            if quantity > 0:
+                action = 'sell'
+                if self.roll_contracts > 0:
+                    action = 'buy'
+            self.roll_contracts = 0
+        if quantity > 0:
+            self.send_order(ticker=self.ticker, price=roll_event.price, quantity=quantity,
+                                action=action, type='market', datetime=dt.datetime.utcnow())
+
     def send_order(self, price=None, quantity=None, action=None, ticker=None, type='market', datetime=None,
                    match_name=None, ticker_id=None, selection_id=None, cancel_seconds=None, unique_name=None,
-                   selection=None):
+                   selection=None, contract=None):
         """ Send order to exchange or broker """
         if self.type_trading in ['financial', 'crypto']:
             # contract tracking
             if action == 'buy':
-                self.contracts += quantity
+                self.number_of_contracts += quantity
             elif action == 'sell':
-                self.contracts -= quantity
+                self.number_of_contracts -= quantity
             # update position tracking
-            if self.contracts < 0:
+            if self.number_of_contracts < 0:
                 self.position = -1
-            elif self.contracts > 0:
+            elif self.number_of_contracts > 0:
                 self.position = 1
-            elif self.contracts == 0:
+            elif self.number_of_contracts == 0:
                 self.position = 0
+            # if contract is None, name is active_contract
+            if contract is None:
+                contract = self.active_contract
 
             sender_id = self.get_order_id_sender()
             order_id_sender = self.get_order_id_sender()
             order = Order(datetime=datetime,
                           dtime_zone='UTC', ticker=ticker, action=action,
                           price=price, quantity=quantity, type=type, sender_id=sender_id,
-                          order_id_sender=order_id_sender)
+                          order_id_sender=order_id_sender, contract=contract)
             self.callback(order)
             self.n_orders += 1
             if self.limit_save_values > 0:  # save values by limit, this way it is more efficient
