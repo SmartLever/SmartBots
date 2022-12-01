@@ -5,10 +5,10 @@
 from src.application import conf
 from src.application.base_logger import logger
 from typing import Dict
-from src.infraestructure.betfair.betfair_handler import Trading
+from src.infrastructure.betfair.betfair_handler import Trading
 from src.application.services.health_handler import Health_Handler
-from src.infraestructure.brokerMQ import Emit_Events
-from src.infraestructure.betfair.betfair_handler import get_realtime_data
+from src.infrastructure.brokerMQ import Emit_Events
+from src.infrastructure.betfair.betfair_handler import get_realtime_data
 
 
 class ProviderBetfair(object):

@@ -2,7 +2,7 @@
 import requests
 import json
 import time
-from src.infraestructure.brokerMQ import receive_events
+from src.infrastructure.brokerMQ import receive_events
 import schedule
 import threading
 

@@ -9,8 +9,8 @@ from src.application import conf
 from telegram import ReplyKeyboardMarkup, ParseMode
 from telegram.error import NetworkError, TelegramError
 import schedule
-from src.infraestructure.database_handler import Universe
-from src.infraestructure.brokerMQ import Emit_Events
+from src.infrastructure.database_handler import Universe
+from src.infrastructure.brokerMQ import Emit_Events
 from src.domain.models.trading.petition import Petition
 from tabulate import tabulate
 from src.application.base_logger import logger
@@ -22,9 +22,9 @@ else:
     trading_type = conf.TRADING_TYPE_TELEGRAM
 
 if trading_type == 'crypto':
-    from src.infraestructure.crypto.exchange_handler import Trading
+    from src.infrastructure.crypto.exchange_handler import Trading
 elif trading_type == 'betting':
-    from src.infraestructure.api_berfair.betfair_model import Trading
+    from src.infrastructure.betfair.betfair_handler import Trading
 
 reply_keyboard = [['/start']]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)

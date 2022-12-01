@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import os
 from os.path import join
 from pathlib import Path
-from src.infraestructure.betfair.api import Api
+from src.infrastructure.betfair.api import Api
 from concurrent.futures import ThreadPoolExecutor, wait
 from src.domain.models.betting.odds import Odds
 import json

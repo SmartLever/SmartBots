@@ -1,4 +1,4 @@
-from src.infraestructure.database_handler import Universe
+from src.infrastructure.database_handler import Universe
 import pandas as pd
 import datetime as dt
 from src.domain.models.trading.bar import Bar

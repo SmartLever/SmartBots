@@ -1,13 +1,13 @@
 import importlib
 from dataclasses import dataclass
-from src.infraestructure.brokerMQ import Emit_Events, receive_events
-from src.infraestructure import database_handler
+from src.infrastructure.brokerMQ import Emit_Events, receive_events
+from src.infrastructure import database_handler
 import datetime as dt
 import os
 from src.application import conf
 import pandas as pd
 from src.domain.services.equity_handler import Equity_Handler
-from src.infraestructure.database_handler import Universe
+from src.infrastructure.database_handler import Universe
 from src.application.services.health_handler import Health_Handler
 from pathlib import Path
 

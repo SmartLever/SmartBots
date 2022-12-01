@@ -6,8 +6,8 @@ import dataclasses
 def main(_name_library='events_keeper') -> None:
     import time
     time.sleep(10) # wait until MQ and Database are running
-    from src.infraestructure.brokerMQ import receive_events
-    from src.infraestructure.database_handler import Universe
+    from src.infrastructure.brokerMQ import receive_events
+    from src.infrastructure.database_handler import Universe
     import datetime as dt
     from src.application import conf
 

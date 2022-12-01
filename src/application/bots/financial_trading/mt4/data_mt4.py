@@ -3,12 +3,12 @@ import pandas as pd
 from src.domain.models.trading.bar import Bar
 from src.domain.models.trading.tick import Tick
 from src.domain.models.trading.timer import Timer
-from src.infraestructure.brokerMQ import Emit_Events
+from src.infrastructure.brokerMQ import Emit_Events
 from src.application.services.health_handler import Health_Handler
 import pytz
 from src.application.base_logger import logger
 from src.application import conf
-from src.infraestructure.mt4.mt4_handler import Trading
+from src.infrastructure.mt4.mt4_handler import Trading
 from typing import Dict
 
 

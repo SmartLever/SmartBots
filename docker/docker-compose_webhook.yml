@@ -1,0 +1,27 @@
+# docker-compose -f docker-compose_basic.yml --env-file ./compose.env up -d
+# docker compose -f docker-compose_basic.yml --env-file ./compose.env up -d mongoDB  # just one container
+version: '3.9'
+
+services:
+  webhook:
+    build:
+      context: .
+      dockerfile: smartbot-python.dockerfile
+    hostname: webhook
+    ports:
+      - 80:80
+    volumes:
+      - ..:/app
+    depends_on:
+      - rabbitmq
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+    networks:
+      - smartbots_networks
+    command: python -u ./src/application/webhook.py
+
+networks:
+  smartbots_networks:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24

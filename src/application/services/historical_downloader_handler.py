@@ -9,8 +9,8 @@ import pandas as pd
 from src.domain.decorators import log_start_end
 from src.application.services.historical_utils_handler import save_historical, read_historical, clean_symbol
 from src.application import conf
-from src.infraestructure.crypto.exchange_handler import Trading as Trading_Crypto
-from src.infraestructure.mt4.mt4_handler import Trading as Trading_Darwinex
+from src.infrastructure.crypto.exchange_handler import Trading as Trading_Crypto
+from src.infrastructure.mt4.mt4_handler import Trading as Trading_Darwinex
 
 
 

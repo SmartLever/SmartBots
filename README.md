@@ -14,26 +14,23 @@ Lets see how it works.
 ## Project Breakdown
 ```
 SmartBots
-├── bots                           # folder for bots code
-│   ├── bettings_trading           # folder for bots for betting
-│   ├── crypto_trading             # folder for bots for crypto trading
-│   ├── financial_trading          # folder for bots for  trading in financial markets
-│   └── event_keeper.py            # script for saving events.
-├── docker                         # folder for docker files 
-│   ├── docker-compose_basic.yml   # Configuration for basic components
-│   ├── docker-compose_crypto.yml  # Configuration for trading a portfolio of cryptocurrencies
-│   ├── smartbot-python.dockerfile # Docker file      
-│   ├── compose.env                # Configuration file for setting passwords and other variables
-├── smartbots                      # Main folder with the library of the project 
-│   ├── betting                    # folder for librery and helpers for betting
-│   ├── crypo                      # folder for librery and helpers for crypto trading
-│   ├── financial                  # folder for librery and helpers for crypto trading
-├── my_smartbots                   # folder with my own strategies, you should create it and put your strategies here
-│   ├── my_betting_strategies      # folder with betting strategies
-    ├── my_crypto_strategies       # folder with crypto strategies
-    ├── my_financial_strategies    # folder with financial strategies
-├── conf.env                       # Configuration file for setting passwords and other variables
-├── requirements.txt               # requirements for python
+├── src                              # folder for smartbots code
+│   ├── application                  # folder for bots
+│   ├── infrastructure               # folder for librery and helpers for trading
+│   └── domain                       # folder for domain
+├── docker                           # folder for docker files 
+│   ├── docker-compose_basic.yml     # Configuration for basic components
+│   ├── docker-compose_crypto.yml    # Configuration for trading a portfolio of cryptocurrencies
+│   ├── docker-compose_betting.yml   # Configuration for trading a portfolio of betting
+│   ├── docker-compose_financial.yml # Configuration for trading a portfolio of financial
+│   ├── smartbot-python.dockerfile   # Docker file      
+│   ├── compose.env                  # Configuration file for setting passwords and other variables
+├── my_smartbots                     # folder with my own strategies, you should create it and put your strategies here
+│   ├── my_betting_strategies        # folder with betting strategies
+    ├── my_crypto_strategies         # folder with crypto strategies
+    ├── my_financial_strategies      # folder with financial strategies
+├── conf.env                         # Configuration file for setting passwords and other variables
+├── requirements.txt                 # requirements for python
 
 
 ```
@@ -73,7 +70,7 @@ SmartBots
       Wellcome to SmartBots, you can now start coding and testing your strategies and run it in real time.
       
       Backtesting an Strategy Example:
-      On jupyter Lab, go and open to bots/backtesting.ipynb and run the code.
+      On jupyter Lab, go and open to src/application/bots/backtesting.ipynb and run the code.
       
       Live Trading:
       ```bash
@@ -115,12 +112,12 @@ When you have account, Api keys and Certs files you can execute this command:
  cd docker/
  docker compose -f docker-compose_betting.yml --env-file ./compose.env up -d
  ```
-Your Username, Password and Keys should be put in path docker/compose.env and the certs file in smartbots/betting/certs/
+Your Username, Password and Keys should be put in path docker/compose.env and the certs file in src/infrastructure/betfair/certs/
 
 Inside the docker compose we have these services:
  * provider_betting: Connect with the broker and obtain the data that will feed the strategy, in addition to saving in mongodb
  * bot_betting_trading: This service executes the strategy in this case, it is a very simple strategy, feel free to create your own strategy.
-   The strategy configuration is found in this location: bots/betting_trading/config_betting.yaml
+   The strategy configuration is found in this location: src/application/betting_trading/config_betting.yaml
  * broker_betting: This service receives the bet and sends it to the broker and also manages the pending bets.
  * telegram_betting: For this service to work you must obtain a token by following the first part of this manual: https://www.pragnakalp.com/create-telegram-bot-using-python-tutorial-with-examples/ .
    Once you have the token you should put it in compose.env.
@@ -153,7 +150,7 @@ Run this command:
 Inside the docker compose we have these services:
  * data_provider_mt4: This service connects to mt4 and generates minute bars of the symbols we want.
  * bot_financial_trading: This service executes the strategy and receives the bars that feed the strategy, 
-   the configuration of the strategy is found in this location: bots/financial_trading/config_financial.yaml
+   the configuration of the strategy is found in this location: src/application/bots/config_portfolios   /config_financial.yaml
  * broker_mt4: Receive the order and send the order to mt4, in addition to saving balance and active positions.
  * telegram_financial: For this service to work you must obtain a token by following the first part of this manual: https://www.pragnakalp.com/create-telegram-bot-using-python-tutorial-with-examples/ .
    Once you have the token you should put it in compose.env.
@@ -161,7 +158,7 @@ Inside the docker compose we have these services:
    One of the advantages of this service is that if the positions do not match or any service fails, you will receive an alert.
  * update_mongodb_financial: Updates the library where we are saving the data historical, that is, we transfer the data that is being saved in the keeper library to the historical.
 
-You can also simulate the simple_avg_cross as an example or any strategy you want to create. In path bots/ there is a notebook called backtesting,
+You can also simulate the simple_avg_cross as an example or any strategy you want to create. In path  src/application/bots/ there is a notebook called backtesting,
 there you can download data, simulate and see a several of statistical ratios.
 To download the data in this case from darwinex you need to have the credentials that darwinex provides you on its website in the
 historical_ticks section, those credentials should be put in the docker/compose.env configuration file
