@@ -1,13 +1,10 @@
-# SmartBots: Event-Drive Platform.
+# SmartBots: An Event-Driven Platform
 
-Cryptocurrencies, financial markets, and betting markets have never been easier. SmartBots is event-driven platform,
-meaning both backtesting and live trading follow the same path.
+SmartBots is an event-driven platform that makes it easy to trade in cryptocurrencies, financial markets, and betting markets. The platform offers all the tools and architecture you need to build a trading bot, including backtesting and live trading capabilities.
 
-Smartbots is not just a library; it is a platform with all the architecture needed to build a trading bot. 
-Backtesting an idea and getting statistics is just the first step, but it is not enough. 
-You need to be able to monetize it in real time and monitor it.
+With SmartBots, you can quickly and easily test your trading ideas using backtesting, and then easily transition to live trading to monetize your strategies. The platform also provides monitoring tools to help you stay on top of your trades.
 
-SmartBots cover the gaps to make it possible.
+Overall, SmartBots is a comprehensive solution for anyone looking to build and manage their own trading bots.
 
 Lets see how it works.
 
@@ -46,7 +43,7 @@ SmartBots
       ```bash
       cd SmartBots/
       ```
-   
+      
    3. Easy install and running, with Docker-Compose. You do not need to have Python installed on your machine.
       All will be done on the container and configurations and modifications can be done with JupyterLab.
 
@@ -102,40 +99,32 @@ SmartBots
 ### Open a account in Kucoin and get the Keys
 
 ## Smartbots Betting
-At Smartbots Betting you can automate your sports strategy in any market offered by the broker,
-in our case betfair. To make the betting platform work you first need to create an account at www.betfair.com,
-once you have an account you should follow these steps to obtain the necessary keys and certs files at that url:
-https://docs.developer.betfair.com/display/1smk3cen4v3lu3yomq5qye0ni .
+SmartBots Betting is a feature of the SmartBots platform that allows users to automate their sports betting strategies on markets offered by Betfair. In order to use the betting platform, 
+users must first create an account on Betfair and obtain the necessary keys and certificates. Detailed instructions for doing this can be found at the following URL: https://docs.developer.betfair.com/display/1smk3cen4v3lu3yomq5qye0ni.
+Once you have your Betfair account and the necessary keys and certificates, you can use the SmartBots Betting platform to automate your sports betting strategies on Betfair markets. This can help you save time and effort, and potentially increase your profits by executing your strategies more efficiently.
 
-When you have account, Api keys and Certs files you can execute this command:
  ```bash
  cd docker/
  docker compose -f docker-compose_betting.yml --env-file ./compose.env up -d
  ```
 Your Username, Password and Keys should be put in path docker/compose.env and the certs file in src/infrastructure/betfair/certs/
 
-Inside the docker compose we have these services:
- * provider_betting: Connect with the broker and obtain the data that will feed the strategy, in addition to saving in mongodb
+The SmartBots Betting platform uses several Docker services to provide its functionality:
+ * provider_betting: service connects with the Betfair broker to obtain data that will feed your betting strategies, as well as saving this data in a MongoDB database
  * bot_betting_trading: This service executes the strategy in this case, it is a very simple strategy, feel free to create your own strategy.
    The strategy configuration is found in this location: src/application/betting_trading/config_betting.yaml
- * broker_betting: This service receives the bet and sends it to the broker and also manages the pending bets.
- * telegram_betting: For this service to work you must obtain a token by following the first part of this manual: https://www.pragnakalp.com/create-telegram-bot-using-python-tutorial-with-examples/ .
-   Once you have the token you should put it in compose.env.
-   With this service you will be able to control that the previous services work correctly 
-   and your current balance, although many more things could be included, this is just the first version
+ * broker_betting: service receives bets from your strategies and sends them to the Betfair broker, as well as managing pending bets.
+ * telegram_betting: service allows you to control and monitor the other services using the Telegram messaging platform. You can obtain a Telegram token by following the instructions at the following URL: https://www.pragnakalp.com/create-telegram-bot-using-python-tutorial-with-examples/. Once you have the token, 
+                     you can put it in the compose.env file and use the telegram_betting service to control and monitor the SmartBots Betting platform.
 
-You can also simulate the basic strategy as an example or any strategy you want to create. In the path bots/betting_trading folder there is a notebook called backtesting_betting, 
-there you can download some test data, simulate and see a several of statistical ratios.
+In addition to using the platform in a live trading environment, you can also use the backtesting_betting notebook in the bots/betting_trading directory to simulate and test your trading strategies using historical data. 
+This can help you evaluate the performance of your strategies and fine-tune them before using them in live trading.
 
 ## Smartbots Financial
-In smartbots financial you can create and automate any financial strategy and apply it to any asset (cfd, forex, future, shares etc...).
-In this first version of financial smartbots we have developed all the logic to be able to operate with any broker that offers Metatrader 4,
-in our case we have focused on darwinex.
-
-For the financial platform to work, you should first create an account at www.darwinex.com, when you are logged in create an mt4 account in test mode for example.
-Follow the steps to download mt4 on your computer, once you have mt4 installed
-we have followed this tutorial to run this service and prepare it.
-https://github.com/paduel/MT_zeromq_vnc_docker
+SmartBots Financial is a feature of the SmartBots platform that allows users to create and automate financial trading strategies 
+and apply them to various assets such as CFDs, forex, futures, and shares. In the current version of the platform, the financial trading functionality is designed to work with brokers that offer the MetaTrader 4 platform, such as Darwinex.
+To use the SmartBots Financial platform, users must first create an account with a broker that offers MetaTrader 4, such as Darwinex. Once you have an account, you can download and install MetaTrader 4 on your computer. Then, you can follow the instructions at the following URL to set up the platform and prepare it for use: https://github.com/paduel/MT_zeromq_vnc_docker.
+Once you have set up the platform, you can use it to create and automate your financial trading strategies. You can use the platform in a test mode to simulate your strategies and evaluate their performance, or you can use it in live trading mode to execute your strategies and potentially make profits.
 
 When we have mt4 running in docker and with the necessary ports open, we are ready to run docker compose with all services.
 Also keep in mind to put all the variables necessary for the services work correctly
@@ -162,8 +151,6 @@ You can also simulate the simple_avg_cross as an example or any strategy you wan
 there you can download data, simulate and see a several of statistical ratios.
 To download the data in this case from darwinex you need to have the credentials that darwinex provides you on its website in the
 historical_ticks section, those credentials should be put in the docker/compose.env configuration file
-
-
 
 
 ## Infrastructure
