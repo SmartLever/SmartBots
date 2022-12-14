@@ -1,5 +1,5 @@
 # docker-compose -f docker-compose_basic.yml --env-file ./compose.env up -d
-# docker compose -f docker-compose_basic.yml --env-file ./compose.env up -d mongoDB  # just one container
+# docker compose -f docker-compose_webhook.yml --env-file ./compose.env up -d webhook  # just one container
 version: '3.9'
 
 services:
@@ -12,8 +12,6 @@ services:
       - 80:80
     volumes:
       - ..:/app
-    depends_on:
-      - rabbitmq
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:

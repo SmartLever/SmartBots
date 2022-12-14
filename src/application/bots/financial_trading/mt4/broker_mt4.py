@@ -74,7 +74,7 @@ class BrokerMT4(object):
                             # send to close all positions
                             function_to_run = 'close_all_positions'  # get_saved_values_strategy
                             petition_pos = Petition(datetime=now, function_to_run=function_to_run,
-                                                           name_portfolio=self.name_portfolio)
+                                                    name_portfolio=self.name_portfolio)
 
                             print(f'Send close all positions: Percetage Diff {diff_perce}')
                             self.emit.publish_event('petition', petition_pos)
