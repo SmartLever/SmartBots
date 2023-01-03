@@ -80,6 +80,6 @@ if __name__ == '__main__':
     end_date = dt.datetime.utcnow()  # End date of data to download
     # Interval of data to download,
     historical_downloader(symbols=symbols, start_date=start_date, end_date=dt.datetime.utcnow(),
-                          provider=provider, clean_symbols_database=symbols, interval=interval)
+                          provider=provider, interval=interval)
 
 

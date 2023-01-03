@@ -82,7 +82,8 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
     for info in symbols_lib_name:
         if 'tickers' in info:
             for t in info['tickers']:
-                symbols_to_read.append({'ticker': t, 'historical_library': info['historical_library']})
+                symbols_to_read.append({'ticker': t, 'historical_library': info['historical_library'],
+                                        'event_type': info['event_type']})
         elif 'ticker' in info:
             symbols_to_read.append(info)
         else:
@@ -131,7 +132,7 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
                             data['ask'] = data['close']
                         if 'bid' not in data.columns:
                             data['bid'] = data['close']
-                        if 'contract' not in data.columns:
+                        if 'contract' not in data.columns or data['contract'].isnull().values.any():
                             data['contract'] = data['ticker']
                         if len(data) > 0:
                             datas.append(data)

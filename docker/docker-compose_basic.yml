@@ -1,4 +1,4 @@
-# docker compose -f docker-compose_basic.yml --env-file ./compose.env up -d
+# docker-compose -f docker-compose_basic.yml --env-file ./compose.env up -d
 # docker compose -f docker-compose_basic.yml --env-file ./compose.env up -d mongoDB  # just one container
 version: '3.9'
 

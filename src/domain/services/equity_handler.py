@@ -82,7 +82,12 @@ class Equity():
             if abs(_update['quantity']) > 0:
                 self.quantity += _update['quantity']
             #todo: add chage to base currency
-            self.equity_base_currency += var/self.change_to_currency_base
+            if isinstance(self.change_to_currency_base, pd.DataFrame):
+                change_to_currency_base = self.change_to_currency_base[self.change_to_currency_base['date']
+                                                                       <=self.datetime]['close'].values[-1]
+            else:
+                change_to_currency_base = self.change_to_currency_base
+            self.equity_base_currency += var/change_to_currency_base
         elif self.datetime is None:
             self.init = True
             self.datetime = _update['datetime']

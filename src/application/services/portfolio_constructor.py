@@ -68,7 +68,7 @@ class Portfolio_Constructor(object):
             if 'tickers_to_feeder' in parameters['params']:
                 tickers_feeder = parameters['params']['tickers_to_feeder'].split(',')  # set in list
             else:
-                tickers_feeder = ticker
+                tickers_feeder = []
             parameters['params']['tickers_feeder'] = tickers_feeder
             set_basic = False
             if strategy_name == 'Basic_Strategy':
@@ -98,12 +98,12 @@ class Portfolio_Constructor(object):
         """ Load the strategy dinamically"""
         try:
             # check if exist file with the strategy
-            path_to_strategy = os.path.join(conf.path_modulo, 'domain', 'strategies', strategy_name.lower() + '.py')
+            path_to_strategy = os.path.join(conf.path_modulo, 'domain', 'services', 'strategies', strategy_name.lower() + '.py')
             if asset_type == 'betting':
                 strategy_file = 'strategies_betting'
             else:
                 strategy_file = 'strategies'
-            name = f'src.domain.{strategy_file}.{strategy_name.lower()}'
+            name = f'src.domain.services.{strategy_file}.{strategy_name.lower()}'
             if not os.path.exists(path_to_strategy):
                 path_to_strategy = Path(os.path.join(self.path_to_strategies, strategy_name.lower() + '.py'))
                 parent = path_to_strategy.parent.parent.name
