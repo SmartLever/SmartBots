@@ -57,13 +57,16 @@ SmartBots
       Once running, you will have:
       - portainer: Service for managing dockers. Go to your_server_ip:9000 and enter in Docker Portainer, setup the password and you will enter in a Dashboard 
       where you can manage all the dockers. 
+      ![Alt text](./images/portainer.png)
       - mongodb: Mongo database.
       - rabbitmq: service for MQ messages.
       - event_keeper: Service for keeping the events in the database.
       - jupyterlab: service for management the code. Get the Token going  to DashBoard in portainer,
       - localize the jupyterlab container and enter in logs console to copy the token.
         Navigate to your_server_ip:4444 and paste the token. That's all.
-
+        ![Alt text](./images/jupyterlab.jpg)
+        ![Alt text](./images/insert_token.jpg)
+      
       Wellcome to SmartBots, you can now start coding and testing your strategies and run it in real time.
       
       Backtesting an Strategy Example:
@@ -149,6 +152,9 @@ Inside the docker compose we have these services:
 
 You can also simulate the simple_avg_cross as an example or any strategy you want to create. In path  src/application/bots/ there is a notebook called backtesting,
 there you can download data, simulate and see a several of statistical ratios.
+
+   ![Alt text](./images/backtesting.png)
+
 To download the data in this case from darwinex you need to have the credentials that darwinex provides you on its website in the
 historical_ticks section, those credentials should be put in the docker/compose.env configuration file
 
