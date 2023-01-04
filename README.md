@@ -82,11 +82,11 @@ SmartBots
 
           
 
-## Smartbots Financial and Crypto
+## Smartbots Financial 
 SmartBots Financial is a feature of the SmartBots platform that allows users to create and automate financial trading strategies 
-and apply them to various assets such as Crypto, CFDs, forex, futures, and shares. 
+and apply them to various assets such as CFDs, forex, futures, and shares. 
 
-### Financial: In the current version of the platform the financial trading functionality is designed to work with brokers that offer the MetaTrader 4 platform, such as Darwinex.
+In the current version of the platform the financial trading functionality is designed to work with brokers that offer the MetaTrader 4 platform, such as Darwinex.
 
 To use the SmartBots Financial platform, users must first create an account with a broker that offers MetaTrader 4, such as Darwinex. Once you have an account, you can download and install MetaTrader 4 on your computer. Then, you can follow the instructions at the following URL to set up the platform and prepare it for use: https://github.com/paduel/MT_zeromq_vnc_docker.
 
@@ -122,7 +122,9 @@ there you can download data, simulate and see a several of statistical ratios.
 To download the data in this case from darwinex you need to have the credentials that darwinex provides you on its website in the
 historical_ticks section, those credentials should be put in the docker/compose.env configuration file.
 
-### Crypto: In the current version of the platform the crypto trading functionality is designed to work with more than 115 exchages.
+## Smartbots Crypto 
+SmartBots Crypto is a feature of the SmartBots platform that allows users to create and automate  trading strategies 
+and apply them with more than 115 exchages. 
 Smartbots follows the implementation of ccxt, so you can use all the exchanges that ccxt supports.
 Please, go to https://github.com/ccxt/ccxt/wiki/Manual#markets 
 
@@ -135,7 +137,7 @@ A short List:
 * Coinbase Pro
 .... and more.
 
-Run this command:
+Run this command for real-time:
  ```bash
  cd docker/
  docker compose -f docker-compose_crypto.yml --env-file ./compose.env up -d
