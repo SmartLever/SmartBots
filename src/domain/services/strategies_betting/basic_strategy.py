@@ -31,10 +31,11 @@ class Basic_Strategy(Abstract_Strategy):
 
     def _time_conditions(self, odds: dataclass):
         """ Check if the event is between the times parameters"""
-        from_init = (odds.datatime_latest_taken - odds.datetime_real_off).seconds / 60
-        # check range time
-        if self.init_time <= from_init <= self.end_time:
-            return True
+        if odds.datatime_latest_taken >  odds.datetime_real_off:
+            from_init = (odds.datatime_latest_taken - odds.datetime_real_off).seconds / 60
+            # check range time
+            if self.init_time <= from_init <= self.end_time:
+                return True
         return False
 
     def check_control_unique(self, unique: str):

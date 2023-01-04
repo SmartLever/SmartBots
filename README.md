@@ -1,3 +1,4 @@
+![Alt text](./images/logo2.png)
 # SmartBots: An Event-Driven Platform
 
 SmartBots is an event-driven platform that makes it easy to trade in cryptocurrencies, financial markets, and betting markets. The platform offers all the tools and architecture you need to build a trading bot, including backtesting and live trading capabilities.
@@ -168,6 +169,9 @@ The SmartBots Betting platform uses several Docker services to provide its funct
 In addition to using the platform in a live trading environment, you can also use the backtesting_betting notebook in the bots/betting_trading directory to simulate and test your trading strategies using historical data. 
 This can help you evaluate the performance of your strategies and fine-tune them before using them in live trading.
 
+In the image below you can see the graph of a betting strategy that uses smartbots.
+
+![Alt text](./images/betting.png)
 
 ## Importants components:
 ### MongoDB docker: Historical data

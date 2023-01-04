@@ -9,7 +9,7 @@ from src.infrastructure.database_handler import Universe
 def _get_historical_data_test_files_betfair():
     """ Read historical data save in file, normalise it and return it as events"""
     from src.domain.models.betting.odds import Odds
-    location = os.path.join(conf.path_modulo, 'betting', 'data', 'test_data')
+    location = os.path.join(conf.path_modulo, 'application', 'data', 'data_betting')
     files = os.listdir(location)
     data = {}
 
@@ -41,8 +41,8 @@ def _get_historical_data_test_files_betfair():
         df['datetime_real_off'] = pd.to_datetime(df['datetime_real_off'], unit='s')
         df['datetime_scheduled_off'] = pd.to_datetime(df['datetime_scheduled_off'], unit='s')
         df.drop(['datetime'], axis=1, inplace=True)
-        unique_name = df['match_name'].values[0] + '_' + df.unique_id_ticker.values[0] + '_' + str(
-            df.selection_id.values[0])
+        unique_name = df['match_name'].values[0] + '_' + df.ticker.values[0] + '_' + \
+                      str(df.selection_id.values[0]) + '_' + str(int(df['yyyymmdd'].values[0]))
         df['unique_name'] = unique_name
         # Create events Odds
         for tp in df.itertuples():
@@ -67,7 +67,8 @@ def _get_historical_data_test_files_betfair():
                                trainer_name=tp.trainer_name, sex_type=tp.sex_type,
                                sort_priority=tp.sort_priority, sports_id=tp.sports_id,
                                status=tp.status, status_selection=tp.status_selection,
-                               volume_matched=tp.volume_matched, win_flag=tp.win_flag))
+                               volume_matched=tp.volume_matched, win_flag=tp.win_flag,
+                               datatime_latest_taken=tp.Index, datetime_real_off=tp.datetime_real_off))
 
         df_save = pd.DataFrame({'odds': events}, index=df.index)
         df_save.index.name = 'date'

@@ -101,6 +101,8 @@ class Portfolio_Constructor(object):
             path_to_strategy = os.path.join(conf.path_modulo, 'domain', 'services', 'strategies', strategy_name.lower() + '.py')
             if asset_type == 'betting':
                 strategy_file = 'strategies_betting'
+                path_to_strategy = os.path.join(conf.path_modulo, 'domain', 'services', 'strategies_betting',
+                                                strategy_name.lower() + '.py')
             else:
                 strategy_file = 'strategies'
             name = f'src.domain.services.{strategy_file}.{strategy_name.lower()}'
@@ -238,6 +240,7 @@ class Portfolio_Constructor(object):
          recieve dict with key as topic and value as event"""
         if self.in_real_time:
             self.health_handler.check()
+        event = event.odds
         if event.event_type == 'odds':
             # save result
             if event.last_row == 1:
