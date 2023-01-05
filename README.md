@@ -179,12 +179,7 @@ MongoDB is used to store historical data, here more info: https://github.com/man
 For large historical data it use as defaul months chunks, here docs: https://github.com/man-group/arctic/wiki/Chunkstore
 
 
-##Other Info
-
-### Updating the code of the repository changing local files
-'''git fetch
-   git reset --hard HEAD
-   git merge '@{u}' '''
+## Other Info
 
 ### Subscribe to our news!
     https://smartlever.substack.com/
