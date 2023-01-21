@@ -41,7 +41,11 @@ class CallBack_Handler(object):
 
     def callback_recieved(self, ch, method, properties, body):
         """ Callback function for realtime data"""
-        event = events_type[method.routing_key].from_json(body)
+        routing_key = method.routing_key
+        # check if order type
+        if '_order' in routing_key:
+            routing_key = 'order'
+        event = events_type[routing_key].from_json(body)
         if 'datetime' in event.__dict__:
             if event.datetime is not None:
                 _dtime = event.datetime

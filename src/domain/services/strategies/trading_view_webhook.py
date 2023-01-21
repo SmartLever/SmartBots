@@ -40,37 +40,39 @@ class Trading_View_Webhook(Abstract_Strategy):
         """ Logic of the Strategy goes here """
         name = event.msg["name"]
         if event.event_type == 'webhook' and name == self.name: # logic for webhook messages
-            market_position = event.msg["market_position"]
-            if self.quantity_from_hook > 0: # tradingview webhook message has the quantity
-                quantity = abs(event.msg["contracts"])
-                action = event.msg["action"]
-                price = event.msg["price"]
-                self.contracts = quantity
-            else: # quantity manage by the strategy
-                quantity = self.quantity
-                price = event.msg["price"]
-                if market_position == 'long':
-                    action = 'buy'
-                    quantity = quantity - self.contracts
-                elif market_position == 'short':
-                    action = 'sell'
-                    quantity = quantity + self.contracts
-                elif market_position == 'flat':
-                    if self.position == 1:
-                        action = 'sell'
-                        self.position = 1
-                        quantity = self.contracts
-                    elif self.position == -1:
+            if self.ticker == event.msg["ticker"]:
+                market_position = event.msg["market_position"]
+                prev_market_position = event.msg["prev_market_position"]
+                if self.quantity_from_hook > 0: # tradingview webhook message has the quantity
+                    quantity = abs(event.msg["contracts"])
+                    action = event.msg["action"]
+                    price = event.msg["price"]
+                    self.contracts = quantity
+                else: # quantity manage by the strategy
+                    quantity = self.quantity
+                    self.contracts = quantity
+                    price = event.msg["price"]
+                    if market_position == 'long':
                         action = 'buy'
+                        self.position = 1
+                    elif market_position == 'short':
+                        action = 'sell'
                         self.position = -1
-                        quantity = -self.contracts
-            # send order
-            self.send_order(ticker=self.ticker_broker, price=price, quantity=quantity,
-                            action=action, type='market', datetime=dt.datetime.utcnow())
+                    elif market_position == 'flat':
+                        if prev_market_position == 'long':
+                            action = 'sell'
+                            self.position = 0
+                        elif prev_market_position == 'short':
+                            action = 'buy'
+                            self.position = 0
 
-            # Save list of values
-            self.saves_values['datetime'].append(event.datetime)
-            self.saves_values['position'].append(self.position)
-            self.saves_values['close'].append(price)
-            self.saves_values['contracts'].append(self.contracts)
+                # send order
+                self.send_order(ticker=self.ticker_broker, price=price, quantity=quantity,
+                                action=action, type='market', datetime=dt.datetime.utcnow())
+
+                # Save list of values
+                self.saves_values['datetime'].append(event.datetime)
+                self.saves_values['position'].append(self.position)
+                self.saves_values['close'].append(price)
+                self.saves_values['contracts'].append(self.contracts)
 
