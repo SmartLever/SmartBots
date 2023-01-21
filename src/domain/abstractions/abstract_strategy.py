@@ -129,6 +129,8 @@ class Abstract_Strategy(ABC):
                    match_name=None, ticker_id=None, selection_id=None, cancel_seconds=None, unique_name=None,
                    selection=None, contract=None):
         """ Send order to exchange or broker """
+        action = action.lower()
+        type = type.lower()
         if self.type_trading in ['financial', 'crypto']:
             # contract tracking
             if action == 'buy':
