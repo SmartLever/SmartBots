@@ -226,7 +226,6 @@ class Portfolio_Constructor(object):
             self.orders.append(order_or_bet) # append the order to the list of orders
             if self.in_real_time and self.send_orders_to_broker:
                 print(order_or_bet)
-                print(conf.ROUTING_KEY)
                 self.emit_orders.publish_event(conf.ROUTING_KEY, order_or_bet)
         elif self.asset_type == 'betting':
             self.bets.append(order_or_bet)
