@@ -226,6 +226,7 @@ class Portfolio_Constructor(object):
             self.orders.append(order_or_bet) # append the order to the list of orders
             if self.in_real_time and self.send_orders_to_broker:
                 print(order_or_bet)
+                print(conf.ROUTING_KEY)
                 self.emit_orders.publish_event(conf.ROUTING_KEY, order_or_bet)
         elif self.asset_type == 'betting':
             self.bets.append(order_or_bet)
@@ -263,13 +264,13 @@ class Portfolio_Constructor(object):
         if self.in_real_time:
             self.health_handler.check()
         if event.event_type == 'bar':  # bar event, most common.
-            if self.print_events_realtime:
-                print(f'bar {event.ticker} {event.datetime} {event.close}')
             try:
                 strategies = self.ticker_to_strategies[event.ticker]
             except:
                 self.ticker_to_strategies[event.ticker] = []  # default empty list
                 strategies = self.ticker_to_strategies[event.ticker]
+            if self.print_events_realtime and strategies:
+                print(f'bar {event.ticker} {event.datetime} {event.close}')
             for strategy in strategies:
                 strategy.add_event(event)
 
