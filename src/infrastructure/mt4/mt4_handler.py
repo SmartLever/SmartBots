@@ -190,6 +190,7 @@ class Trading(Abstract_Trading):
 
             try:
                 # Saving order_id en order
+                print(respond_order)
                 order.order_id_receiver = str(respond_order['_ticket'])
                 if respond_order['_action'] == 'CLOSE':
                     logger.info(f'order closes successfully in ticker: {order.ticker} quantity: {order.quantity}'

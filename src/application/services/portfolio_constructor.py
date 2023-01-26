@@ -263,13 +263,13 @@ class Portfolio_Constructor(object):
         if self.in_real_time:
             self.health_handler.check()
         if event.event_type == 'bar':  # bar event, most common.
-            if self.print_events_realtime:
-                print(f'bar {event.ticker} {event.datetime} {event.close}')
             try:
                 strategies = self.ticker_to_strategies[event.ticker]
             except:
                 self.ticker_to_strategies[event.ticker] = []  # default empty list
                 strategies = self.ticker_to_strategies[event.ticker]
+            if self.print_events_realtime and strategies:
+                print(f'bar {event.ticker} {event.datetime} {event.close}')
             for strategy in strategies:
                 strategy.add_event(event)
 

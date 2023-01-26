@@ -53,7 +53,16 @@ WEBHOOKS['TRADINGVIEW_KEY'] = os.getenv("WEBHOOKS_TRADINGVIEW_KEY") or "REPLACE_
 TRADING_TYPE_TELEGRAM = os.getenv("TRADING_TYPE_TELEGRAM") or "REPLACE_ME"
 
 # channel where orders are received just for financial and crypto
-ROUTING_KEY = os.getenv("ROUTING_KEY") or "order"
+if 'ROUTING_KEY' in os.environ: #docker
+    ROUTING_KEY = os.environ['ROUTING_KEY']
+else:
+    ROUTING_KEY = os.getenv("ROUTING_KEY") or "order"
+
+# config of porfolio
+if 'CONF_PORTFOLIO' in os.environ: #docker
+    CONF_PORTFOLIO = os.environ['CONF_PORTFOLIO']
+else:
+    CONF_PORTFOLIO = os.getenv("CONF_PORTFOLIO") or "config_financial"
 
 ##################################################
 
@@ -91,7 +100,10 @@ SEND_ORDERS_BROKER_MT4 = int(os.getenv("SEND_ORDERS_BROKER_MT4")) or 0
 TOKEN_TELEGRAM_FINANCIAL = os.getenv("TOKEN_TELEGRAM_FINANCIAL") or "REPLACE_ME"
 
 # Info Darwinex
-MT4_HOST = os.getenv("MT4_HOST") or "REPLACE_ME"
+if 'MT4_HOST' in os.environ: #docker
+    MT4_HOST = os.environ['MT4_HOST']
+else:
+    MT4_HOST = os.getenv("MT4_HOST") or "REPLACE_ME"
 CLIENT_IF = os.getenv("CLIENT_IF") or "REPLACE_ME"
 PUSH_PORT = os.getenv("PUSH_PORT") or "REPLACE_ME"
 PULL_PORT_PROVIDER = os.getenv("PULL_PORT_PROVIDER") or "REPLACE_ME"
@@ -104,8 +116,15 @@ if '[' in FINANCIAL_SYMBOLS:
     FINANCIAL_SYMBOLS = ast.literal_eval(FINANCIAL_SYMBOLS)
 
 PERCENTAGE_CLOSE_POSITIONS_MT4 = os.getenv("PERCENTAGE_CLOSE_POSITIONS_MT4") or None
-NAME_FINANCIAL_PORTOFOLIO = os.getenv("NAME_FINANCIAL_PORTOFOLIO") or "REPLACE_ME"  # Name of the Portfolio which is running in production
-BROKER_FINANCIAL = os.getenv("BROKER_FINANCIAL") or "REPLACE_ME"  # Name of the broker-mt4, you are going to connect
+# Name of the Portfolio which is running in production
+if 'NAME_FINANCIAL_PORTOFOLIO' in os.environ: #docker
+    NAME_FINANCIAL_PORTOFOLIO = os.environ['NAME_FINANCIAL_PORTOFOLIO']
+else:
+    NAME_FINANCIAL_PORTOFOLIO = os.getenv("NAME_FINANCIAL_PORTOFOLIO") or "NAME_FINANCIAL_PORTOFOLIO"
+if 'BROKER_FINANCIAL' in os.environ:  # Name of the broker-mt4, you are going to connect
+    BROKER_FINANCIAL = os.environ['BROKER_FINANCIAL']
+else:
+    BROKER_FINANCIAL = os.getenv("BROKER_FINANCIAL") or "REPLACE_ME"
 LIST_SERVICES_FINANCIAL = os.getenv("LIST_SERVICES_FINANCIAL") or "REPLACE_ME"
 # is a list
 if '[' in LIST_SERVICES_FINANCIAL:

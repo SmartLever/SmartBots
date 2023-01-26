@@ -18,8 +18,6 @@ keys = [conf.WEBHOOKS[k] for k in conf.WEBHOOKS.keys() if len(conf.WEBHOOKS[k]) 
 # Start publishing events in MQ
 config_brokermq = {'host': conf.RABBITMQ_HOST, 'port': conf.RABBITMQ_PORT, 'user': conf.RABBITMQ_USER,
                    'password': conf.RABBITMQ_PASSWORD}
-emit = Emit_Events(config=config_brokermq)
-
 
 def get_datetime():
     timestamp = dt.datetime.utcnow()
@@ -41,6 +39,7 @@ def webhook():
                                     datetime=dtime, ticker=ticker)
                 print("[X]", dtime, "Alert Received")
                 print(hook)
+                emit = Emit_Events(config=config_brokermq)
                 emit.publish_event("webhook", hook)
                 return "Sent alert", 200
 
