@@ -126,6 +126,8 @@ def load_tickers_and_create_events(symbols_lib_name: list, start_date: dt.dateti
                 if len(data):
                     if info['event_type'] == 'bar':
                         data['event_type'] = 'bar'
+                        if 'ticker' not in data.columns:
+                            data['ticker'] = ticker_name
                         if 'multiplier' not in data.columns:
                             data['multiplier'] = 1  # default value
                         if 'ask' not in data.columns:

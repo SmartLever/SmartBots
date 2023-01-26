@@ -197,7 +197,12 @@ class Abstract_Strategy(ABC):
             self.saves_values['datetime'].append(event.datetime)
             self.saves_values['position'].append(self.position)
             self.saves_values['close'].append(event.close)
+        elif event.event_type == 'tick' and event.tick_type == 'close_day':
+            """Logic of the Strategy goes here for calculate data at the end of the day if it was necessary"""
+            # update equity strategy
+            self.update_equity(event)
 
         else:
             pass
+
 
