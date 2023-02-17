@@ -11,10 +11,12 @@ Strategies_Load_From:
 
 Strategies:
   - id: 1
-    strategy: RSI_Chatgpt
+    strategy: TrendFollowing_ChatGpt
     params:
       ticker: BTC-USDT
-      period: 14
+      pattern_length: 3
+      short_ma_period: 50
+      long_ma_period: 200
       quantity: 1
       limit_save_values: 1000
       point_value: 1
