@@ -14,7 +14,7 @@
     to produce orders that will send to trading.
     """
 import datetime as dt
-
+from src.application import conf
 
 def main(run_real: bool = False, send_orders_to_broker: bool = True,
          start_date: dt.datetime = dt.datetime(2022, 7, 1),conf_portfolio: str=None ,
@@ -23,7 +23,6 @@ def main(run_real: bool = False, send_orders_to_broker: bool = True,
     from src.domain.config_helper import get_config
     import os
     import pandas as pd
-    from src.application import conf
     from src.application.services.portfolio_constructor import Portfolio_Constructor
     path = os.path.abspath(__file__)
     path_bot = os.path.dirname(path)  # path to the module
@@ -59,8 +58,8 @@ def main(run_real: bool = False, send_orders_to_broker: bool = True,
 
 if __name__ == '__main__':
     run_real = False
-    asset_type = 'financial'
-    conf_portfolio = 'config_crypto'
+    asset_type = conf.ASSET_TYPE
+    conf_portfolio = conf.CONF_PORTFOLIO
     start_date = dt.datetime(2022, 1, 1)
     main(run_real=run_real, send_orders_to_broker=True, start_date=start_date,
          conf_portfolio=conf_portfolio,asset_type=asset_type)

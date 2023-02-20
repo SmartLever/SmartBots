@@ -64,6 +64,12 @@ if 'CONF_PORTFOLIO' in os.environ: #docker
 else:
     CONF_PORTFOLIO = os.getenv("CONF_PORTFOLIO") or "config_financial"
 
+# asset_type
+if 'ASSET_TYPE' in os.environ: #docker
+    ASSET_TYPE = os.environ['ASSET_TYPE']
+else:
+    ASSET_TYPE = os.getenv("ASSET_TYPE") or "financial"
+
 ##################################################
 
 
