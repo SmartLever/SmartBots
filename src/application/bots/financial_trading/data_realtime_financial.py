@@ -6,6 +6,8 @@ import time
 import threading
 if conf.BROKER_FINANCIAL == 'darwinex':
     from src.application.bots.financial_trading.mt4.data_mt4 import ProviderMT4 as ProviderFinancial
+elif conf.BROKER_FINANCIAL == 'ib':
+    from src.application.bots.financial_trading.ib.data_ib import ProviderIB as ProviderFinancial
 
 
 def main():
@@ -32,8 +34,8 @@ def main():
             schedule.run_pending()
             time.sleep(1)
 
-    print(f'* Starting MT4 provider at {dt.datetime.utcnow()}')
-    logger.info(f'Starting MT4 provider at {dt.datetime.utcnow()}')
+    print(f'* Starting provider {conf.BROKER_FINANCIAL} at {dt.datetime.utcnow()}')
+    logger.info(f'Starting provider {conf.BROKER_FINANCIAL} at {dt.datetime.utcnow()}')
     symbols = conf.FINANCIAL_SYMBOLS
     # Log event health of the service
     config_brokermq = {'host': conf.RABBITMQ_HOST, 'port': conf.RABBITMQ_PORT, 'user': conf.RABBITMQ_USER,

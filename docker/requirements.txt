@@ -191,3 +191,4 @@ yfinance==0.1.77
 zipp==3.9.0
 zmq==0.0.0
 xlrd==1.2.0
+ib-insync==0.9.71

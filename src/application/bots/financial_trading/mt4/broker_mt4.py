@@ -19,7 +19,7 @@ class BrokerMT4(object):
 
     """
 
-    def __init__(self, config_brokermq: Dict = {}, send_orders_status=True, exchange_or_broker='darwinex'):
+    def __init__(self, config_brokermq: Dict = {}, send_orders_status=True, exchange_or_broker='darwinex', account=''):
         self.config_brokermq = config_brokermq
         self.config_broker = {'MT4_HOST': conf.MT4_HOST, 'CLIENT_IF': conf.CLIENT_IF, 'PUSH_PORT': conf.PUSH_PORT,
                               'PULL_PORT_BROKER': conf.PULL_PORT_BROKER, 'SUB_PORT_BROKER': conf.SUB_PORT_BROKER}
@@ -27,7 +27,7 @@ class BrokerMT4(object):
                                config_broker=self.config_broker, config_brokermq=self.config_brokermq)
         # Log event health of the service
         self.health_handler = Health_Handler(n_check=6,
-                                             name_service='broker_mt4',
+                                             name_service=f'broker_mt4_{exchange_or_broker}',
                                              config=self.config_brokermq)
         self.emit = Emit_Events(config=config_brokermq)
         self.name_portfolio = conf.NAME_FINANCIAL_PORTOFOLIO

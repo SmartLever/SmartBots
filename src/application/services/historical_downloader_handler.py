@@ -11,7 +11,7 @@ from src.application.services.historical_utils_handler import save_historical, r
 from src.application import conf
 from src.infrastructure.crypto.exchange_handler import Trading as Trading_Crypto
 from src.infrastructure.mt4.mt4_handler import Trading as Trading_Darwinex
-
+from src.infrastructure.ib.ib_handler import Trading as Trading_ib
 
 
 def save_test_data():
@@ -26,7 +26,8 @@ def save_test_data():
 
 def historical_downloader(symbols: List[str] = ["EURUSD"], start_date: dt.datetime = dt.datetime(2022, 7, 1),
                           end_date: dt.datetime = dt.datetime.utcnow(),
-                          interval: str = '1m', provider: str = 'darwinex', clean_symbols_database: list = []):
+                          interval: str = '1m', provider: str = 'darwinex', clean_symbols_database: list = [],
+                          unit=''):
     """ Main function """
     name_library = f'{provider}_historical_{interval}'
     # Connect to the exchange or broker
@@ -37,6 +38,13 @@ def historical_downloader(symbols: List[str] = ["EURUSD"], start_date: dt.dateti
                          'PULL_PORT_BROKER': conf.PULL_PORT_BROKER, 'SUB_PORT_BROKER': conf.SUB_PORT_BROKER
                          }
         trading = Trading_Darwinex(send_orders_status=False, config_broker=config_broker)
+    elif provider == 'ib':
+        config_broker = {'HOST_IB': conf.HOST_IB, 'PORT_IB': int(conf.PORT_IB),
+                         'CLIENT_IB': 99}
+        path_ticker = os.path.join(conf.path_to_principal, 'ticker_info_ib.csv')
+        trading = Trading_ib(send_orders_status=False, exchange_or_broker=f'{provider}_broker',
+                             config_broker=config_broker,
+                             path_ticker=path_ticker)
     else:
         trading = Trading_Crypto(exchange_or_broker=provider)
 
@@ -53,8 +61,12 @@ def historical_downloader(symbols: List[str] = ["EURUSD"], start_date: dt.dateti
             start_date = data_last.index.max() + dt.timedelta(minutes=1)
             start_date = start_date.to_pydatetime()
         # load from provider
-        data = trading.get_historical_data(timeframe=interval, limit=1500, start_date=start_date,
-                                           end_date=end_date, symbols=[symbol])[symbol]
+        if provider == 'ib':
+            data = trading.get_historical_data(timeframe=interval, start_date=start_date,
+                                               end_date=end_date, symbols=symbol, unit=unit)
+        else:
+            data = trading.get_historical_data(timeframe=interval, limit=1500, start_date=start_date,
+                                               end_date=end_date, symbols=[symbol])[symbol]
 
         # change types to float for columns with numeric values (in this case all columns)
         for c in data.columns:
@@ -73,13 +85,14 @@ def historical_downloader(symbols: List[str] = ["EURUSD"], start_date: dt.dateti
 
 if __name__ == '__main__':
     # test
-    provider = 'darwinex'
-    interval = '1m'
-    symbols = ['AUDNZD', 'GBPUSD', 'EURNOK', 'USDSEK', 'EURJPY']  # List of symbols to download from provider
-    start_date = dt.datetime(2022, 11, 1)  # Start date of data to download
+    provider = 'ib'  # ib, darwinex
+    interval = '1'  # darwinex: 1m , ib : 1
+    unit = 'hour'  # just for ib: hour, min, day
+    symbols = ['AUDNZD']  # List of symbols to download from provider
+    start_date = dt.datetime(2023, 2, 1)  # Start date of data to download
     end_date = dt.datetime.utcnow()  # End date of data to download
     # Interval of data to download,
     historical_downloader(symbols=symbols, start_date=start_date, end_date=dt.datetime.utcnow(),
-                          provider=provider, interval=interval)
+                          provider=provider, interval=interval, unit=unit)
 
 

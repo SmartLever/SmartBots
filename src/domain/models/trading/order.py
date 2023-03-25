@@ -28,8 +28,11 @@ class Order(Base):
     exchange: str = None
     order_id_sender: str = None
     order_id_receiver: str = None
+    trace_id: str = None
     datetime_in: dt.datetime = field(default=None, metadata=dataclass_json_config)
     sender_id: int = None  # id of sender, strategies id
     portfolio_name: str = None  # name of portfolio
     error_description: str = None  # error description if error
     action_mt4: str = None  # close_trade, close_partial, normal
+    duration: str = 'DAY'
+    account: str = ''  # name of account

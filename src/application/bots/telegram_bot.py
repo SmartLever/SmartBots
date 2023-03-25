@@ -208,6 +208,8 @@ def positions(update, context):
             lib_keeper = store.get_library(name_library)
             data = lib_keeper.read(symbol_positions).data
             broker_pos = data.positions
+            if conf.BROKER_FINANCIAL == 'ib':
+                broker_pos = broker_pos[account]
             trades = []
             for trade in agregate:
                 real = 0
@@ -391,6 +393,8 @@ def callback_control():
                     lib_keeper = store.get_library(name_library)
                     data = lib_keeper.read(symbol_positions).data
                     broker_pos = data.positions
+                    if conf.BROKER_FINANCIAL == 'ib':
+                        broker_pos = broker_pos[account]
                 elif trading_type == 'crypto':
                     list_currency = [c.split('-')[0] for c in agregate.keys()]
                     _broker_pos = trading.get_accounts()
@@ -449,13 +453,14 @@ def schedule_callback_control():
 
 def main():
     global LIST_OF_ADMINS, updater, counters_callback, name_library, _name_library, lib_keeper, store, list_services
-    global lib_petitions, emiter, name_portfolio, symbol_positions, symbols, initial_balance, trading
+    global lib_petitions, emiter, name_portfolio, symbol_positions, symbols, initial_balance, trading, account
 
     # initialize these variables to none
     name_portfolio = None
     symbol_positions = None
     symbols = None
     trading = None
+    account = None
     initial_balance = 0
     counters_callback = {'health': 0, 'positions': 0}
     if trading_type == 'financial':
@@ -467,7 +472,11 @@ def main():
         # name of portfolio which we want to know simulated positions
         name_portfolio = conf.NAME_FINANCIAL_PORTOFOLIO
         # symbol to read real positions from mongo
-        symbol_positions = f'{conf.BROKER_FINANCIAL}_mt4_positions'
+        if conf.BROKER_FINANCIAL == 'darwinex':
+            symbol_positions = f'{conf.BROKER_FINANCIAL}_mt4_positions'
+        elif conf.BROKER_FINANCIAL == 'ib':
+            symbol_positions = f'real_positions_{conf.BROKER_FINANCIAL}'
+            account = conf.ACCOUNT_IB
         # symbols to get price
         symbols = conf.FINANCIAL_SYMBOLS
 
@@ -479,6 +488,7 @@ def main():
         list_services = conf.LIST_SERVICES_CRYPTO
         initial_balance = conf.INITIAL_BALANCE_CRYPTO
         symbols = conf.CRYPTO_SYMBOLS
+        name_portfolio = conf.NAME_CRYPTO_PORTFOLIO
 
     elif trading_type == 'betting':
         # Parameters

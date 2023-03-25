@@ -10,7 +10,6 @@ class Abstract_Trading(ABC):
     def __init__(self, send_orders_status: bool = True, exchange_or_broker='', config_broker: Dict = {},
                  config_brokermq: Dict = {}):
         self.exchange_or_broker = exchange_or_broker
-        self.client = self.get_client()
         self.config_broker = config_broker
         self.config_brokermq = config_brokermq
         # variables of orders status
@@ -18,6 +17,7 @@ class Abstract_Trading(ABC):
         self.dict_cancel_and_close_orders = {}  # key is the order_id_sender, closed or cancelled order in the broker
         self.dict_from_strategies = {}  # key is order_id_sender from strategies, before send to broker or with error
         self.send_orders_status = send_orders_status
+        self.client = self.get_client()
 
     def get_client(self):
         # to be implemented in the child class

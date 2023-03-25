@@ -1,5 +1,5 @@
 # docker compose -f docker-compose_financial.yml --env-file ./compose.env up -d
-# docker compose -f docker-compose_financial.yml --env-file ./compose.env up -d telegram_financial
+# docker compose -f docker-compose_financial.yml --env-file ./compose.env up -d bot_financial_trading
 version: '3.9'
 
 services:
@@ -12,6 +12,21 @@ services:
       - ..:/app
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
+      BROKER_FINANCIAL: darwinex
+    networks:
+      - smartbots_networks
+    command: python -u ./src/application/bots/financial_trading/data_realtime_financial.py
+
+  data_provider_ib:
+    build:
+      context: .
+      dockerfile: smartbot-python.dockerfile
+    hostname: data_provider_ib
+    volumes:
+      - ..:/app
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+      BROKER_FINANCIAL: ib
     networks:
       - smartbots_networks
     command: python -u ./src/application/bots/financial_trading/data_realtime_financial.py
@@ -25,7 +40,7 @@ services:
       - ..:/app
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
-      ROUTING_KEY: financial_order
+      ROUTING_KEY: ib_order
     networks:
       - smartbots_networks
     command: python -u ./src/application/bots/portfolio_production.py
@@ -39,10 +54,26 @@ services:
       - ..:/app
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
-      ROUTING_KEY: financial_order
+      ROUTING_KEY: darwinex_order
+      BROKER_FINANCIAL: darwinex
     networks:
       - smartbots_networks
     command: python -u ./src/application/bots/financial_trading/broker_financial.py
+
+  broker_ib:
+    build:
+      context: .
+      dockerfile: smartbot-python.dockerfile
+    hostname: broker_ib
+    volumes:
+      - ..:/app
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+      ROUTING_KEY: ib_order
+      BROKER_FINANCIAL: ib
+    networks:
+      - smartbots_networks
+    command: python -u ./src/application/bots/financial_trading/broker_financial_ib.py
 
   telegram_financial:
     build:
@@ -56,6 +87,7 @@ services:
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
       TRADING_TYPE_DOCKER: financial
+      BROKER_FINANCIAL: darwinex
     command: python -u ./src/application/bots/telegram_bot.py
 
   update_mongodb_financial:

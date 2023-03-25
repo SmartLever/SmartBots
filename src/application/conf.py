@@ -101,7 +101,7 @@ INITIAL_BALANCE_BETTING = os.getenv("INITIAL_BALANCE_BETTING") or "REPLACE_ME"
 
 # Variable for production
 SEND_ORDERS_BROKER_MT4 = int(os.getenv("SEND_ORDERS_BROKER_MT4")) or 0
-
+SEND_ORDERS_BROKER_IB = int(os.getenv("SEND_ORDERS_BROKER_IB")) or 0
 # Telegram
 TOKEN_TELEGRAM_FINANCIAL = os.getenv("TOKEN_TELEGRAM_FINANCIAL") or "REPLACE_ME"
 
@@ -147,6 +147,12 @@ DWT_FTP_PASS = os.getenv("DWT_FTP_PASS") or "REPLACE_ME"
 DWT_FTP_HOSTNAME = os.getenv("DWT_FTP_HOSTNAME") or "REPLACE_ME"
 DWT_FTP_PORT = os.getenv("DWT_FTP_PORT") or "REPLACE_ME"
 
+#### INFO IB ####
+HOST_IB = os.getenv("HOST_IB") or "REPLACE_ME"
+PORT_IB = os.getenv("PORT_IB") or "REPLACE_ME"
+CLIENT_IB_PROVIDER = os.getenv("CLIENT_IB_PROVIDER") or "REPLACE_ME"
+CLIENT_IB_BROKER = os.getenv("CLIENT_IB_BROKER") or "REPLACE_ME"
+ACCOUNT_IB =  os.getenv("ACCOUNT_IB") or "REPLACE_ME"
 ##################################################
 
 
@@ -179,5 +185,5 @@ if '[' in CRYPTO_SYMBOLS:
     CRYPTO_SYMBOLS = ast.literal_eval(CRYPTO_SYMBOLS)
 INITIAL_BALANCE_CRYPTO = os.getenv("INITIAL_BALANCE_CRYPTO") or 100
 BROKER_CRYPTO = os.getenv("BROKER_CRYPTO") or "REPLACE_ME"
-
+NAME_CRYPTO_PORTFOLIO = os.getenv("NAME_CRYPTO_PORTFOLIO") or "REPLACE_ME"
 ##################################################

@@ -116,7 +116,7 @@ class Emit_Events():
 
 @log_start_end(log=logger)
 def receive_events(routing_key: str = "#", topic: str ='events', callback: callable=None,
-                   config: dict = None):
+                   config: dict = None, block=True):
     """ Receive events from MQ by topic """
     if callback is not None and topic == 'events':
         callBack_handler = CallBack_Handler(callback=callback)
@@ -136,4 +136,7 @@ def receive_events(routing_key: str = "#", topic: str ='events', callback: calla
     print(' [*] Waiting for events. To exit press CTRL+C')
     channel.basic_consume(
         queue=queue_name, on_message_callback=callback, auto_ack=True)
-    channel.start_consuming()
+    if block:
+        channel.start_consuming()
+    else:
+        return connection

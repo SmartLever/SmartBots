@@ -1,0 +1,7 @@
+ticker,type,exchange_ib,multiplier,currency,ticker_ib,primaryExchange,ISIN
+ES,FUT,CME,50,USD,ES,,
+EURUSD,FOREX,,,,EUR.USD,,
+AUDNZD,FOREX,,,,AUD.NZD,,
+EURJPY,FOREX,,,,EUR.JPY,,
+GBPUSD,FOREX,,,,GBP.USD,,
+AAPL,STOCK,SMART,,USD,AAPL,NASDAQ,US0378331005 
