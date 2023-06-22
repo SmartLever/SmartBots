@@ -8,6 +8,12 @@ import time
 from src.infrastructure.brokerMQ import Emit_Events
 from src.application.base_logger import logger
 from datetime import datetime, timedelta
+from IPython import get_ipython
+
+
+ipython = get_ipython()
+if 'IPKernelApp' in ipython.config:  # 'ipykernel' is used by Jupyter notebook
+    ib_insync.util.startLoop()  # only use in Jupyter
 
 # default Callable
 async def _callable(data: Dict) -> None:
@@ -43,7 +49,10 @@ class Trading(Abstract_Trading):
         """
         try:
             self.client = ib_insync.IB()
-            self.client.connect(self.config_broker['HOST_IB'], self.config_broker['PORT_IB'], self.config_broker['CLIENT_IB'])
+            if 'IPKernelApp' in ipython.config:
+                self.client.connect('172.17.0.1', self.config_broker['PORT_IB'], self.config_broker['CLIENT_IB'])
+            else:
+                self.client.connect(self.config_broker['HOST_IB'], self.config_broker['PORT_IB'], self.config_broker['CLIENT_IB'])
             self.sleep = self.client.sleep
             print(self.client)
             return self.client
@@ -298,6 +307,7 @@ class Trading(Abstract_Trading):
         # Iterate through the date ranges and request the historical data for each interval
         for start, end in intervals:
             # Convert end date to string in the format required by IB API
+            print(start)
             end_str = end.strftime("%Y%m%d %H:%M:%S")
             duration = start - end
             days = str(abs(duration.days))

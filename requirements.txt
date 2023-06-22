@@ -190,4 +190,7 @@ zmq==0.0.0
 flask
 waitress
 Darwinex-ticks
-ib-insync==0.9.71
+ib-insync==0.9.81
+pyportfolioopt
+ipython
+bokeh
