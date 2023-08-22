@@ -81,19 +81,36 @@ SmartBots
   docker compose -f docker-compose_crypto.yml --env-file ./compose.env up -d
   ```
 
-          
+## SmartBots Financial:
 
-## Smartbots Financial 
-SmartBots Financial is a feature of the SmartBots platform that allows users to create and automate financial trading strategies 
-and apply them to various assets such as CFDs, forex, futures, and shares. 
+SmartBots Financial is a feature of the SmartBots platform designed to empower users to create and automate financial trading strategies across a variety of assets such as CFDs, forex, futures, and stocks.
 
-In the current version of the platform the financial trading functionality is designed to work with brokers that offer the MetaTrader 4 platform, such as Darwinex.
+### Broker Integrations
 
-To use the SmartBots Financial platform, users must first create an account with a broker that offers MetaTrader 4, such as Darwinex. Once you have an account, you can download and install MetaTrader 4 on your computer. Then, you can follow the instructions at the following URL to set up the platform and prepare it for use: https://github.com/paduel/MT_zeromq_vnc_docker.
+SmartBots Financial has evolved to interface with various broker platforms. Originally designed to work with brokers offering the MetaTrader 4 platform, like Darwinex, it now also supports Interactive Brokers (IB).
 
-Once you have set up the platform, you can use it to create and automate your financial trading strategies. You can use the platform in a test mode to simulate your strategies and evaluate their performance, or you can use it in live trading mode to execute your strategies and potentially make profits.
+### MetaTrader 4 Setup
 
-When we have mt4 running in docker and with the necessary ports open, we are ready to run docker compose with all services.
+1. Create an account with a broker offering MetaTrader 4, such as Darwinex.
+2. Download and install MetaTrader 4 on your computer.
+3. Set up the platform following [instructions at this link](https://github.com/paduel/MT_zeromq_vnc_docker).
+4. Once set up, you can utilize SmartBots Financial to automate your trading strategies.
+
+### Interactive Brokers Setup
+
+The following article provides a comprehensive tutorial on connecting SmartBots Financial with Interactive Brokers: **"Connecting the dots: Interactive Brokers and SmartBots"**.
+
+#### Quick Steps:
+
+1. Install and run SmartBots.
+2. Install and configure IB's Trader Workstation (TWS).
+3. Connect IB with SmartBots by setting the appropriate parameters.
+4. Execute your trading strategy, from data acquisition to sending trades.
+5. For 24/7 automated trading, operate and orchestrate all the required services.
+
+[Read the full article for detailed and specific steps](https://smartlever.medium.com/connecting-the-dots-interactive-brokers-and-smartbots-a3ce38a33744).
+
+When we have mt4 or TWS running in docker and with the necessary ports open, we are ready to run docker compose with all services.
 Also keep in mind to put all the variables necessary for the services work correctly
 in the path docker/compose.env
 
