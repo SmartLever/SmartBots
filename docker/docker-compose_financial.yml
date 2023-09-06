@@ -17,6 +17,20 @@ services:
       - smartbots_networks
     command: python -u ./src/application/bots/financial_trading/data_realtime_financial.py
 
+  data_provider_mt5:
+    build:
+      context: .
+      dockerfile: smartbot-python.dockerfile
+    hostname: data_provider_mt5
+    volumes:
+      - ..:/app
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+      BROKER_FINANCIAL: darwinex_mt5
+    networks:
+      - smartbots_networks
+    command: python -u ./src/application/bots/financial_trading/data_realtime_financial.py
+
   data_provider_ib:
     build:
       context: .
@@ -56,6 +70,21 @@ services:
       AM_I_IN_A_DOCKER_CONTAINER: 1
       ROUTING_KEY: darwinex_order
       BROKER_FINANCIAL: darwinex
+    networks:
+      - smartbots_networks
+    command: python -u ./src/application/bots/financial_trading/broker_financial.py
+
+  broker_mt5:
+    build:
+      context: .
+      dockerfile: smartbot-python.dockerfile
+    hostname: broker_mt5
+    volumes:
+      - ..:/app
+    environment:
+      AM_I_IN_A_DOCKER_CONTAINER: 1
+      ROUTING_KEY: darwinex_mt5_order
+      BROKER_FINANCIAL: darwinex_mt5
     networks:
       - smartbots_networks
     command: python -u ./src/application/bots/financial_trading/broker_financial.py

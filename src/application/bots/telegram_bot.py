@@ -474,6 +474,8 @@ def main():
         # symbol to read real positions from mongo
         if conf.BROKER_FINANCIAL == 'darwinex':
             symbol_positions = f'{conf.BROKER_FINANCIAL}_mt4_positions'
+        elif conf.BROKER_FINANCIAL == 'darwinex_mt5':
+            symbol_positions = f'{conf.BROKER_FINANCIAL}_mt5_positions'
         elif conf.BROKER_FINANCIAL == 'ib':
             symbol_positions = f'real_positions_{conf.BROKER_FINANCIAL}'
             account = conf.ACCOUNT_IB

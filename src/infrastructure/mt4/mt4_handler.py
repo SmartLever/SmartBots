@@ -109,8 +109,10 @@ class Trading(Abstract_Trading):
         for ticker in symbols:
             print(dt.datetime.utcnow())
             # Read historical data from darwinex
-
-            data = self.dwt.ticks_from_darwinex(ticker, start=_start_date,
+            ticker_search = ticker
+            if ticker == 'SPX500':
+                ticker_search = 'SPXm'
+            data = self.dwt.ticks_from_darwinex(ticker_search, start=_start_date,
                                                 end=_end_date)
 
             if len(data) > 0:

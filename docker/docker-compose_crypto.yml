@@ -10,9 +10,6 @@ services:
     hostname: exchange_provider
     volumes:
       - ..:/app
-    depends_on:
-      - rabbitmq
-      - mongodb
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
     networks:
@@ -26,9 +23,6 @@ services:
     hostname: bot_crypto_trading1
     volumes:
       - ..:/app
-    depends_on:
-      - rabbitmq
-      - mongodb
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
       ROUTING_KEY: crypto_order
@@ -43,9 +37,6 @@ services:
     hostname: broker_crypto1
     volumes:
       - ..:/app
-    depends_on:
-      - rabbitmq
-      - mongodb
     environment:
       AM_I_IN_A_DOCKER_CONTAINER: 1
       ROUTING_KEY: crypto_order

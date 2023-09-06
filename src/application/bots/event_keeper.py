@@ -26,6 +26,8 @@ def main(_name_library='events_keeper') -> None:
             return f'{event.unique_name}_{event.datetime}_{saved_variable["events"]}'
         elif event.event_type == 'bet':
             return f'{event.unique_name}_{event.bet_id}'
+        elif event.event_type == 'tick' and 'VIX' in event.ticker:
+            return f'{event.ticker}_{event.datetime}_{event.event_type}'
         else:
             print(f'Event type {event.event_type}  saving as default')
             return f'{event.ticker}_{event.datetime}_{event.event_type}_{saved_variable["events"]}'

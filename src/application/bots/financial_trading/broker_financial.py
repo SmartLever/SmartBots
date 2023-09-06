@@ -5,6 +5,8 @@ import time
 import threading
 if conf.BROKER_FINANCIAL in ['ftmo', 'darwinex']:
     from src.application.bots.financial_trading.mt4.broker_mt4 import BrokerMT4 as BrokerFinancial
+elif conf.BROKER_FINANCIAL == 'darwinex_mt5':
+    from src.application.bots.financial_trading.mt5.broker_mt5 import BrokerMT5 as BrokerFinancial
 
 
 def main():

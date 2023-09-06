@@ -8,6 +8,8 @@ if conf.BROKER_FINANCIAL == 'darwinex':
     from src.application.bots.financial_trading.mt4.data_mt4 import ProviderMT4 as ProviderFinancial
 elif conf.BROKER_FINANCIAL == 'ib':
     from src.application.bots.financial_trading.ib.data_ib import ProviderIB as ProviderFinancial
+elif conf.BROKER_FINANCIAL == 'darwinex_mt5':
+    from src.application.bots.financial_trading.mt5.data_mt5 import ProviderMT5 as ProviderFinancial
 
 
 def main():

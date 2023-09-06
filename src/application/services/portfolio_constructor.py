@@ -279,6 +279,9 @@ class Portfolio_Constructor(object):
             except:
                 self.ticker_to_strategies[event.ticker] = []  # default empty list
                 strategies = self.ticker_to_strategies[event.ticker]
+            if self.print_events_realtime and strategies:
+                if event.ticker == 'VIX':
+                    print(f'tick {event.ticker} {event.datetime} {event.price}')
             for strategy in strategies:
                 strategy.add_event(event)
 

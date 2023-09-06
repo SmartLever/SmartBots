@@ -53,11 +53,22 @@ class Trading_View_Webhook(Abstract_Strategy):
                     self.contracts = quantity
                     price = event.msg["price"]
                     if market_position == 'long':
-                        action = 'buy'
-                        self.position = 1
+                        if prev_market_position == 'flat':
+                            action = 'buy'
+                            self.position = 1
+                        elif prev_market_position == 'short':
+                            action = 'buy'
+                            self.position = 1
+                            quantity = quantity * 2
                     elif market_position == 'short':
-                        action = 'sell'
-                        self.position = -1
+                        if prev_market_position == 'flat':
+                            action = 'sell'
+                            self.position = -1
+                        elif prev_market_position == 'long':
+                            action = 'sell'
+                            self.position = -1
+                            quantity = quantity * 2
+
                     elif market_position == 'flat':
                         if prev_market_position == 'long':
                             action = 'sell'

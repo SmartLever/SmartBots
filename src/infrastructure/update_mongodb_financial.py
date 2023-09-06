@@ -17,12 +17,13 @@ def main():
         """Read data from MongoDB"""
         try:
             data = lib.read(symbol).data
-            if data.event_type == 'bar':
+            if data.event_type == 'bar' or data.event_type == 'tick':
                 try:
                     dict_per_ticker[data.ticker].append(data.__dict__)
                 except:
                     dict_per_ticker[data.ticker] = []
                     dict_per_ticker[data.ticker].append(data.__dict__)
+
         except:
             pass
 
@@ -50,7 +51,10 @@ def main():
                 # range of dates from last data
                 list_dates = pd.date_range(max_index_historical, today, freq='1min')
                 list_symbols_yesterday = []
-                list_symbols_today = [f'{ticker}_{x.strftime("%Y-%m-%d %H:%M:00")}_bar' for x in list_dates]
+                if ticker == 'VIX':
+                    list_symbols_today = [f'{ticker}_{x.strftime("%Y-%m-%d %H:%M:00")}_tick' for x in list_dates]
+                else:
+                    list_symbols_today = [f'{ticker}_{x.strftime("%Y-%m-%d %H:%M:00")}_bar' for x in list_dates]
             # different day, read symbols from yesterday
             else:
                 # calculate end of the day from the last data
@@ -58,7 +62,10 @@ def main():
                                       max_index_historical.day, 23, 59, 0)
                 # range of dates from last data
                 list_dates = pd.date_range(max_index_historical, end_day, freq='1min')
-                list_symbols_yesterday = [f'{ticker}_{x.strftime("%Y-%m-%d %H:%M:00")}_bar' for x in list_dates]
+                if ticker == 'VIX':
+                    list_symbols_yesterday = [f'{ticker}_{x.strftime("%Y-%m-%d %H:%M:00")}_tick' for x in list_dates]
+                else:
+                    list_symbols_yesterday = [f'{ticker}_{x.strftime("%Y-%m-%d %H:%M:00")}_bar' for x in list_dates]
                 list_symbols_today = lib_keeper.list_symbols(regex=ticker)
 
             for sim in list_symbols_today:
@@ -71,6 +78,15 @@ def main():
             data = data.sort_values(by=['datetime'])
             data.index = data['datetime']
             data['symbol'] = data['ticker']
+            if ticker == 'VIX':
+                data['open'] =  data['price']
+                data['high'] = data['price']
+                data['low'] = data['price']
+                data['close'] = data['price']
+                data['tick_type'] = 'indicator'
+                data['descriptiona']: 'vol_implicit'
+                data['exchange'] = 'CBOT'
+                data['volumen'] = 0
             if len(data) > 0 and len(data_last) > 0:  #
                 # update data
                 data = data[data.index > data_last.index.max() - timedelta(days=1)]
